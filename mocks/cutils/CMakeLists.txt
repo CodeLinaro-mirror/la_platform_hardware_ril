@@ -12,6 +12,7 @@ set( TARGET_MOCK_LIBCUTILS mockcutils )
 set( MOCK_CUTILS_SOURCES
         sockets2.c
         properties2.c
+        ril_config.c
         )
 
 if (NOT RIL_FOR_EXTERNAL_AP)
@@ -37,6 +38,7 @@ install ( TARGETS ${TARGET_MOCK_LIBCUTILS}
 set( MOCK_CUTILS_HEADERS
         sockets2.h
         properties2.h
+        ril_config.h
         )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

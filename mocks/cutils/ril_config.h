@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,40 +27,29 @@
  *   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "properties2.h"
-#include "ril_config.h"
+/******************************************************************************
+  @file    ril_config.h
+  @brief   Read settings from configuration file
 
-int property_get(const char* key, char* value, const char* defaultValue)
-{
-    getConfigValue(key, value);
-    if(strlen(value) == 0) {
-        strlcpy(value, defaultValue, PROPERTY_VALUE_MAX-1);
-    }
-    value[PROPERTY_VALUE_MAX-1] = '\0';
-    return strlen(value);
-}
+  DESCRIPTION
+  Read settings like logging properties, multi SIM properties etc from configuration file.
+******************************************************************************/
 
-int8_t property_get_bool(const char* key, int8_t default_value)
-{
-    return 0;
-}
+#ifndef RIL_CONFIG_H
+#define RIL_CONFIG_H
 
-int64_t property_get_int64(const char* key, int64_t default_value)
-{
-    return 0;
-}
+void getConfigValue(const char *key, char * val);
 
-int32_t property_get_int32(const char* key, int32_t default_value)
-{
-    return 0;
-}
+void getConfigFilePath(char *configFile);
 
-int property_set(const char* key, const char* value)
-{
-    return 0;
-}
+void readConfigFile(char *configFile);
 
-int property_list(void (*propfn)(const char *key, const char *value, void *cookie), void *cookie)
-{
-  return 0;
-}
+void getCurrentProcessPath(char *currentProcPath);
+
+void getCurrentProcessName(char *procName);
+
+void getProcessPath(char *procPath);
+
+void trim(char *token);
+
+#endif
