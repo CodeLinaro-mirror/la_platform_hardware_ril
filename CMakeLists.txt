@@ -4,7 +4,8 @@ project (ril)
 
 include(GNUInstallDirs)
 include(FindPkgConfig)
-
+set(CMAKE_SHARED_LINKER_FLAGS "${LDFLAGS} -z noexecstack -z relro -z now")
+set(CMAKE_EXE_LINKER_FLAGS "${LDFLAGS} -z noexecstack -z relro -z now")
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_compile_options(${GLIB_CFLAGS} -include glib.h)
 add_definitions(-Dstrlcpy=g_strlcpy)
