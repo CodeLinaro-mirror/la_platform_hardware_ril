@@ -32,9 +32,16 @@
 
 int property_get(const char* key, char* value, const char* defaultValue)
 {
-    getConfigValue(key, value);
-    if(strlen(value) == 0) {
-        strlcpy(value, defaultValue, PROPERTY_VALUE_MAX-1);
+    if(!key || !value) {
+        return 0;
+    }
+    bool propertyFound = getConfigValue(key, value);
+    if(!propertyFound) {
+        if(defaultValue) {
+            strlcpy(value, defaultValue, PROPERTY_VALUE_MAX);
+        } else {
+            return 0;
+        }
     }
     value[PROPERTY_VALUE_MAX-1] = '\0';
     return strlen(value);

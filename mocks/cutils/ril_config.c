@@ -253,19 +253,20 @@ void init() {
 
 }
 
-void getConfigValue(const char *configKey, char *configVal) {
-
+bool getConfigValue(const char *configKey, char *configVal) {
+   bool keyFound = false;
    if(!confFileRead) {
       init();
    }
 
    for (int index = 0; strlen(gSettings[index].key) != 0; index++) {
       if (strncmp (gSettings[index].key , configKey, sizeof(gSettings[index].key)) == 0) {
-         strlcpy(configVal, gSettings[index].value, PROP_VALUE_MAX-1);
-         configVal[PROP_VALUE_MAX-1] = '\0';
+         strlcpy(configVal, gSettings[index].value, PROP_VALUE_MAX);
          syslog(LOG_DEBUG, "%s:[%d] key: %s configVal: %s", __func__, __LINE__,
             gSettings[index].key, configVal);
+         keyFound = true;
          break;
       }
    }
+   return keyFound;
 }

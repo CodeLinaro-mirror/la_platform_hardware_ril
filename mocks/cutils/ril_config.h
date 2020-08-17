@@ -38,7 +38,9 @@
 #ifndef RIL_CONFIG_H
 #define RIL_CONFIG_H
 
-void getConfigValue(const char *key, char * val);
+#include <stdbool.h>
+
+bool getConfigValue(const char *key, char * val);
 
 void getConfigFilePath(char *configFile);
 
