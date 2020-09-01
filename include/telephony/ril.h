@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021 The Linux Foundation. All rights reserved.
  * Not a contribution.
  */
 
@@ -252,7 +252,8 @@ typedef enum {
     RADIO_TECH_GSM = 16, // Only supports voice
     RADIO_TECH_TD_SCDMA = 17,
     RADIO_TECH_IWLAN = 18,
-    RADIO_TECH_LTE_CA = 19
+    RADIO_TECH_LTE_CA = 19,
+    RADIO_TECH_5G = 20
 } RIL_RadioTechnology;
 
 typedef enum {
