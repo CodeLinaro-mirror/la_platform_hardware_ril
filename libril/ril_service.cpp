@@ -1795,8 +1795,12 @@ Return<void> RadioImpl::setGsmBroadcastConfig(int32_t serial,
     }
 
     int num = configInfo.size();
-    RIL_GSM_BroadcastSmsConfigInfo gsmBci[num];
-    RIL_GSM_BroadcastSmsConfigInfo *gsmBciPtrs[num];
+    auto gsmBci = new RIL_GSM_BroadcastSmsConfigInfo[num];
+    if (gsmBci == nullptr) {
+        sendErrorResponse(pRI, RIL_E_NO_MEMORY);
+        return Void();
+    }
+    std::vector<RIL_GSM_BroadcastSmsConfigInfo*> gsmBciPtrs(num);
 
     for (int i = 0 ; i < num ; i++ ) {
         gsmBciPtrs[i] = &gsmBci[i];
@@ -1807,8 +1811,10 @@ Return<void> RadioImpl::setGsmBroadcastConfig(int32_t serial,
         gsmBci[i].selected = BOOL_TO_INT(configInfo[i].selected);
     }
 
-    CALL_ONREQUEST(pRI->pCI->requestNumber, gsmBciPtrs,
+    CALL_ONREQUEST(pRI->pCI->requestNumber, gsmBciPtrs.data(),
             num * sizeof(RIL_GSM_BroadcastSmsConfigInfo *), pRI, mSlotId);
+
+    delete []gsmBci;
     return Void();
 }
 
@@ -1842,9 +1848,12 @@ Return<void> RadioImpl::setCdmaBroadcastConfig(int32_t serial,
     }
 
     int num = configInfo.size();
-    RIL_CDMA_BroadcastSmsConfigInfo cdmaBci[num];
-    RIL_CDMA_BroadcastSmsConfigInfo *cdmaBciPtrs[num];
-
+    auto cdmaBci = new RIL_CDMA_BroadcastSmsConfigInfo[num];
+    if (cdmaBci == nullptr) {
+        sendErrorResponse(pRI, RIL_E_NO_MEMORY);
+        return Void();
+    }
+    std::vector<RIL_CDMA_BroadcastSmsConfigInfo*> cdmaBciPtrs(num);
     for (int i = 0 ; i < num ; i++ ) {
         cdmaBciPtrs[i] = &cdmaBci[i];
         cdmaBci[i].service_category = configInfo[i].serviceCategory;
@@ -1852,8 +1861,10 @@ Return<void> RadioImpl::setCdmaBroadcastConfig(int32_t serial,
         cdmaBci[i].selected = BOOL_TO_INT(configInfo[i].selected);
     }
 
-    CALL_ONREQUEST(pRI->pCI->requestNumber, cdmaBciPtrs,
+    CALL_ONREQUEST(pRI->pCI->requestNumber, cdmaBciPtrs.data(),
             num * sizeof(RIL_CDMA_BroadcastSmsConfigInfo *), pRI, mSlotId);
+
+    delete []cdmaBci;
     return Void();
 }
 
