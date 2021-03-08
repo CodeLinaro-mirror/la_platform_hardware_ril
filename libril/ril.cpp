@@ -1,6 +1,6 @@
 /* //device/libs/telephony/ril.cpp
 **
-** Copyright (c) 2020 The Linux Foundation. All rights reserved.
+** Copyright (c) 2020-2021 The Linux Foundation. All rights reserved.
 ** Not a contribution.
 */
 
@@ -355,6 +355,11 @@ static void wakeTimeoutCallback(void *);
 static bool isServiceTypeCfQuery(RIL_SsServiceType serType, RIL_SsRequestType reqType);
 
 static bool isDebuggable();
+
+static void rilEventAddWakeup(struct ril_event *ev);
+static void onCommandsSocketClosed(RIL_SOCKET_ID socket_id);
+static int findFd(int socket_id);
+
 
 #ifdef RIL_SHLIB
 #if defined(ANDROID_MULTI_SIM)
@@ -2441,9 +2446,46 @@ blockingWrite(int fd, const void *buffer, size_t len) {
     return 0;
 }
 
+/**
+  Delete the events and streams corresponding to older client connection and start listening to
+  accept new client connection
+ */
+static void resetConnection(RIL_SOCKET_ID socket_id) {
+    SocketListenParam *param = NULL;
+    if (socket_id == RIL_SOCKET_1) {
+        param = &s_ril_param_socket;
+    }
+#if (SIM_COUNT >= 2)
+    if (socket_id == RIL_SOCKET_2) {
+        param = &s_ril_param_socket2;
+    }
+#if (SIM_COUNT >= 3)
+    else if (socket_id == RIL_SOCKET_3) {
+        param = &s_ril_param_socket3;
+    }
+#endif
+#if (SIM_COUNT >= 4)
+    else if (socket_id == RIL_SOCKET_4) {
+        param = &s_ril_param_socket4;
+    }
+#endif
+#endif
+    if(param) {
+        RLOGE(" Removing the client connection on %s, connFd: %d", rilSocketIdToString(socket_id),
+                param->fdCommand);
+        param->fdCommand = -1;
+        ril_event_del(param->commands_event);
+        record_stream_free(param->p_rs);
+        /* start listening for new connections again */
+        rilEventAddWakeup(param->listen_event);
+        onCommandsSocketClosed(socket_id);
+    } else {
+        RLOGE("Invalid socket_id  found %d", socket_id);
+    }
+}
+
 static int
 sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
-    int fd = s_ril_param_socket.fdCommand;
     int ret;
     uint32_t header;
     pthread_mutex_t * writeMutexHook = &s_writeMutex;
@@ -2454,25 +2496,19 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
 
 #if (SIM_COUNT >= 2)
     if (socket_id == RIL_SOCKET_2) {
-        fd = s_ril_param_socket2.fdCommand;
         writeMutexHook = &s_writeMutex_socket2;
     }
 #if (SIM_COUNT >= 3)
     else if (socket_id == RIL_SOCKET_3) {
-        fd = s_ril_param_socket3.fdCommand;
         writeMutexHook = &s_writeMutex_socket3;
     }
 #endif
 #if (SIM_COUNT >= 4)
     else if (socket_id == RIL_SOCKET_4) {
-        fd = s_ril_param_socket4.fdCommand;
         writeMutexHook = &s_writeMutex_socket4;
     }
 #endif
 #endif
-    if (fd < 0) {
-        return -1;
-    }
 
     if (dataSize > MAX_COMMAND_BYTES) {
         RLOGE("RIL: packet larger than %u (%u)",
@@ -2482,12 +2518,20 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
     }
 
     pthread_mutex_lock(writeMutexHook);
+    int fd = findFd(socket_id);
+    if (fd < 0) {
+        pthread_mutex_unlock(writeMutexHook);
+        return -1;
+    }
 
     header = htonl(dataSize);
 
     ret = blockingWrite(fd, (void *)&header, sizeof(header));
 
     if (ret < 0) {
+#ifdef RIL_FOR_MDM_LE
+        resetConnection(socket_id);
+#endif
         pthread_mutex_unlock(writeMutexHook);
         return ret;
     }
@@ -2495,6 +2539,9 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
     ret = blockingWrite(fd, data, dataSize);
 
     if (ret < 0) {
+#ifdef RIL_FOR_MDM_LE
+        resetConnection(socket_id);
+#endif
         pthread_mutex_unlock(writeMutexHook);
         return ret;
     }
@@ -4456,7 +4503,7 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         if (ret != 0) {
             RLOGE("error on reading command socket errno:%d\n", errno);
         } else {
-            RLOGW("EOS.  Closing command socket.");
+            RLOGE("EOS.  Closing command socket, errno:%d", errno);
         }
 
         close(fd);
@@ -4761,6 +4808,7 @@ static void debugCallback (int fd, short flags, void *param) {
             data = 0;
             issueLocalRequest(RIL_REQUEST_RADIO_POWER, &data, sizeof(int), socket_id);
             // Close the socket
+            RLOGE("Closing the socket %s", rilSocketIdToString(socket_id));
             if (socket_id == RIL_SOCKET_1 && s_ril_param_socket.fdCommand > 0) {
                 close(s_ril_param_socket.fdCommand);
                 s_ril_param_socket.fdCommand = -1;
