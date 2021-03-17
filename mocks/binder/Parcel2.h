@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, 2021 The Linux Foundation. All rights reserved.
  * Not a Contribution.
  */
 
@@ -71,10 +71,13 @@ public:
     String16            readString16() const;
     void*               writeInplace(size_t len);
     const char*         readCString() const;
+    status_t            writeCString(const char* str);
     status_t  writeString8AsString16(const char *s);
     uint64_t            readUint64() const;
     status_t            readUint64(uint64_t *pArg) const;
     status_t            writeUint64(uint64_t val);
+    status_t            readUint32(uint32_t *pArg) const;
+    status_t            writeUint32(uint32_t val);
 
 private:
     status_t            continueWrite(size_t desired);
