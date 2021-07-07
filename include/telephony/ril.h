@@ -90,7 +90,7 @@ extern "C" {
 #define MAX_DEBUG_SOCKET_NAME_LENGTH 12
 #define MAX_QEMU_PIPE_NAME_LENGTH  11
 #define MAX_UUID_LENGTH 64
-
+#define MAX_RIL_MCC_MNC_SIZE 4
 
 typedef void * RIL_Token;
 
@@ -1374,6 +1374,15 @@ typedef struct {
 } RIL_CellIdentityTdscdma;
 
 typedef struct {
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown  */
+    uint64_t nci;    /* 64-bit NR Cell Identity described in 3GPP TS 38.331, INT_MAX if unknown  */
+    uint32_t pci;    /* 32-bit Physical cell id described in 3GPP TS 38.331, INT_MAX if unknown  */
+    int32_t tac;    /* 16-bit tracking area code, INT_MAX if unknown */
+    int32_t nrarfcn; /*NR Absolute Radio Frequency Channel Number Reference: 3GPP TS 38.101-1 and 3GPP TS 38.101-2 section 5.4.2.1*/
+} RIL_CellIdentityNr;
+
+typedef struct {
   RIL_CellIdentityGsm   cellIdentityGsm;
   RIL_GW_SignalStrength signalStrengthGsm;
 } RIL_CellInfoGsm;
@@ -1414,13 +1423,19 @@ typedef struct {
   RIL_TD_SCDMA_SignalStrength signalStrengthTdscdma;
 } RIL_CellInfoTdscdma;
 
+typedef struct {
+  RIL_CellIdentityNr cellIdentityNr;
+  RIL_NR5G_SignalStrength signalStrengthNr;
+} RIL_CellInfoNr;
+
 // Must be the same as CellInfo.TYPE_XXX
 typedef enum {
   RIL_CELL_INFO_TYPE_GSM    = 1,
   RIL_CELL_INFO_TYPE_CDMA   = 2,
   RIL_CELL_INFO_TYPE_LTE    = 3,
   RIL_CELL_INFO_TYPE_WCDMA  = 4,
-  RIL_CELL_INFO_TYPE_TD_SCDMA  = 5
+  RIL_CELL_INFO_TYPE_TD_SCDMA  = 5,
+  RIL_CELL_INFO_TYPE_NR5G  = 6
 } RIL_CellInfoType;
 
 // Must be the same as CellInfo.TIMESTAMP_TYPE_XXX
@@ -1457,8 +1472,10 @@ typedef struct {
     RIL_CellInfoLte_v12     lte;
     RIL_CellInfoWcdma_v12   wcdma;
     RIL_CellInfoTdscdma     tdscdma;
+    RIL_CellInfoNr          nr;
   } CellInfo;
 } RIL_CellInfo_v12;
+
 
 /* Names of the CDMA info records (C.S0005 section 3.7.5) */
 typedef enum {
