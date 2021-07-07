@@ -3738,6 +3738,19 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.tdscdma.signalStrengthTdscdma.rscp);
                 break;
             }
+            case RIL_CELL_INFO_TYPE_NR5G: {
+                p.writeCString(p_cur->CellInfo.nr.cellIdentityNr.mcc);
+                p.writeCString(p_cur->CellInfo.nr.cellIdentityNr.mnc);
+                p.writeUint64(p_cur->CellInfo.nr.cellIdentityNr.nci);
+                p.writeUint32(p_cur->CellInfo.nr.cellIdentityNr.pci);
+                p.writeInt32(p_cur->CellInfo.nr.cellIdentityNr.tac);
+                p.writeInt32(p_cur->CellInfo.nr.cellIdentityNr.nrarfcn);
+
+                p.writeInt32(p_cur->CellInfo.nr.signalStrengthNr.rsrp);
+                p.writeInt32(p_cur->CellInfo.nr.signalStrengthNr.rsrq);
+                p.writeInt32(p_cur->CellInfo.nr.signalStrengthNr.rssnr);
+                break;
+            }
         }
         p_cur += 1;
     }

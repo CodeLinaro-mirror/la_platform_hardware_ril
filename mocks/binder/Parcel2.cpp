@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, 2021 The Linux Foundation. All rights reserved.
  * Not a Contribution.
  */
 
@@ -548,6 +548,11 @@ status_t Parcel::writeString8AsString16(const char *s8) {
     return NO_ERROR;
 }
 
+status_t Parcel::writeCString(const char* str)
+{
+    return write(str, strlen(str)+1);
+}
+
 status_t Parcel::writeUint64(uint64_t val) {
     return writeAligned(val);
 }
@@ -558,4 +563,12 @@ status_t Parcel::readUint64(uint64_t *pArg) const {
 
 uint64_t Parcel::readUint64() const {
     return readAligned<uint64_t>();
+}
+
+status_t Parcel::writeUint32(uint32_t val) {
+    return writeAligned(val);
+}
+
+status_t Parcel::readUint32(uint32_t *pArg) const {
+    return readAligned(pArg);
 }
