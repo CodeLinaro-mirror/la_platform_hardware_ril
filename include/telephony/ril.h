@@ -19,6 +19,42 @@
  * limitations under the License.
  */
 
+/*
+ *  Changes from Qualcomm Innovation Center are provided under the following license:
+ *
+ *  Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted (subject to the limitations in the
+ *  disclaimer below) provided that the following conditions are met:
+ *
+ *      * Redistributions of source code must retain the above copyright
+ *        notice, this list of conditions and the following disclaimer.
+ *
+ *      * Redistributions in binary form must reproduce the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer in the documentation and/or other materials provided
+ *        with the distribution.
+ *
+ *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
+ *        contributors may be used to endorse or promote products derived
+ *        from this software without specific prior written permission.
+ *
+ *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
+ *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+ *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifndef ANDROID_RIL_H
 #define ANDROID_RIL_H 1
 
@@ -1313,8 +1349,8 @@ typedef struct {
 } RIL_CellIdentityGsm;
 
 typedef struct {
-    int mcc;    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown */
-    int mnc;    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown */
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, empty if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, empty if unknown  */
     int lac;    /* 16-bit Location Area Code, 0..65535, INT_MAX if unknown  */
     int cid;    /* 16-bit GSM Cell Identity described in TS 27.007, 0..65535, INT_MAX if unknown  */
     int arfcn;  /* 16-bit GSM Absolute RF channel number, INT_MAX if unknown */
@@ -1330,8 +1366,8 @@ typedef struct {
 } RIL_CellIdentityWcdma;
 
 typedef struct {
-    int mcc;    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown  */
-    int mnc;    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown  */
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, empty if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, empty if unknown  */
     int lac;    /* 16-bit Location Area Code, 0..65535, INT_MAX if unknown  */
     int cid;    /* 28-bit UMTS Cell Identity described in TS 25.331, 0..268435455, INT_MAX if unknown  */
     int psc;    /* 9-bit UMTS Primary Scrambling Code described in TS 25.331, 0..511, INT_MAX if unknown */
@@ -1362,8 +1398,8 @@ typedef struct {
 } RIL_CellIdentityLte;
 
 typedef struct {
-    int mcc;    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown  */
-    int mnc;    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown  */
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, empty if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, empty if unknown  */
     int ci;     /* 28-bit Cell Identity described in TS ???, INT_MAX if unknown */
     int pci;    /* physical cell id 0..503, INT_MAX if unknown  */
     int tac;    /* 16-bit tracking area code, INT_MAX if unknown  */
@@ -1371,16 +1407,16 @@ typedef struct {
 } RIL_CellIdentityLte_v12;
 
 typedef struct {
-    int mcc;    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown  */
-    int mnc;    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown  */
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, empty if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, empty if unknown  */
     int lac;    /* 16-bit Location Area Code, 0..65535, INT_MAX if unknown  */
     int cid;    /* 28-bit UMTS Cell Identity described in TS 25.331, 0..268435455, INT_MAX if unknown  */
     int cpid;    /* 8-bit Cell Parameters ID described in TS 25.331, 0..127, INT_MAX if unknown */
 } RIL_CellIdentityTdscdma;
 
 typedef struct {
-    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, INT_MAX if unknown  */
-    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, INT_MAX if unknown  */
+    char mcc[MAX_RIL_MCC_MNC_SIZE];    /* 3-digit Mobile Country Code, 0..999, empty if unknown  */
+    char mnc[MAX_RIL_MCC_MNC_SIZE];    /* 2 or 3-digit Mobile Network Code, 0..999, empty if unknown  */
     uint64_t nci;    /* 64-bit NR Cell Identity described in 3GPP TS 38.331, INT_MAX if unknown  */
     uint32_t pci;    /* 32-bit Physical cell id described in 3GPP TS 38.331, INT_MAX if unknown  */
     int32_t tac;    /* 16-bit tracking area code, INT_MAX if unknown */

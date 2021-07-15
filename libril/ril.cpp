@@ -20,6 +20,42 @@
 ** limitations under the License.
 */
 
+/*
+ *  Changes from Qualcomm Innovation Center are provided under the following license:
+ *
+ *  Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted (subject to the limitations in the
+ *  disclaimer below) provided that the following conditions are met:
+ *
+ *      * Redistributions of source code must retain the above copyright
+ *        notice, this list of conditions and the following disclaimer.
+ *
+ *      * Redistributions in binary form must reproduce the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer in the documentation and/or other materials provided
+ *        with the distribution.
+ *
+ *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
+ *        contributors may be used to endorse or promote products derived
+ *        from this software without specific prior written permission.
+ *
+ *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
+ *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+ *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #define LOG_TAG "RILC"
 
 #if !defined(RIL_FOR_MDM_LE)
@@ -3682,8 +3718,8 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
                 break;
             }
             case RIL_CELL_INFO_TYPE_TD_SCDMA: {
-                p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mcc);
-                p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mnc);
+                p.writeCString(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mcc);
+                p.writeCString(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mnc);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.lac);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.cid);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.cpid);
@@ -3724,8 +3760,8 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
         p.writeUint64(p_cur->timeStamp);
         switch(p_cur->cellInfoType) {
             case RIL_CELL_INFO_TYPE_GSM: {
-                p.writeInt32(p_cur->CellInfo.gsm.cellIdentityGsm.mcc);
-                p.writeInt32(p_cur->CellInfo.gsm.cellIdentityGsm.mnc);
+                p.writeCString(p_cur->CellInfo.gsm.cellIdentityGsm.mcc);
+                p.writeCString(p_cur->CellInfo.gsm.cellIdentityGsm.mnc);
                 p.writeInt32(p_cur->CellInfo.gsm.cellIdentityGsm.lac);
                 p.writeInt32(p_cur->CellInfo.gsm.cellIdentityGsm.cid);
                 p.writeInt32(p_cur->CellInfo.gsm.cellIdentityGsm.arfcn);
@@ -3736,8 +3772,8 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 break;
             }
             case RIL_CELL_INFO_TYPE_WCDMA: {
-                p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.mcc);
-                p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.mnc);
+                p.writeCString(p_cur->CellInfo.wcdma.cellIdentityWcdma.mcc);
+                p.writeCString(p_cur->CellInfo.wcdma.cellIdentityWcdma.mnc);
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.lac);
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.cid);
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.psc);
@@ -3761,8 +3797,8 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 break;
             }
             case RIL_CELL_INFO_TYPE_LTE: {
-                p.writeInt32(p_cur->CellInfo.lte.cellIdentityLte.mcc);
-                p.writeInt32(p_cur->CellInfo.lte.cellIdentityLte.mnc);
+                p.writeCString(p_cur->CellInfo.lte.cellIdentityLte.mcc);
+                p.writeCString(p_cur->CellInfo.lte.cellIdentityLte.mnc);
                 p.writeInt32(p_cur->CellInfo.lte.cellIdentityLte.ci);
                 p.writeInt32(p_cur->CellInfo.lte.cellIdentityLte.pci);
                 p.writeInt32(p_cur->CellInfo.lte.cellIdentityLte.tac);
@@ -3777,8 +3813,8 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 break;
             }
             case RIL_CELL_INFO_TYPE_TD_SCDMA: {
-                p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mcc);
-                p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mnc);
+                p.writeCString(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mcc);
+                p.writeCString(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.mnc);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.lac);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.cid);
                 p.writeInt32(p_cur->CellInfo.tdscdma.cellIdentityTdscdma.cpid);
