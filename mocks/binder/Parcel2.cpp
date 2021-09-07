@@ -270,6 +270,8 @@ status_t Parcel::growData(size_t len)
         return BAD_VALUE;
     }
 
+    if (len > SIZE_MAX - mDataSize) return NO_MEMORY; // overflow
+    if (mDataSize + len > SIZE_MAX / 3) return NO_MEMORY; // overflow
     size_t newSize = ((mDataSize+len)*3)/2;
     return (newSize <= mDataSize)
            ? (status_t) NO_MEMORY
