@@ -27,15 +27,6 @@ if (RIL_FOR_EXTERNAL_AP)
     add_definitions(-DRIL_FOR_EXTERNAL_AP)
     # Feature flag used by some data header files
     add_definitions(-DFEATURE_EXTERNAL_AP)
-    if (NOT MACHINE_HAS_CV2X_ONLY)
-        install(FILES scripts/rild.service
-                DESTINATION ${SYSTEMD_UNITDIR})
-        install(FILES scripts/rild2.service
-                DESTINATION ${SYSTEMD_UNITDIR})
-        install(FILES scripts/rild_launcher.sh
-                PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                DESTINATION /etc/initscripts)
-    endif (NOT MACHINE_HAS_CV2X_ONLY)
 endif (RIL_FOR_EXTERNAL_AP)
 
 include_directories(BEFORE include)

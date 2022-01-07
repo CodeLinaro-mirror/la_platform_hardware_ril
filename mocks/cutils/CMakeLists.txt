@@ -4,6 +4,13 @@ set( CMAKE_CONFIGURATION_TYPES
         )
 set( CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES} CACHE STRING "Available build configurations." FORCE )
 
+macro(SYSR_INCLUDE_DIR subdir)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I =/usr/include/${subdir}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I =/usr/include/${subdir}")
+endmacro()
+
+SYSR_INCLUDE_DIR(qmi-framework)
+
 include_directories(BEFORE
         ${CMAKE_SOURCE_DIR}/mocks )
 
@@ -25,7 +32,7 @@ add_library ( ${TARGET_MOCK_LIBCUTILS} SHARED
         )
 
 target_link_libraries(${TARGET_MOCK_LIBCUTILS}
-    ${GLIB_LIBRARIES})
+    ${GLIB_LIBRARIES} qrtr)
 
 set_target_properties(${TARGET_MOCK_LIBCUTILS} PROPERTIES
         VERSION 1.0.0
