@@ -23,7 +23,7 @@
 /*
  *  Changes from Qualcomm Innovation Center are provided under the following license:
  *
- *  Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+ *  Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted (subject to the limitations in the
@@ -5674,7 +5674,7 @@ static int64_t getSystemTimeInMs() {
     struct timeval t;
     t.tv_sec = t.tv_usec = 0;
     gettimeofday(&t, NULL);
-    return t.tv_sec * 1000LL + t.tv_usec / 1000LL;
+    return (int64_t)t.tv_sec * 1000LL + (int64_t)t.tv_usec / 1000LL;
 }
 
 #if defined(ANDROID_MULTI_SIM)
