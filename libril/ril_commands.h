@@ -14,6 +14,13 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
     {0, NULL, NULL},                   //none
     {RIL_REQUEST_GET_SIM_STATUS, dispatchVoid, responseSimStatus},
     {RIL_REQUEST_ENTER_SIM_PIN, dispatchStrings, responseInts},
@@ -156,3 +163,5 @@
     {RIL_REQUEST_CAF_SIM_OPEN_CHANNEL_WITH_P2, dispatchOpenChannelWithP2, responseInts},
     {RIL_REQUEST_GET_ADN_RECORD, dispatchVoid, responseInts},
     {RIL_REQUEST_UPDATE_ADN_RECORD, dispatchAdnRecord, responseInts},
+    {RIL_REQUEST_GET_ECALL_OPRT_MODE, dispatchVoid, responseInts},
+    {RIL_REQUEST_SET_ECALL_OPRT_MODE, dispatchInts, responseVoid},
