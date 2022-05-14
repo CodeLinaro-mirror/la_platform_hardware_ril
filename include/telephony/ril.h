@@ -19,6 +19,12 @@
  * limitations under the License.
  */
 
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
 #ifndef ANDROID_RIL_H
 #define ANDROID_RIL_H 1
 
@@ -5346,6 +5352,37 @@ typedef struct {
  */
 #define RIL_REQUEST_UPDATE_ADN_RECORD 141
 
+/**
+ * RIL_REQUEST_GET_ECALL_OPRT_MODE
+ *
+ * Used to get the emergency call operating mode. Supported modes,
+ * ECALL and NORMAL voice call both can coexist.
+ * only Ecall is available.
+ * Ecall mode is not applicable.
+ *
+ * "data" is NULL
+ *
+ * "response" is int *, used to feedback ECALL OPRT mode
+ *
+ */
+#define RIL_REQUEST_GET_ECALL_OPRT_MODE   142
+
+/**
+ * RIL_REQUEST_SET_ECALL_OPRT_MODE
+ *
+ * Used to set the emergency call operating mode. Supported modes,
+ * ECALL and NORMAL voice call both can coexist.
+ * only Ecall is available.
+ * Ecall mode is not applicable.
+ *
+ * "data" is int *, ECALL OPRT mode to be set
+ *
+ * "response" is NULL
+ *
+ */
+#define RIL_REQUEST_SET_ECALL_OPRT_MODE  143
+
+
 /***********************************************************************/
 
 /**
@@ -5992,6 +6029,18 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_RESPONSE_ADN_RECORDS 1048
+
+/**
+ * RIL_UNSOL_ECALL_OPRT_MODE
+ *
+ * Called when there is a emergency operating mode change,
+ *
+ * "data" is int[2] *.
+ * data[0] is Ecall oprt mode, data[1] is Ecall reason
+ *
+ */
+#define RIL_UNSOL_ECALL_OPRT_MODE 1049
+
 
 /***********************************************************************/
 
