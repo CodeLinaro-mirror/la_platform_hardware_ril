@@ -56,6 +56,12 @@
  *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
 #define LOG_TAG "RILC"
 
 #if !defined(RIL_FOR_MDM_LE)
@@ -6136,6 +6142,8 @@ requestToString(int request) {
         case RIL_REQUEST_GET_CARRIER_RESTRICTIONS: return "GET_CARRIER_RESTRICTIONS";
         case RIL_REQUEST_GET_ADN_RECORD: return "RIL_REQUEST_GET_ADN_RECORD";
         case RIL_REQUEST_UPDATE_ADN_RECORD: return "RIL_REQUEST_UPDATE_ADN_RECORD";
+        case RIL_REQUEST_GET_ECALL_OPRT_MODE: return "GET_ECALL_OPRT_MODE";
+        case RIL_REQUEST_SET_ECALL_OPRT_MODE: return "SET_ECALL_OPRT_MODE";
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED: return "UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED";
@@ -6184,6 +6192,7 @@ requestToString(int request) {
         case RIL_UNSOL_PCO_DATA: return "RIL_UNSOL_PCO_DATA";
         case RIL_UNSOL_RESPONSE_ADN_INIT_DONE: return "RIL_UNSOL_RESPONSE_ADN_INIT_DONE";
         case RIL_UNSOL_RESPONSE_ADN_RECORDS: return "RIL_UNSOL_RESPONSE_ADN_RECORDS";
+        case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
         default: return "<unknown request>";
     }
 }
