@@ -5418,6 +5418,25 @@ typedef struct {
  */
 #define RIL_REQUEST_SET_ECALL_OPRT_MODE  143
 
+/**
+ * RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE
+ *
+ * Query current emergency callback mode
+ *
+ * "data" is NULL
+ *
+ * "response" is int *
+ * ((const int *)response)[0] is
+ *     0 for normal mode
+ *     1 for emergency mode
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  GENERIC_FAILURE
+ *
+ */
+#define RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE 144
 
 /***********************************************************************/
 
