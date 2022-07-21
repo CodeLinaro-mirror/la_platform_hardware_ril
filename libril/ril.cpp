@@ -4740,6 +4740,7 @@ static void listenCallback (int fd, short flags, void *param) {
     }
 }
 
+#ifndef RIL_FOR_MDM_LE
 static void freeDebugCallbackArgs(int number, char **args) {
     for (int i = 0; i < number; i++) {
         if (args[i] != NULL) {
@@ -4942,6 +4943,7 @@ static void debugCallback (int fd, short flags, void *param) {
     freeDebugCallbackArgs(number, args);
     close(acceptFD);
 }
+#endif // RIL_FOR_MDM_LE
 
 
 static void userTimerCallback (int fd, short flags, void *param) {
@@ -5216,7 +5218,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
 #endif /* (SIM_COUNT == 4) */
 
 
-#if 1
+#ifndef RIL_FOR_MDM_LE
     // start debug interface socket
 
     char *inst = NULL;
@@ -5228,14 +5230,9 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
     if (inst != NULL) {
         strlcat(rildebug, inst, MAX_DEBUG_SOCKET_NAME_LENGTH);
     }
-
-#ifndef RIL_FOR_MDM_LE
     s_fdDebug = android_get_control_socket(rildebug);
-#endif
     if (s_fdDebug < 0) {
-#ifndef RIL_FOR_MDM_LE
         RLOGW("Failed to get socket : %s errno:%d, creating local socket", rildebug, errno);
-#endif
         s_fdDebug = ril_socket_local_server(rildebug, SOCK_STREAM);
         if (s_fdDebug < 0) {
             RLOGW("Failed to create socket : %s errno:%d", rildebug, errno);
@@ -5255,7 +5252,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
                 debugCallback, NULL);
 
     rilEventAddWakeup (&s_debug_event);
-#endif
+#endif // RIL_FOR_MDM_LE
 
 }
 
