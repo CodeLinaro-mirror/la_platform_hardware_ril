@@ -160,8 +160,10 @@ int main(int argc, char **argv) {
     char **rilArgv;
     void *dlHandle;
     const RIL_RadioFunctions *(*rilInit)(const struct RIL_Env *, int, char **);
+#ifndef RIL_FOR_MDM_LE
     RIL_RadioFunctions *(*rilUimInit)(const struct RIL_Env *, int, char **);
     const char *err_str = NULL;
+#endif
 
     const RIL_RadioFunctions *funcs;
     char libPath[PROPERTY_VALUE_MAX];
@@ -211,8 +213,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* special override when in the emulator */
-#if 1
+    /* special override when in the emulator. Not required in LE */
+#ifndef RIL_FOR_MDM_LE
     {
         static char*  arg_overrides[5];
         static char   arg_device[32];
@@ -264,7 +266,6 @@ int main(int argc, char **argv) {
             int  tries = 5;
 #define  QEMUD_SOCKET_NAME    "qemud"
 
-#ifndef RIL_FOR_MDM_LE
             while (1) {
                 int  fd = -1;
 
@@ -290,7 +291,6 @@ int main(int argc, char **argv) {
                 if (--tries == 0)
                     break;
             }
-#endif
             if (!done) {
                 RLOGE("could not connect to %s socket (giving up): %s",
                     QEMUD_SOCKET_NAME, strerror(errno));
@@ -358,6 +358,7 @@ OpenLib:
     }
 
     dlerror(); // Clear any previous dlerror
+#ifndef RIL_FOR_MDM_LE
     rilUimInit =
         (RIL_RadioFunctions *(*)(const struct RIL_Env *, int, char **))
         dlsym(dlHandle, "RIL_SAP_Init");
@@ -367,7 +368,7 @@ OpenLib:
     } else if (!rilUimInit) {
         RLOGW("RIL_SAP_Init defined as null in %s. SAP Not usable\n", rilLibPath);
     }
-
+#endif
     if (hasLibArgs) {
         rilArgv = argv + i - 1;
         argc = argc -i + 1;
@@ -392,14 +393,14 @@ OpenLib:
     RIL_register(funcs);
 
     RLOGD("RIL_Init RIL_register completed");
-
+#ifndef RIL_FOR_MDM_LE
     if (rilUimInit) {
         RLOGD("RIL_register_socket started");
         RIL_register_socket(rilUimInit, RIL_SAP_SOCKET, argc, rilArgv);
     }
 
     RLOGD("RIL_register_socket completed");
-
+#endif
 done:
 
     RLOGD("RIL_Init starting sleep loop");
