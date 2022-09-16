@@ -5383,6 +5383,18 @@ typedef struct {
  */
 #define RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE 144
 
+/**
+ * RIL_REQUEST_ECALL_STOP_DFT
+ *
+ * Stop T10 eCall HLAP timer i.e De-registration Fallback Timer (DFT) and de-register from the
+ * serving network.
+ *
+ * "data" is NULL
+ * "response" is NULL
+ *
+ */
+#define RIL_REQUEST_ECALL_STOP_DFT 145
+
 /***********************************************************************/
 
 /**
