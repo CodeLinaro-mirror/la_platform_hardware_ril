@@ -166,3 +166,4 @@
     {RIL_REQUEST_GET_ECALL_OPRT_MODE, dispatchVoid, responseInts},
     {RIL_REQUEST_SET_ECALL_OPRT_MODE, dispatchInts, responseVoid},
     {RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE, dispatchVoid, responseInts},
+    {RIL_REQUEST_ECALL_STOP_DFT, dispatchVoid, responseVoid},
