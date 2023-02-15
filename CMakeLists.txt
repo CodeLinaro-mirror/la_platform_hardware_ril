@@ -31,9 +31,9 @@ endif (RIL_FOR_EXTERNAL_AP)
 
 include_directories(BEFORE include)
 
-if (NOT MACHINE_HAS_CV2X_ONLY)
-    add_subdirectory( rild )
-endif (NOT MACHINE_HAS_CV2X_ONLY)
+if ((NOT MACHINE_HAS_CV2X_ONLY) AND (NOT TELSDK_FEATURE_FOR_SECONDARY_VM) AND (NOT RIL_FOR_EXTERNAL_AP))
+   add_subdirectory( rild )
+endif ((NOT MACHINE_HAS_CV2X_ONLY) AND (NOT TELSDK_FEATURE_FOR_SECONDARY_VM) AND (NOT RIL_FOR_EXTERNAL_AP))
 add_subdirectory( librilutils )
 add_subdirectory( libril )
 add_subdirectory( mocks )
