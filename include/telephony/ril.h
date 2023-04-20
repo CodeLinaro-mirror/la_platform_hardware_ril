@@ -57,7 +57,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -5449,6 +5449,17 @@ typedef struct {
  *
  */
 #define RIL_REQUEST_ECALL_STOP_DFT 145
+
+/**
+ * RIL_REQUEST_RESET_WWAN
+ *
+ * Trigger to reset WWAN without interrupting CV2X stack
+ *
+ * "data" is NULL
+ * "response" is NULL
+ *
+ */
+#define RIL_REQUEST_RESET_WWAN 146
 
 /***********************************************************************/
 

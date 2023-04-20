@@ -58,7 +58,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -6143,6 +6143,7 @@ requestToString(int request) {
         case RIL_REQUEST_GET_ECALL_OPRT_MODE: return "GET_ECALL_OPRT_MODE";
         case RIL_REQUEST_SET_ECALL_OPRT_MODE: return "SET_ECALL_OPRT_MODE";
         case RIL_REQUEST_ECALL_STOP_DFT: return "RIL_REQUEST_ECALL_STOP_DFT";
+        case RIL_REQUEST_RESET_WWAN: return "RIL_REQUEST_RESET_WWAN";
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED: return "UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED";
