@@ -26,10 +26,17 @@
  *   OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  *   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
 
 #include "sockets2.h"
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -72,6 +79,9 @@ int ril_socket_local_server(const char *name, int type) {
         close(fdListen);
         return -1;
     }
+    #ifdef RESTRICT_FILE_PERMS
+    chmod( addr.sun_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+    #endif
 
     return fdListen;
 }

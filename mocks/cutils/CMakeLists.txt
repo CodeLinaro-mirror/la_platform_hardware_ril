@@ -17,6 +17,7 @@ set( MOCK_CUTILS_SOURCES
 
 if (NOT RIL_FOR_EXTERNAL_AP)
     add_definitions(-DSOCKET_PATH_PREFIX="/dev/socket/ril/")
+    add_definitions(-DRESTRICT_FILE_PERMS)
 endif (NOT RIL_FOR_EXTERNAL_AP)
 
 # build library
