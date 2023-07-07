@@ -22,7 +22,7 @@
 /*
  *  Changes from Qualcomm Innovation Center are provided under the following license:
  *
- *  Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+ *  Copyright (c) 2021, 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted (subject to the limitations in the
@@ -1870,6 +1870,38 @@ typedef struct {
     int               record_elements;
     RIL_AdnRecordInfo adn_record_info[RIL_NUM_ADN_RECORDS];
 } RIL_AdnRecord_v1;
+
+typedef enum {
+   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_DELTA = 1,
+   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_THRESHOLD = 2
+} RIL_SignalStrengthConfigType;
+
+typedef enum {
+    RIL_SIGNAL_STRENGTH_TYPE_GSM_RSSI,
+    RIL_SIGNAL_STRENGTH_TYPE_WCDMA_RSSI,
+    RIL_SIGNAL_STRENGTH_TYPE_LTE_SNR,
+    RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRQ,
+    RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRP,
+    RIL_SIGNAL_STRENGTH_TYPE_NR5G_SNR,
+    RIL_SIGNAL_STRENGTH_TYPE_NR5G_RSRP,
+    RIL_SIGNAL_STRENGTH_TYPE_NR5G_RSRQ
+} RIL_SignalStrengthConfigRATType;
+
+#ifdef RIL_FOR_MDM_LE
+typedef struct {
+    int32_t lower_threshold;
+    int32_t upper_threshold;
+} RIL_SignalStrengthThreshold;
+
+typedef struct {
+    RIL_SignalStrengthConfigType signal_strength_config_type;
+    RIL_SignalStrengthConfigRATType signal_rat_type;
+    union {
+       uint16_t delta;
+       RIL_SignalStrengthThreshold threshold;
+    } SignalStrengthConfigData;
+} RIL_SignalStrengthConfig;
+#endif /* RIL_FOR_MDM_LE */
 
 /**
  * RIL_REQUEST_GET_SIM_STATUS
@@ -5460,6 +5492,21 @@ typedef struct {
  *
  */
 #define RIL_REQUEST_RESET_WWAN 146
+
+/**
+ * RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH
+ *
+ * Configure Signal strength delta or threshold for notification.
+ *
+ * "data" is an const RIL_SignalStrengthConfig **
+ * "datalen" is count * sizeof(const RIL_SignalStrengthConfig *)
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ */
+ #define RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH 147
 
 /***********************************************************************/
 

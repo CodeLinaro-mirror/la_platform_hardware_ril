@@ -168,3 +168,6 @@
     {RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE, dispatchVoid, responseInts},
     {RIL_REQUEST_ECALL_STOP_DFT, dispatchVoid, responseVoid},
     {RIL_REQUEST_RESET_WWAN, dispatchVoid, responseVoid},
+#ifdef RIL_FOR_MDM_LE
+    {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH, dispatchSignalStrengthConfig, responseVoid},
+#endif  /* RIL_FOR_MDM_LE */
