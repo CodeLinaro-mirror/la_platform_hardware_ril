@@ -6119,6 +6119,16 @@ typedef struct {
  */
 #define RIL_UNSOL_ECALL_OPRT_MODE 1049
 
+/**
+ * RIL_UNSOL_EMERGENCY_SCAN_FAIL
+ *
+ * Called when completed one round of emergency scanning.
+ *
+ * "data" is null
+ *
+ */
+#define RIL_UNSOL_EMERGENCY_SCAN_FAIL 1050
+
 
 /***********************************************************************/
 
