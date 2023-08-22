@@ -6193,6 +6193,7 @@ requestToString(int request) {
         case RIL_UNSOL_RESPONSE_ADN_INIT_DONE: return "RIL_UNSOL_RESPONSE_ADN_INIT_DONE";
         case RIL_UNSOL_RESPONSE_ADN_RECORDS: return "RIL_UNSOL_RESPONSE_ADN_RECORDS";
         case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
+        case RIL_UNSOL_EMERGENCY_SCAN_FAIL: return "RIL_UNSOL_EMERGENCY_SCAN_FAIL";
         default: return "<unknown request>";
     }
 }
