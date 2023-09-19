@@ -23,7 +23,7 @@
 /*
  *  Changes from Qualcomm Innovation Center are provided under the following license:
  *
- *  Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ *  Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted (subject to the limitations in the
@@ -351,6 +351,9 @@ static void dispatchRadioCapability(Parcel &p, RequestInfo *pRI);
 static void dispatchCarrierRestrictions(Parcel &p, RequestInfo *pRI);
 static void dispatchOpenChannelWithP2(Parcel &p, RequestInfo *pRI);
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI);
+#ifdef RIL_FOR_MDM_LE
+static void dispatchSignalStrengthConfig(Parcel &p, RequestInfo *pRI);
+#endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
 static int responseStrings(Parcel &p, void *response, size_t responselen);
@@ -2459,6 +2462,109 @@ invalid:
     invalidCommandBlock(pRI);
     return;
 }
+
+#ifdef RIL_FOR_MDM_LE
+static void dispatchSignalStrengthConfig(Parcel &p, RequestInfo *pRI) {
+    int32_t t;
+    status_t status;
+    int32_t num;
+
+#if VDBG
+    RLOGD("dispatchSignalStrengthConfig");
+#endif
+
+    status = p.readInt32(&num);
+    if (status != NO_ERROR || num <= 0) {
+        goto invalid;
+    }
+    {
+        RIL_SignalStrengthConfig *signalStrengthConfig =
+            (RIL_SignalStrengthConfig *)calloc(num, sizeof(RIL_SignalStrengthConfig));
+        if (signalStrengthConfig == NULL) {
+            RLOGE("Memory allocation failed for request %s",
+                    requestToString(pRI->pCI->requestNumber));
+            return;
+        }
+        RIL_SignalStrengthConfig **signalStrengthConfigPtrs =
+           (RIL_SignalStrengthConfig **)calloc(num, sizeof(RIL_SignalStrengthConfig *));
+        if (signalStrengthConfigPtrs == NULL) {
+            RLOGE("Memory allocation failed for request %s",
+                    requestToString(pRI->pCI->requestNumber));
+            free(signalStrengthConfig);
+            return;
+        }
+
+        startRequest;
+        for (int i = 0 ; i < num ; i++ ) {
+            signalStrengthConfigPtrs[i] = &signalStrengthConfig[i];
+
+            status = p.readInt32(&t);
+            signalStrengthConfig[i].signal_strength_config_type = (RIL_SignalStrengthConfigType) t;
+            status = p.readInt32(&t);
+            signalStrengthConfig[i].signal_rat_type = (RIL_SignalStrengthConfigRATType) t;
+            appendPrintBuf("%s [%d: signal_config_type=%d, radio_type=%d", printBuf, i,
+               signalStrengthConfig[i].signal_strength_config_type,
+               signalStrengthConfig[i].signal_rat_type);
+            switch (signalStrengthConfig[i].signal_strength_config_type)
+            {
+                case RIL_SIGNAL_STRENGTH_CONFIG_TYPE_DELTA:
+                {
+                    status = p.readInt32(&t);
+                    signalStrengthConfig[i].SignalStrengthConfigData.delta = (uint16_t) t;
+                    appendPrintBuf("%s ,delta=%u", printBuf,
+                        signalStrengthConfig[i].SignalStrengthConfigData.delta);
+                    break;
+                }
+                case RIL_SIGNAL_STRENGTH_CONFIG_TYPE_THRESHOLD:
+                {
+                    status = p.readInt32(&t);
+                    signalStrengthConfig[i].SignalStrengthConfigData.threshold.lower_threshold =
+                        (int32_t) t;
+                    status = p.readInt32(&t);
+                    signalStrengthConfig[i].SignalStrengthConfigData.threshold.upper_threshold =
+                        (int32_t) t;
+                    appendPrintBuf("%s ,lower_threshold=%d, upper_threshold=%d]", printBuf,
+                        signalStrengthConfig[i].SignalStrengthConfigData.threshold.lower_threshold,
+                        signalStrengthConfig[i].SignalStrengthConfigData.threshold.upper_threshold
+                        );
+                    break;
+                }
+                default: {
+                   // do nothing
+                   RLOGD(" Unhandled signal strength config type = %u",
+                       signalStrengthConfig[i].signal_strength_config_type);
+                   break;
+                }
+            }
+        }
+        closeRequest;
+        printRequest(pRI->token, pRI->pCI->requestNumber);
+
+        if (status != NO_ERROR) {
+           free(signalStrengthConfig);
+           free(signalStrengthConfigPtrs);
+           goto invalid;
+        }
+        CALL_ONREQUEST(pRI->pCI->requestNumber,
+                              signalStrengthConfigPtrs,
+                              num * sizeof(RIL_SignalStrengthConfig *),
+                              pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+        memset(signalStrengthConfig, 0, num * sizeof(RIL_SignalStrengthConfig));
+        memset(signalStrengthConfigPtrs, 0, num * sizeof(RIL_SignalStrengthConfig *));
+#endif
+        free(signalStrengthConfig);
+        free(signalStrengthConfigPtrs);
+    }
+
+    return;
+
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+#endif
 
 static int
 blockingWrite(int fd, const void *buffer, size_t len) {
@@ -6144,6 +6250,9 @@ requestToString(int request) {
         case RIL_REQUEST_SET_ECALL_OPRT_MODE: return "SET_ECALL_OPRT_MODE";
         case RIL_REQUEST_ECALL_STOP_DFT: return "RIL_REQUEST_ECALL_STOP_DFT";
         case RIL_REQUEST_RESET_WWAN: return "RIL_REQUEST_RESET_WWAN";
+#ifdef RIL_FOR_MDM_LE
+        case RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH: return "CONFIGURE_SIGNAL_STRENGTH";
+#endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED: return "UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED";
