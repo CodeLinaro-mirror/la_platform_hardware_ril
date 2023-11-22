@@ -12,7 +12,6 @@ set(SOURCE_FILES rild.c)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-add_definitions( -DHAVE_ANDROID_OS )
 add_definitions( -DRIL_SHLIB )
 if (NOT RIL_FOR_EXTERNAL_AP)
     add_definitions(-DRESTRICT_FILE_PERMS)
