@@ -112,6 +112,7 @@ extern "C" {
 #include <cutils/properties2.h>
 #include <cutils/sockets2.h>
 #include <glib.h>
+#include <libqrtr.h>
 }
 
 extern "C" void
@@ -195,6 +196,11 @@ namespace android {
     #define appendPrintBuf(x...)
 #endif
 
+#define RILD_QSOCKET_SERVER_SERVICE_ID         5014
+#define RILD_QSOCKET_SERVER_SIM1_INSTANCE_ID   1
+#define RILD_QSOCKET_SERVER_SIM2_INSTANCE_ID   2
+#define RILD_CLIENT_MAX_NUM                    64 //maximum 64 clients per slot
+
 enum WakeType {DONT_WAKE, WAKE_PARTIAL};
 
 typedef struct {
@@ -209,6 +215,12 @@ typedef struct {
     WakeType wakeType;
 } UnsolResponseInfo;
 
+typedef struct QrtrAddress
+{
+    uint32_t node;
+    uint32_t port;
+};
+
 typedef struct RequestInfo {
     int32_t token;      //this is not RIL_Token
     CommandInfo *pCI;
@@ -217,6 +229,7 @@ typedef struct RequestInfo {
     char local;         // responses to local commands do not go back to command process
     RIL_SOCKET_ID socket_id;
     int wasAckSent;    // Indicates whether an ack was sent earlier
+    QrtrAddress addr;
 } RequestInfo;
 
 typedef struct UserCallbackInfo {
@@ -316,8 +329,12 @@ static size_t s_lastNITZTimeDataSize;
     static char printBuf[PRINTBUF_SIZE];
 #endif
 
+ static QrtrAddress clientAddrs[RIL_SOCKET_NUM][RILD_CLIENT_MAX_NUM];
+
 /*******************************************************************/
 static int sendResponse (Parcel &p, RIL_SOCKET_ID socket_id);
+static int sendQrtrResponse(Parcel &p, RIL_SOCKET_ID socket_id, QrtrAddress addr);
+static void removeClientConnection(RIL_SOCKET_ID socket_id, QrtrAddress address);
 
 static void dispatchVoid (Parcel& p, RequestInfo *pRI);
 static void dispatchString (Parcel& p, RequestInfo *pRI);
@@ -580,7 +597,7 @@ issueLocalRequest(int request, void *data, int len, RIL_SOCKET_ID socket_id) {
 
 
 static int
-processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id) {
+processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id, QrtrAddress addr) {
     Parcel p;
     status_t status;
     int32_t request;
@@ -592,6 +609,7 @@ processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id) {
     pthread_mutex_t* pendingRequestsMutexHook = &s_pendingRequestsMutex;
     /* pendingRequestsHook refer to &s_pendingRequests */
     RequestInfo**    pendingRequestsHook = &s_pendingRequests;
+    int client_index;
 
     p.setData((uint8_t *) buffer, buflen);
 
@@ -617,7 +635,30 @@ processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id) {
     }
 #endif
 #endif
-
+#ifdef RIL_FOR_MDM_LE
+    for(client_index = 0; client_index < RILD_CLIENT_MAX_NUM; client_index++) {
+        if(addr.node == clientAddrs[socket_id][client_index].node &&
+            addr.port == clientAddrs[socket_id][client_index].port) {
+            break;
+        }
+    }
+    if (client_index == RILD_CLIENT_MAX_NUM) {
+        for(client_index = 0; client_index < RILD_CLIENT_MAX_NUM; client_index++) {
+            if(0 == clientAddrs[socket_id][client_index].node &&
+                0 == clientAddrs[socket_id][client_index].port) {
+                clientAddrs[socket_id][client_index].node = addr.node;
+                clientAddrs[socket_id][client_index].port = addr.port;
+                RLOGD("add the connected client to address map: node is %d", addr.node,
+                    ", port is %d", addr.port, ", client index is %d", client_index);
+                break;
+            }
+        }
+        if (client_index == RILD_CLIENT_MAX_NUM) {
+            RLOGE("exceed the connected client max number");
+            return -1;
+        }
+    }
+#endif
     if (status != NO_ERROR) {
         RLOGE("invalid request block");
         return 0;
@@ -637,8 +678,11 @@ processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id) {
         pErr.writeInt32 (RESPONSE_SOLICITED);
         pErr.writeInt32 (token);
         pErr.writeInt32 (RIL_E_GENERIC_FAILURE);
-
+#ifndef RIL_FOR_MDM_LE
         sendResponse(pErr, socket_id);
+#else
+        sendQrtrResponse(pErr, socket_id, addr);
+#endif
         return 0;
     }
 
@@ -651,6 +695,7 @@ processCommandBuffer(void *buffer, size_t buflen, RIL_SOCKET_ID socket_id) {
     pRI->token = token;
     pRI->pCI = &(s_commands[request]);
     pRI->socket_id = socket_id;
+    pRI->addr = addr;
 
     ret = pthread_mutex_lock(pendingRequestsMutexHook);
     assert (ret == 0);
@@ -2594,6 +2639,36 @@ blockingWrite(int fd, const void *buffer, size_t len) {
     return 0;
 }
 
+static int
+blockingSend(int fd, const void *buffer, size_t len, QrtrAddress addr) {
+   size_t writeOffset = 0;
+   const uint8_t *toWrite = (const uint8_t *)buffer;
+   toWrite = (const uint8_t *)buffer;
+   struct sockaddr_qrtr sq;
+   while(writeOffset < len) {
+      ssize_t written;
+      sq.sq_family = AF_QIPCRTR;
+      sq.sq_node = addr.node;
+      sq.sq_port = addr.port;
+      do {
+         written = sendto(fd, toWrite + writeOffset, len - writeOffset, 0,
+                        (sockaddr *)&sq, sizeof(sq));
+      } while(written < 0 && ((errno == EINTR) || (errno == EAGAIN)));
+
+        if (written >= 0) {
+            writeOffset += written;
+        } else {   // written < 0
+            RLOGE ("RIL Response: unexpected error on send to client socket of node:%d",
+                addr.node, " port:%d", addr.port, ", errno:%d", errno);
+            return -1;
+        }
+    }
+#if VDBG
+    RLOGE("RIL Response bytes written:%d", writeOffset);
+#endif
+    return 0;
+}
+
 /**
   Delete the events and streams corresponding to older client connection and start listening to
   accept new client connection
@@ -2677,9 +2752,6 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
     ret = blockingWrite(fd, (void *)&header, sizeof(header));
 
     if (ret < 0) {
-#ifdef RIL_FOR_MDM_LE
-        resetConnection(socket_id);
-#endif
         pthread_mutex_unlock(writeMutexHook);
         return ret;
     }
@@ -2687,9 +2759,6 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
     ret = blockingWrite(fd, data, dataSize);
 
     if (ret < 0) {
-#ifdef RIL_FOR_MDM_LE
-        resetConnection(socket_id);
-#endif
         pthread_mutex_unlock(writeMutexHook);
         return ret;
     }
@@ -2700,9 +2769,77 @@ sendResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id) {
 }
 
 static int
+sendQrtrResponseRaw (const void *data, size_t dataSize, RIL_SOCKET_ID socket_id, QrtrAddress addr) {
+    int client_index;
+    int ret;
+    pthread_mutex_t * writeMutexHook = &s_writeMutex;
+
+#if VDBG
+    RLOGE("Send Qrtr Response to %s", rilSocketIdToString(socket_id));
+#endif
+
+#if (SIM_COUNT >= 2)
+    if (socket_id == RIL_SOCKET_2) {
+        writeMutexHook = &s_writeMutex_socket2;
+    }
+#if (SIM_COUNT >= 3)
+    else if (socket_id == RIL_SOCKET_3) {
+        writeMutexHook = &s_writeMutex_socket3;
+    }
+#endif
+#if (SIM_COUNT >= 4)
+    else if (socket_id == RIL_SOCKET_4) {
+        writeMutexHook = &s_writeMutex_socket4;
+    }
+#endif
+#endif
+
+    if (dataSize > MAX_COMMAND_BYTES) {
+        RLOGE("RIL: packet larger than %u (%u)",
+                MAX_COMMAND_BYTES, (unsigned int )dataSize);
+
+        return -1;
+    }
+
+    pthread_mutex_lock(writeMutexHook);
+    int fd = findFd(socket_id);
+    if (fd < 0) {
+        pthread_mutex_unlock(writeMutexHook);
+        return -1;
+    }
+    if (addr.node != 0 && addr.port != 0) {
+        //response message
+        ret = blockingSend(fd, data, dataSize, addr);
+        if (ret < 0) {
+            removeClientConnection(socket_id, addr);
+        }
+    } else {
+        //unsolicited response messgae
+        for(client_index = 0; client_index < RILD_CLIENT_MAX_NUM; client_index++) {
+            if(0 != clientAddrs[socket_id][client_index].node &&
+                0 != clientAddrs[socket_id][client_index].port) {
+                ret = blockingSend(fd, data, dataSize, clientAddrs[socket_id][client_index]);
+                if (ret < 0) {
+                    removeClientConnection(socket_id, clientAddrs[socket_id][client_index]);
+                }
+            }
+        }
+    }
+
+    pthread_mutex_unlock(writeMutexHook);
+
+    return 0;
+}
+static int
 sendResponse (Parcel &p, RIL_SOCKET_ID socket_id) {
     printResponse;
     return sendResponseRaw(p.data(), p.dataSize(), socket_id);
+}
+
+static int
+sendQrtrResponse (Parcel &p, RIL_SOCKET_ID socket_id, QrtrAddress addr) {
+    printResponse;
+    return sendQrtrResponseRaw(p.data(), p.dataSize(), socket_id, addr);
 }
 
 /** response is an int* pointing to an array of ints */
@@ -4630,19 +4767,47 @@ static void onCommandsSocketClosed(RIL_SOCKET_ID socket_id) {
         p_cur->cancelled = 1;
     }
 
+#ifdef RIL_FOR_MDM_LE
+    memset(clientAddrs, 0, sizeof(clientAddrs[0][0]) * RIL_SOCKET_NUM * RILD_CLIENT_MAX_NUM);
+#endif
     ret = pthread_mutex_unlock(pendingRequestsMutexHook);
     assert (ret == 0);
 }
 
+static void removeClientConnection(RIL_SOCKET_ID socket_id, QrtrAddress address) {
+    int client_index;
+    for(client_index = 0; client_index < RILD_CLIENT_MAX_NUM; client_index++) {
+        if(address.node == clientAddrs[socket_id][client_index].node &&
+            address.port == clientAddrs[socket_id][client_index].port) {
+            clientAddrs[socket_id][client_index].node = 0;
+            clientAddrs[socket_id][client_index].port = 0;
+            break;
+        }
+    }
+    if (client_index == RILD_CLIENT_MAX_NUM) {
+        RLOGD(" Socket address not found");
+    }
+}
+
 static void processCommandsCallback(int fd, short flags, void *param) {
+#ifndef RIL_FOR_MDM_LE
     RecordStream *p_rs;
     void *p_record;
     size_t recordlen;
+#else
+    ssize_t n = 0;
+    uint8_t *buf;
+    struct sockaddr_qrtr sq;
+    socklen_t sl = sizeof(sq);
+    struct qrtr_packet pkt;
+#endif
     int ret;
     SocketListenParam *p_info = (SocketListenParam *)param;
+    QrtrAddress addr;
 
     assert(fd == p_info->fdCommand);
 
+#ifndef RIL_FOR_MDM_LE
     p_rs = p_info->p_rs;
 
     for (;;) {
@@ -4655,10 +4820,9 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         } else if (ret < 0) {
             break;
         } else if (ret == 0) { /* && p_record != NULL */
-            processCommandBuffer(p_record, recordlen, p_info->socket_id);
+            processCommandBuffer(p_record, recordlen, p_info->socket_id, addr);
         }
     }
-
     if (ret == 0 || !(errno == EAGAIN || errno == EINTR)) {
         /* fatal error or end-of-stream */
         if (ret != 0) {
@@ -4679,12 +4843,76 @@ static void processCommandsCallback(int fd, short flags, void *param) {
 
         onCommandsSocketClosed(p_info->socket_id);
     }
+#else
+    buf = p_info->recv_buffer;
+    for (;;) {
+        /* loop until EAGAIN/EINTR, end of stream, or other error */
+        memset(buf, 0, MAX_COMMAND_BYTES);
+        memset(&sq, 0, sizeof(sq));
+        memset(&pkt, 0, sizeof(pkt));
+
+        n = recvfrom(fd, buf, MAX_COMMAND_BYTES, 0, (sockaddr *)&sq, &sl);
+        if (n < 0) {
+            ret = -1;
+            break;
+        }
+
+         if (qrtr_decode(&pkt, buf, n, &sq) < 0) {
+            RLOGE(" Qrtr decode with incorrect length: %d", n);
+            continue;
+         }
+
+         if (pkt.node == 0 && pkt.port == 0) {
+            continue;
+         } else {
+            addr.node = pkt.node;
+            addr.port = pkt.port;
+         }
+
+         switch (pkt.type) {
+
+         case QRTR_TYPE_DATA:
+            {
+               RLOGD( " Received data message from node = %d", pkt.node, ", port = %d", pkt.port,
+                  ", service = %d ", pkt.service);
+               processCommandBuffer((pkt.data), pkt.data_len, p_info->socket_id, addr);
+            }
+            break;
+         case QRTR_TYPE_DEL_CLIENT:
+            removeClientConnection(p_info->socket_id, addr);
+            break;
+         default:
+            RLOGE("Unhandled socket control message from node = %d", pkt.node, ", port = %d",
+                pkt.port, ", service = %d", pkt.service, ", instance = %d", pkt.instance,
+                ", type = %d", pkt.type);
+            break;
+         }
+    }
+
+    if (ret < 0 && !(errno == EAGAIN || errno == EINTR)) {
+        /* fatal error or end-of-stream */
+        RLOGE("EOS.  Closing command socket, errno:%d", errno);
+
+        close(fd);
+        free(buf);
+        p_info->fdCommand = -1;
+
+        ril_event_del(p_info->commands_event);
+        /* start listening for new connections again */
+        rilEventAddWakeup(&s_listen_event);
+
+        onCommandsSocketClosed(p_info->socket_id);
+    }
+#endif
 }
 
 
 static void onNewCommandConnect(RIL_SOCKET_ID socket_id) {
     // Inform we are connected and the ril version
     int rilVer = s_callbacks.version;
+#ifdef RIL_FOR_MDM_LE
+    QrtrAddress address;
+#endif
     RIL_UNSOL_RESPONSE(RIL_UNSOL_RIL_CONNECTED,
                                     &rilVer, sizeof(rilVer), socket_id);
 
@@ -4694,8 +4922,13 @@ static void onNewCommandConnect(RIL_SOCKET_ID socket_id) {
 
     // Send last NITZ time data, in case it was missed
     if (s_lastNITZTimeData != NULL) {
+#ifndef RIL_FOR_MDM_LE
         sendResponseRaw(s_lastNITZTimeData, s_lastNITZTimeDataSize, socket_id);
-
+#else
+        address.node = 0;
+        address.port = 0;
+        sendQrtrResponseRaw(s_lastNITZTimeData, s_lastNITZTimeDataSize, socket_id, address);
+#endif
         free(s_lastNITZTimeData);
         s_lastNITZTimeData = NULL;
     }
@@ -4724,6 +4957,9 @@ static void listenCallback (int fd, short flags, void *param) {
     MySocketListenParam* listenParam;
     RilSocket *sapSocket = NULL;
     socketClient *sClient = NULL;
+#ifdef RIL_FOR_MDM_LE
+    uint8_t *recv_buffer;
+#endif
 
     SocketListenParam *p_info = (SocketListenParam *)param;
 
@@ -4732,7 +4968,6 @@ static void listenCallback (int fd, short flags, void *param) {
         listenParam = (MySocketListenParam *)param;
         sapSocket = listenParam->socket;
     }
-#endif
 
     struct sockaddr_un peeraddr;
     socklen_t socklen = sizeof (peeraddr);
@@ -4844,6 +5079,27 @@ static void listenCallback (int fd, short flags, void *param) {
         rilEventAddWakeup(sapSocket->getCallbackEvent());
         sapSocket->onNewCommandConnect();
     }
+
+#else
+    assert (p_info->fdCommand < 0);
+    assert (fd == p_info->fdListen);
+    processName = PHONE_PROCESS;
+    fdCommand = fd;
+    RLOGE("libril: new connection to %s", rilSocketIdToString(p_info->socket_id));
+
+    p_info->fdCommand = fdCommand;
+    recv_buffer = (uint8_t *) malloc(MAX_COMMAND_BYTES);
+    if(recv_buffer == nullptr) {
+        RLOGE ("Failed to malloc socket buffer");
+        return;
+    }
+    p_info->recv_buffer = recv_buffer;
+    ril_event_set (p_info->commands_event, p_info->fdCommand, 1,
+    p_info->processCommandsCallback, p_info);
+    rilEventAddWakeup (p_info->commands_event);
+
+    onNewCommandConnect(p_info->socket_id);
+#endif
 }
 
 #ifndef RIL_FOR_MDM_LE
@@ -5139,8 +5395,14 @@ extern "C" void RIL_setcallbacks (const RIL_RadioFunctions *callbacks) {
 }
 
 static void startListen(RIL_SOCKET_ID socket_id, SocketListenParam* socket_listen_p) {
+#ifndef RIL_FOR_MDM_LE
     int fdListen = -1;
     int ret;
+#else
+    uint32_t serviceId = 0;
+    uint16_t instanceId = 0;
+    int serverFd;
+#endif
     char socket_name[10];
 
     memset(socket_name, 0, sizeof(char)*10);
@@ -5173,11 +5435,9 @@ static void startListen(RIL_SOCKET_ID socket_id, SocketListenParam* socket_liste
 
 #ifndef RIL_FOR_MDM_LE
     fdListen = android_get_control_socket(socket_name);
-#endif
     if (fdListen < 0) {
-#ifndef RIL_FOR_MDM_LE
         RLOGW("Failed to get socket %s, creating local socket", socket_name);
-#endif
+
         fdListen = ril_socket_local_server(socket_name, SOCK_STREAM);
         if (fdListen < 0) {
             RLOGE("Failed to create socket %s", socket_name);
@@ -5199,6 +5459,28 @@ static void startListen(RIL_SOCKET_ID socket_id, SocketListenParam* socket_liste
                 listenCallback, socket_listen_p);
 
     rilEventAddWakeup (socket_listen_p->listen_event);
+#else
+    RLOGD("Creating qrtr socket server for %s", socket_name);
+
+    serviceId = RILD_QSOCKET_SERVER_SERVICE_ID;
+    if (strcmp(socket_name, SOCKET_NAME_RIL) == 0) {
+      instanceId = RILD_QSOCKET_SERVER_SIM1_INSTANCE_ID;
+    } else if (strcmp(socket_name, SOCKET2_NAME_RIL) == 0) {
+      instanceId = RILD_QSOCKET_SERVER_SIM2_INSTANCE_ID;
+    }
+
+    serverFd = get_qsocket_server(serviceId, instanceId);
+    if(serverFd < 0) {
+      RLOGE("Failed to create socket %s", socket_name);
+      exit(-1);
+    }
+    socket_listen_p->fdListen = serverFd;
+
+    ril_event_set (socket_listen_p->listen_event, serverFd, false,
+            listenCallback, socket_listen_p);
+
+    rilEventAddWakeup (socket_listen_p->listen_event);
+#endif
 }
 
 extern "C" void
@@ -5238,6 +5520,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
                         &s_listen_event,          /* listen_event */
                         processCommandsCallback,  /* processCommandsCallback */
                         NULL,                     /* p_rs */
+                        NULL,                     /* recv_buffer */
                         RIL_TELEPHONY_SOCKET      /* type */
                         };
 
@@ -5251,6 +5534,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
                         &s_listen_event_socket2,    /* listen_event */
                         processCommandsCallback,    /* processCommandsCallback */
                         NULL,                       /* p_rs */
+                        NULL,                       /* recv_buffer */
                         RIL_TELEPHONY_SOCKET        /* type */
                         };
 #endif
@@ -5265,6 +5549,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
                         &s_listen_event_socket3,    /* listen_event */
                         processCommandsCallback,    /* processCommandsCallback */
                         NULL,                       /* p_rs */
+                        NULL,                       /* recv_buffer */
                         RIL_TELEPHONY_SOCKET        /* type */
                         };
 #endif
@@ -5279,6 +5564,7 @@ RIL_register (const RIL_RadioFunctions *callbacks) {
                         &s_listen_event_socket4,    /* listen_event */
                         processCommandsCallback,    /* processCommandsCallback */
                         NULL,                       /* p_rs */
+                        NULL,                       /* recv_buffer */
                         RIL_TELEPHONY_SOCKET        /* type */
                         };
 #endif
@@ -5503,8 +5789,11 @@ RIL_onRequestAck(RIL_Token t) {
         if (fd < 0) {
             RLOGD ("RIL onRequestComplete: Command channel closed");
         }
-
+#ifndef RIL_FOR_MDM_LE
         sendResponse(p, socket_id);
+#else
+        sendQrtrResponse(p, socket_id, pRI->addr);
+#endif
     }
 }
 
@@ -5576,7 +5865,11 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
         if (fd < 0) {
             RLOGD ("RIL onRequestComplete: Command channel closed");
         }
+#ifndef RIL_FOR_MDM_LE
         sendResponse(p, socket_id);
+#else
+        sendQrtrResponse(p, socket_id, pRI->addr);
+#endif
     }
 
 done:
@@ -5802,7 +6095,9 @@ void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
     bool shouldScheduleTimeout = false;
     RIL_RadioState newState;
     RIL_SOCKET_ID soc_id = RIL_SOCKET_1;
-
+#ifdef RIL_FOR_MDM_LE
+    QrtrAddress address;
+#endif
 #if defined(ANDROID_MULTI_SIM)
     soc_id = socket_id;
 #endif
@@ -5904,7 +6199,13 @@ void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
 #if VDBG
     RLOGI("%s UNSOLICITED: %s length:%d", rilSocketIdToString(soc_id), requestToString(unsolResponse), p.dataSize());
 #endif
+#ifndef RIL_FOR_MDM_LE
     ret = sendResponse(p, soc_id);
+#else
+    address.node = 0;
+    address.port = 0;
+    ret = sendQrtrResponse(p, soc_id, address);
+#endif
     if (ret != 0 && unsolResponse == RIL_UNSOL_NITZ_TIME_RECEIVED) {
 
         // Unfortunately, NITZ time is not poll/update like everything
