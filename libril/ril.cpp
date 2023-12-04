@@ -58,7 +58,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -6604,6 +6604,7 @@ requestToString(int request) {
         case RIL_UNSOL_RESPONSE_ADN_RECORDS: return "RIL_UNSOL_RESPONSE_ADN_RECORDS";
         case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
         case RIL_UNSOL_EMERGENCY_SCAN_FAIL: return "RIL_UNSOL_EMERGENCY_SCAN_FAIL";
+        case RIL_UNSOL_OPERATOR_INFO: return "RIL_UNSOL_OPERATOR_INFO";
         default: return "<unknown request>";
     }
 }
