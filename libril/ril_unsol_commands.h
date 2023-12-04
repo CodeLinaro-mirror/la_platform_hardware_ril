@@ -17,7 +17,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023,2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -72,3 +72,4 @@
     {RIL_UNSOL_RESPONSE_ADN_RECORDS, responseAdnRecords, WAKE_PARTIAL},
     {RIL_UNSOL_ECALL_OPRT_MODE, responseInts, WAKE_PARTIAL},
     {RIL_UNSOL_EMERGENCY_SCAN_FAIL, responseVoid, WAKE_PARTIAL},
+    {RIL_UNSOL_OPERATOR_INFO, responseVoid, WAKE_PARTIAL},

@@ -57,7 +57,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -2563,6 +2563,8 @@ typedef struct {
  *                                  or NULL if unregistered
  * ((const char **)response)[2] is 5 or 6 digit numeric code (MCC + MNC)
  *                                  or NULL if unregistered
+ * ((const char **)response)[3] is the string code for whether it is a home network
+ *                                 Valid values are "unknown", "true" and "false"
  *
  * Valid errors:
  *  SUCCESS
@@ -6179,6 +6181,16 @@ typedef struct {
  */
 #define RIL_UNSOL_EMERGENCY_SCAN_FAIL 1050
 
+
+/**
+ * RIL_UNSOL_OPERATOR_INFO
+ *
+ * Called when operator information changes.
+ *
+ * "data" is null
+ *
+ */
+#define RIL_UNSOL_OPERATOR_INFO 1051
 
 /***********************************************************************/
 
