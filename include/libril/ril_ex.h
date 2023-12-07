@@ -13,6 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
 
 #ifndef RIL_EX_H_INCLUDED
 #define RIL_EX_H_INCLUDED
@@ -42,6 +47,8 @@ typedef struct SocketListenParam {
     struct ril_event* listen_event;
     void (*processCommandsCallback)(int fd, short flags, void *param);
     RecordStream *p_rs;
+    uint8_t* recv_buffer;
+
     RIL_SOCKET_TYPE type;
 } SocketListenParam;
 
