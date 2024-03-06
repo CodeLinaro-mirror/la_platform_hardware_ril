@@ -57,7 +57,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -1879,6 +1879,7 @@ typedef enum {
 typedef enum {
     RIL_SIGNAL_STRENGTH_TYPE_GSM_RSSI,
     RIL_SIGNAL_STRENGTH_TYPE_WCDMA_RSSI,
+    RIL_SIGNAL_STRENGTH_TYPE_LTE_RSSI,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_SNR,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRQ,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRP,
