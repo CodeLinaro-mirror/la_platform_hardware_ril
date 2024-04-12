@@ -61,7 +61,7 @@
     {RIL_REQUEST_SMS_ACKNOWLEDGE, dispatchInts, responseVoid},
     {RIL_REQUEST_GET_IMEI, dispatchVoid, responseString},
     {RIL_REQUEST_GET_IMEISV, dispatchVoid, responseString},
-    {RIL_REQUEST_ANSWER,dispatchVoid, responseVoid},
+    {RIL_REQUEST_ANSWER, dispatchAnswer, responseVoid},
     {RIL_REQUEST_DEACTIVATE_DATA_CALL, dispatchStrings, responseVoid},
     {RIL_REQUEST_QUERY_FACILITY_LOCK, dispatchStrings, responseInts},
     {RIL_REQUEST_SET_FACILITY_LOCK, dispatchStrings, responseInts},
@@ -171,4 +171,6 @@
 #ifdef RIL_FOR_MDM_LE
     {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH, dispatchSignalStrengthConfig, responseVoid},
     {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX, dispatchSignalStrengthConfigEx, responseVoid},
+    {RIL_REQUEST_MODIFY_CALL_INITIATE, dispatchModify, responseVoid},
+    {RIL_REQUEST_MODIFY_CALL_CONFIRM, dispatchModify, responseVoid},
 #endif  /* RIL_FOR_MDM_LE */

@@ -457,6 +457,13 @@ typedef struct {
   char signal;       /* as defined 3.7.5.5-3, 3.7.5.5-4 or 3.7.5.5-5 */
 } RIL_CDMA_SignalInfoRecord;
 
+/* Indicates whether the current call is a RTT call */
+typedef enum {
+    RIL_RTT_MODE_UNKNOWN = -1,       /* RTT mode of the call is UNKNOWN */
+    RIL_RTT_MODE_DISABLED = 0,       /* Non-RTT call */
+    RTT_MODE_FULL = 1,               /* RTT call */
+} RIL_RTT_Info;
+
 typedef struct {
     RIL_CallState   state;
     int             index;      /* Connection Index for use with, eg, AT+CHLD */
@@ -471,8 +478,17 @@ typedef struct {
     int             numberPresentation; /* 0=Allowed, 1=Restricted, 2=Not Specified/Unknown 3=Payphone */
     char *          name;       /* Remote party name */
     int             namePresentation; /* 0=Allowed, 1=Restricted, 2=Not Specified/Unknown 3=Payphone */
-    RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
+    int             rttModeValid; /*  0 - RTT mode is invalid , 1 - RTT mode is Valid */
+    RIL_RTT_Info    rttMode;      /* -1 - Unknown , 0  = Non RTT call, 1 = RTT call */
+    RIL_RTT_Info    localRttCap;  /*  0  = local UE is not RTT capable , 1 = local UE is RTT capable */
+    RIL_RTT_Info    peerRttCap;   /*  0  = peer UE is not RTT capable , 1 = peer UE is RTT capable */
+    RIL_UUS_Info *  uusInfo;      /* NULL or Pointer to User-User Signaling Information */
 } RIL_Call;
+
+typedef struct {
+    RIL_RTT_Info rttMode;  /* 0 - RTT downgrade to normal voice call , 1 - upgrade to RTT voice call  */
+    int32_t callIndex;    /* CallId of a call on which upgrade or downgrade is requested */
+} RIL_ModifyCall;
 
 /* Deprecated, use RIL_Data_Call_Response_v6 */
 typedef struct {
@@ -644,6 +660,11 @@ typedef struct {
              * clir == 0 on "use subscription default value"
              * clir == 1 on "CLIR invocation" (restrict CLI presentation)
              * clir == 2 on "CLIR suppression" (allow CLI presentation)
+             */
+    int rttMode;
+            /* Indicates the call attribute of voice call
+             * rttMode == 0 when a normal voice call is initiated by user
+             * rttMode == 1 when a RTT voice call is initiated by user
              */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;
@@ -2173,7 +2194,7 @@ typedef struct {
 /**
  * RIL_REQUEST_DIAL
  *
- * Initiate voice call
+ * Initiate normal voice call or a RTT voice call
  *
  * "data" is const RIL_Dial *
  * "response" is NULL
@@ -3167,7 +3188,7 @@ typedef struct {
  * RIL_REQUEST_SWITCH_WAITING_OR_HOLDING_AND_ACTIVE will be used in this case
  * instead
  *
- * "data" is NULL
+ * "data" is RIL_RTT_Info
  * "response" is NULL
  *
  * Valid errors:
@@ -5591,6 +5612,36 @@ typedef struct {
  */
  #define RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX 148
 
+/**
+ * RIL_REQUEST_MODIFY_CALL_INITIATE
+ *
+ * Send a upgrade from normal voice call to RTT call or downgrade request from RTT call to a
+ * normal voice call.
+ *
+ * "data" is an const RIL_ModifyCall *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ */
+ #define RIL_REQUEST_MODIFY_CALL_INITIATE 149
+
+
+/**
+ * RIL_REQUEST_MODIFY_CALL_CONFIRM
+ *
+ * Send accept or reject request in response to modify request triggered by peer party.
+ *
+ * "data" is an const RIL_ModifyCall **
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ */
+ #define RIL_REQUEST_MODIFY_CALL_CONFIRM 150
+
 /***********************************************************************/
 
 /**
@@ -6269,6 +6320,16 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_OPERATOR_INFO 1051
+
+/**
+ * RIL_UNSOL_MODIFY_CALL
+ *
+ * Called when call upgrade or downgrade request is triggered by peer party.
+ *
+ * "data" is RIL_ModifyCall
+ *
+ */
+#define RIL_UNSOL_MODIFY_CALL 1052
 
 /***********************************************************************/
 

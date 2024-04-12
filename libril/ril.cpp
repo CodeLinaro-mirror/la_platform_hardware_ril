@@ -371,6 +371,8 @@ static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI);
 #ifdef RIL_FOR_MDM_LE
 static void dispatchSignalStrengthConfig(Parcel &p, RequestInfo *pRI);
 static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI);
+static void dispatchModify(Parcel &p, RequestInfo *pRI);
+static void dispatchAnswer(Parcel &p, RequestInfo *pRI);
 #endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
@@ -930,11 +932,93 @@ invalid:
     return;
 }
 
+#ifdef RIL_FOR_MDM_LE
+static void dispatchAnswer(Parcel &p, RequestInfo *pRI)
+{
+    RIL_RTT_Info rttMode;
+    int32_t  t;
+    status_t status;
+
+    RLOGD("dispatchAnswer");
+
+    memset(&rttMode, 0, sizeof(rttMode));
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchAnswer invalid rtt mode");
+        goto invalid;
+    }
+    rttMode = static_cast<RIL_RTT_Info> (t);
+
+    startRequest;
+    appendPrintBuf("rttMode= %d ", rttMode);
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &rttMode, sizeof(rttMode), pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memset(&rttMode, 0, sizeof(rttMode));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+
+static void dispatchModify(Parcel &p, RequestInfo *pRI)
+{
+    RIL_ModifyCall modifyCallAttribute;
+    int32_t  t;
+    status_t status;
+
+    RLOGD("dispatchModify");
+
+    memset(&modifyCallAttribute, 0, sizeof(modifyCallAttribute));
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchModify invalid rtt mode");
+        goto invalid;
+    }
+    modifyCallAttribute.rttMode = static_cast<RIL_RTT_Info> (t);
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchModify invalid call index");
+        goto invalid;
+    }
+    modifyCallAttribute.callIndex = static_cast<int>(t);
+
+    startRequest;
+    appendPrintBuf("rttMode=%d, callIndex=%d ", modifyCallAttribute.rttMode,
+        modifyCallAttribute.callIndex);
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &modifyCallAttribute, sizeof(modifyCallAttribute),
+        pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memset(&modifyCallAttribute, 0, sizeof(modifyCallAttribute));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+#endif
+
 /**
  * Callee expects const RIL_Dial *
  * Payload is:
  *   String address
  *   int32_t clir
+ *   int32_t rttMode
  */
 static void
 dispatchDial (Parcel &p, RequestInfo *pRI) {
@@ -952,6 +1036,9 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
 
     status = p.readInt32(&t);
     dial.clir = (int)t;
+
+    status = p.readInt32(&t);
+    dial.rttMode = static_cast<int>(t);
 
     if (status != NO_ERROR || dial.address == NULL) {
         goto invalid;
@@ -1000,7 +1087,7 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     }
 
     startRequest;
-    appendPrintBuf("%snum=%s,clir=%d", printBuf, dial.address, dial.clir);
+    appendPrintBuf("%snum=%s,clir=%d, rttMode%d", printBuf, dial.address, dial.clir, dial.rttMode);
     if (uusPresent) {
         appendPrintBuf("%s,uusType=%d,uusDcs=%d,uusLen=%d", printBuf,
                 dial.uusInfo->uusType, dial.uusInfo->uusDcs,
@@ -3136,6 +3223,10 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
         p.writeInt32(p_cur->numberPresentation);
         p.writeString8AsString16(p_cur->name);
         p.writeInt32(p_cur->namePresentation);
+        p.writeInt32(p_cur->rttModeValid);
+        p.writeInt32(p_cur->rttMode);
+        p.writeInt32(p_cur->localRttCap);
+        p.writeInt32(p_cur->peerRttCap);
         // Remove when partners upgrade to version 3
         if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
             p.writeInt32(0); /* UUS Information is absent */
@@ -3159,12 +3250,18 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
             p_cur->als,
             (p_cur->isVoice)?"voc":"nonvoc",
             (p_cur->isVoicePrivacy)?"evp":"noevp");
-        appendPrintBuf("%s%s,cli=%d,name='%s',%d]",
+        appendPrintBuf("%s%s,cli=%d,name='%s',%d,",
             printBuf,
             p_cur->number,
             p_cur->numberPresentation,
             p_cur->name,
             p_cur->namePresentation);
+        appendPrintBuf("%s,rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d]",
+            printBuf,
+            p_cur->rttModeValid,
+            p_cur->rttMode,
+            p_cur->localRttCap,
+            p_cur->peerRttCap);
     }
     removeLastChar;
     closeResponse;
@@ -6691,6 +6788,8 @@ requestToString(int request) {
 #ifdef RIL_FOR_MDM_LE
         case RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH: return "CONFIGURE_SIGNAL_STRENGTH";
         case RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX: return "CONFIGURE_SIGNAL_STRENGTH_EX";
+        case RIL_REQUEST_MODIFY_CALL_INITIATE : return "RIL_REQUEST_MODIFY_CALL_INITIATE";
+        case RIL_REQUEST_MODIFY_CALL_CONFIRM : return "RIL_REQUEST_MODIFY_CALL_CONFIRM";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
@@ -6743,6 +6842,9 @@ requestToString(int request) {
         case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
         case RIL_UNSOL_EMERGENCY_SCAN_FAIL: return "RIL_UNSOL_EMERGENCY_SCAN_FAIL";
         case RIL_UNSOL_OPERATOR_INFO: return "RIL_UNSOL_OPERATOR_INFO";
+#ifdef RIL_FOR_MDM_LE
+        case RIL_UNSOL_MODIFY_CALL: return "RIL_UNSOL_MODIFY_CALL";
+#endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }
 }
