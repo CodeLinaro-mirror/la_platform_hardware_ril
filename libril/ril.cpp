@@ -2614,26 +2614,29 @@ invalid:
 static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
     int32_t t;
     status_t status;
-    int32_t no_of_sigConfigEx;
+    RIL_SignalStrengthConfigCriteria config_criteria;
+    int32_t num;
 
 #if VDBG
     RLOGD("dispatchSignalStrengthConfigEx");
 #endif
 
-    status = p.readInt32(&no_of_sigConfigEx);
-    if (status != NO_ERROR || no_of_sigConfigEx <= 0) {
+    memset(&config_criteria, 0, sizeof(config_criteria));
+
+    status = p.readInt32(&num);
+    if (status != NO_ERROR || num <= 0 || num > RIL_SIG_CONFIG_MAX) {
         goto invalid;
     }
     {
         RIL_SignalStrengthConfigEx *sigConfig = (RIL_SignalStrengthConfigEx *)
-            calloc(no_of_sigConfigEx, sizeof(RIL_SignalStrengthConfigEx));
+            calloc(num, sizeof(RIL_SignalStrengthConfigEx));
         if (sigConfig == NULL) {
             RLOGE("Memory allocation failed for request %s",
                     requestToString(pRI->pCI->requestNumber));
             return;
         }
         RIL_SignalStrengthConfigEx **sigConfigPtrs = (RIL_SignalStrengthConfigEx **)
-            calloc(no_of_sigConfigEx, sizeof(RIL_SignalStrengthConfigEx *));
+            calloc(num, sizeof(RIL_SignalStrengthConfigEx *));
         if (sigConfigPtrs == NULL) {
             RLOGE("Memory allocation failed for request %s",
                     requestToString(pRI->pCI->requestNumber));
@@ -2642,7 +2645,8 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
         }
 
         startRequest;
-        for (int i = 0 ; i < no_of_sigConfigEx ; i++ ) {
+        config_criteria.config_ex_elements = num;
+        for (int i = 0 ; i < num ; i++ ) {
             sigConfigPtrs[i] = &sigConfig[i];
 
             status = p.readInt32(&t);
@@ -2650,6 +2654,10 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
             appendPrintBuf("%s [%d:radio tech =%d, ", printBuf, i, sigConfig[i].radio_tech);
             status = p.readInt32(&t);
             sigConfig[i].config_type_elements = static_cast<int>(t);
+            if (sigConfig[i].config_type_elements <= 0 ||
+                sigConfig[i].config_type_elements > RIL_SIG_CONFIG_TYPE_MAX) {
+                goto invalid;
+            }
             appendPrintBuf("%ssignal strength config length=%d, ",printBuf,
                 sigConfig[i].config_type_elements);
             for (int j = 0; j < sigConfig[i].config_type_elements; j++) {
@@ -2659,6 +2667,10 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
             }
             status = p.readInt32(&t);
             sigConfig[i].config_data_elements = static_cast<int>(t);
+            if (sigConfig[i].config_data_elements <= 0 ||
+                sigConfig[i].config_data_elements > RIL_SIG_MEASUREMENT_TYPE_MAX) {
+                goto invalid;
+            }
             appendPrintBuf("%ssignal strength config data length=%d, ",printBuf,
                 sigConfig[i].config_data_elements);
             for (int k = 0; k < sigConfig[i].config_data_elements; k++) {
@@ -2680,17 +2692,18 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
                        status = p.readInt32(&t);
                        sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
                            .threshold_elements = static_cast<int>(t);
-                       appendPrintBuf("%sthreshold list length=%d, ", printBuf,
-                           sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
-                               .threshold_elements);
-                       for (int m = 0;
-                           m < sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
-                           .threshold_elements; m++)
+                       int threshold_len = sigConfig[i].config_data[k].ConfigData
+                           .ConfigThresholdList.threshold.threshold_elements;
+                       if (threshold_len <= 0 || threshold_len >RIL_THRESHOLD_LIST_MAX) {
+                           goto invalid;
+                       }
+                       appendPrintBuf("%sthreshold list length=%d, ", printBuf, threshold_len);
+                       for (int m = 0; m < threshold_len; m++)
                        {
                            status = p.readInt32(&t);
                            sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
                                .threshold_info[m] = static_cast<int32_t>(t);
-                           appendPrintBuf("%sitemID = %d, threshold = %d, ", printBuf, m,
+                           appendPrintBuf("%sitemID=%d, threshold=%d, ", printBuf, m,
                                sigConfig[i].config_data[k].ConfigData.ConfigThresholdList
                                    .threshold.threshold_info[m]);
                        }
@@ -2707,10 +2720,11 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
                    }
                 }
             }
-            status = p.readInt32(&t);
-            sigConfig[i].hysteresis_ms = static_cast<uint16_t>(t);
-            appendPrintBuf("%shysteresis timer=%u]", printBuf, sigConfig[i].hysteresis_ms);
+            config_criteria.config_ex[i] = sigConfig[i];
         }
+        status = p.readInt32(&t);
+        config_criteria.hysteresis_ms = static_cast<uint16_t>(t);
+        appendPrintBuf("%shysteresis timer=%u]", printBuf, config_criteria.hysteresis_ms);
         closeRequest;
         printRequest(pRI->token, pRI->pCI->requestNumber);
 
@@ -2719,18 +2733,20 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
            free(sigConfigPtrs);
            goto invalid;
         }
-        CALL_ONREQUEST(pRI->pCI->requestNumber,
-                              sigConfigPtrs,
-                              no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx *),
-                              pRI, pRI->socket_id);
+        CALL_ONREQUEST(pRI->pCI->requestNumber, &config_criteria, sizeof(config_criteria),
+                       pRI, pRI->socket_id);
 
 #ifdef MEMSET_FREED
-        memset(sigConfig, 0, no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx));
-        memset(sigConfigPtrs, 0, no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx *));
+        memset(sigConfig, 0, num * sizeof(RIL_SignalStrengthConfigEx));
+        memset(sigConfigPtrs, 0, num * sizeof(RIL_SignalStrengthConfigEx *));
 #endif
         free(sigConfig);
         free(sigConfigPtrs);
     }
+
+#ifdef MEMSET_FREED
+    memset(&config_criteria, 0, sizeof(config_criteria));
+#endif
 
     return;
 
