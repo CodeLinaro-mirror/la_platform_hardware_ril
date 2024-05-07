@@ -38,7 +38,7 @@ int property_get(const char* key, char* value, const char* defaultValue)
     bool propertyFound = getConfigValue(key, value);
     if(!propertyFound) {
         if(defaultValue) {
-            strlcpy(value, defaultValue, PROPERTY_VALUE_MAX);
+            g_strlcpy(value, defaultValue, PROPERTY_VALUE_MAX);
         } else {
             return 0;
         }

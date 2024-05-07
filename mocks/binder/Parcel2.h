@@ -23,6 +23,7 @@
 #define PARCEL_H
 
 #include <string>
+#include <stdint.h>
 typedef int status_t;
 typedef std::string String8;
 typedef std::u16string String16;

@@ -112,14 +112,14 @@ void getCurrentProcessPath(char *procPath) {
 void getCurrentProcessName(char *procName) {
    char path[FILE_PATH_MAX];
    getCurrentProcessPath(path);
-   strlcpy(procName, basename(path), PROP_VALUE_MAX-1);
+   g_strlcpy(procName, basename(path), PROP_VALUE_MAX-1);
    procName[PROP_VALUE_MAX-1] = '\0';
 }
 
 void getProcessPath(char *procPath) {
    char path[FILE_PATH_MAX];
    getCurrentProcessPath(path);
-   strlcpy(procPath, dirname(path), FILE_PATH_MAX-1);
+   g_strlcpy(procPath, dirname(path), FILE_PATH_MAX-1);
    procPath[FILE_PATH_MAX-1] = '\0';
 }
 
@@ -144,9 +144,9 @@ void getConfigFilePath(char *configFile) {
 
     // get current config file based on process name in etc folder
     memset(configFile, 0, FILE_PATH_MAX);
-    strlcat(configFile, "/etc/", FILE_PATH_MAX);
-    strlcat(configFile, procName, FILE_PATH_MAX);
-    strlcat(configFile, ".conf", FILE_PATH_MAX);
+    g_strlcat(configFile, "/etc/", FILE_PATH_MAX);
+    g_strlcat(configFile, procName, FILE_PATH_MAX);
+    g_strlcat(configFile, ".conf", FILE_PATH_MAX);
     syslog(LOG_DEBUG, "%s:[%d] config file path: %s", __func__, __LINE__, configFile);
 
     if (access(configFile, F_OK) != -1) {
@@ -159,10 +159,10 @@ void getConfigFilePath(char *configFile) {
 
     // get current config file where process is running
     memset(configFile, 0, FILE_PATH_MAX);
-    strlcat(configFile, procPath, FILE_PATH_MAX);
-    strlcat(configFile, "/", FILE_PATH_MAX);
-    strlcat(configFile, procName, FILE_PATH_MAX);
-    strlcat(configFile, ".conf", FILE_PATH_MAX);
+    g_strlcat(configFile, procPath, FILE_PATH_MAX);
+    g_strlcat(configFile, "/", FILE_PATH_MAX);
+    g_strlcat(configFile, procName, FILE_PATH_MAX);
+    g_strlcat(configFile, ".conf", FILE_PATH_MAX);
     syslog(LOG_DEBUG, "%s:[%d] config file path: %s", __func__, __LINE__,
            configFile);
     if (access(configFile, F_OK) != -1) {
@@ -176,8 +176,8 @@ void getConfigFilePath(char *configFile) {
 
     // get default config file (tel.conf) from /etc
     memset(configFile, 0, FILE_PATH_MAX);
-    strlcat(configFile, "/etc/", FILE_PATH_MAX);
-    strlcat(configFile, DEFAULT_CONFIG_FILE, FILE_PATH_MAX);
+    g_strlcat(configFile, "/etc/", FILE_PATH_MAX);
+    g_strlcat(configFile, DEFAULT_CONFIG_FILE, FILE_PATH_MAX);
     syslog(LOG_DEBUG, "%s:[%d] config file path: %s", __func__, __LINE__,
           configFile);
     if (access(configFile, F_OK) != -1) {
@@ -190,9 +190,9 @@ void getConfigFilePath(char *configFile) {
 
     // get default config file where process is running
     memset(configFile, 0, FILE_PATH_MAX);
-    strlcat(configFile, procPath, FILE_PATH_MAX);
-    strlcat(configFile, "/", FILE_PATH_MAX);
-    strlcat(configFile, DEFAULT_CONFIG_FILE, FILE_PATH_MAX);
+    g_strlcat(configFile, procPath, FILE_PATH_MAX);
+    g_strlcat(configFile, "/", FILE_PATH_MAX);
+    g_strlcat(configFile, DEFAULT_CONFIG_FILE, FILE_PATH_MAX);
     syslog(LOG_DEBUG, "%s:[%d] config file path: %s", __func__, __LINE__,
           configFile);
     if (access(configFile, F_OK) != -1) {
@@ -264,13 +264,13 @@ void readConfigFile(char *configurationFile) {
          token = strtok_r(property, "=", &savePtr);
          if (token != NULL) {
             trim(token);
-            strlcpy(gSettings[index].key, token, PROP_KEY_MAX - 1);
+            g_strlcpy(gSettings[index].key, token, PROP_KEY_MAX - 1);
             gSettings[index].key[PROP_KEY_MAX - 1] = '\0';
          }
          token = strtok_r(NULL, "=", &savePtr);
          if (token != NULL) {
             trim(token);
-            strlcpy(gSettings[index].value, token, PROP_VALUE_MAX - 1);
+            g_strlcpy(gSettings[index].value, token, PROP_VALUE_MAX - 1);
             gSettings[index].value[PROP_VALUE_MAX - 1] = '\0';
          }
          index++;
@@ -301,7 +301,7 @@ bool getConfigValue(const char *configKey, char *configVal) {
 
    for (int index = 0; strlen(gSettings[index].key) != 0; index++) {
       if (strncmp (gSettings[index].key , configKey, sizeof(gSettings[index].key)) == 0) {
-         strlcpy(configVal, gSettings[index].value, PROP_VALUE_MAX);
+         g_strlcpy(configVal, gSettings[index].value, PROP_VALUE_MAX);
          syslog(LOG_DEBUG, "%s:[%d] key: %s configVal: %s", __func__, __LINE__,
             gSettings[index].key, configVal);
          keyFound = true;

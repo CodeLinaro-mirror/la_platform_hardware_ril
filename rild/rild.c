@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
         exit(0);
     }
     if (strncmp(clientId, "0", MAX_CLIENT_ID_LENGTH)) {
-        strlcat(rild, clientId, MAX_SOCKET_NAME_LENGTH);
+        g_strlcat(rild, clientId, MAX_SOCKET_NAME_LENGTH);
         RIL_setRilSocketName(rild);
     }
 
