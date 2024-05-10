@@ -4625,6 +4625,7 @@ static void processCommandsCallback(int fd, short flags, void *param) {
     size_t recordlen;
     int ret;
     SocketListenParam *p_info = (SocketListenParam *)param;
+    pthread_mutex_t * writeMutexHook = &s_writeMutex;
 
     assert(fd == p_info->fdCommand);
 
@@ -4644,6 +4645,7 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         }
     }
 
+
     if (ret == 0 || !(errno == EAGAIN || errno == EINTR)) {
         /* fatal error or end-of-stream */
         if (ret != 0) {
@@ -4653,6 +4655,22 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         }
 
         close(fd);
+#if (SIM_COUNT >= 2)
+    if (socket_id == RIL_SOCKET_2) {
+        writeMutexHook = &s_writeMutex_socket2;
+    }
+#if (SIM_COUNT >= 3)
+    else if (socket_id == RIL_SOCKET_3) {
+        writeMutexHook = &s_writeMutex_socket3;
+    }
+#endif
+#if (SIM_COUNT >= 4)
+    else if (socket_id == RIL_SOCKET_4) {
+        writeMutexHook = &s_writeMutex_socket4;
+    }
+#endif
+#endif
+        pthread_mutex_lock(writeMutexHook);
         p_info->fdCommand = -1;
 
         ril_event_del(p_info->commands_event);
@@ -4663,6 +4681,7 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         rilEventAddWakeup(&s_listen_event);
 
         onCommandsSocketClosed(p_info->socket_id);
+        pthread_mutex_unlock(writeMutexHook);
     }
 }
 
