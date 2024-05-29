@@ -259,7 +259,8 @@ typedef enum {
     RIL_CALL_DIALING = 2,    /* MO call only */
     RIL_CALL_ALERTING = 3,   /* MO call only */
     RIL_CALL_INCOMING = 4,   /* MT call only */
-    RIL_CALL_WAITING = 5     /* MT call only */
+    RIL_CALL_WAITING = 5,    /* MT call only */
+    RIL_CALL_CC_IN_PROGRESS = 6 /* MO call only */
 } RIL_CallState;
 
 typedef enum {
