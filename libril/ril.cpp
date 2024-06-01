@@ -58,7 +58,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -370,6 +370,7 @@ static void dispatchOpenChannelWithP2(Parcel &p, RequestInfo *pRI);
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI);
 #ifdef RIL_FOR_MDM_LE
 static void dispatchSignalStrengthConfig(Parcel &p, RequestInfo *pRI);
+static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI);
 #endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
@@ -2609,7 +2610,135 @@ invalid:
     invalidCommandBlock(pRI);
     return;
 }
+
+static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
+    int32_t t;
+    status_t status;
+    int32_t no_of_sigConfigEx;
+
+#if VDBG
+    RLOGD("dispatchSignalStrengthConfigEx");
 #endif
+
+    status = p.readInt32(&no_of_sigConfigEx);
+    if (status != NO_ERROR || no_of_sigConfigEx <= 0) {
+        goto invalid;
+    }
+    {
+        RIL_SignalStrengthConfigEx *sigConfig = (RIL_SignalStrengthConfigEx *)
+            calloc(no_of_sigConfigEx, sizeof(RIL_SignalStrengthConfigEx));
+        if (sigConfig == NULL) {
+            RLOGE("Memory allocation failed for request %s",
+                    requestToString(pRI->pCI->requestNumber));
+            return;
+        }
+        RIL_SignalStrengthConfigEx **sigConfigPtrs = (RIL_SignalStrengthConfigEx **)
+            calloc(no_of_sigConfigEx, sizeof(RIL_SignalStrengthConfigEx *));
+        if (sigConfigPtrs == NULL) {
+            RLOGE("Memory allocation failed for request %s",
+                    requestToString(pRI->pCI->requestNumber));
+            free(sigConfig);
+            return;
+        }
+
+        startRequest;
+        for (int i = 0 ; i < no_of_sigConfigEx ; i++ ) {
+            sigConfigPtrs[i] = &sigConfig[i];
+
+            status = p.readInt32(&t);
+            sigConfig[i].radio_tech = static_cast<RIL_RadioTechnology>(t);
+            appendPrintBuf("%s [%d:radio tech =%d, ", printBuf, i, sigConfig[i].radio_tech);
+            status = p.readInt32(&t);
+            sigConfig[i].config_type_elements = static_cast<int>(t);
+            appendPrintBuf("%ssignal strength config length=%d, ",printBuf,
+                sigConfig[i].config_type_elements);
+            for (int j = 0; j < sigConfig[i].config_type_elements; j++) {
+                status = p.readInt32(&t);
+                sigConfig[i].config_type[j] = static_cast<RIL_SignalStrengthConfigType>(t);
+                appendPrintBuf("%sconfig_type[%d]=%d, ", printBuf, j, sigConfig[i].config_type[j]);
+            }
+            status = p.readInt32(&t);
+            sigConfig[i].config_data_elements = static_cast<int>(t);
+            appendPrintBuf("%ssignal strength config data length=%d, ",printBuf,
+                sigConfig[i].config_data_elements);
+            for (int k = 0; k < sigConfig[i].config_data_elements; k++) {
+                status = p.readInt32(&t);
+                sigConfig[i].config_data[k].sig_type =
+                    static_cast<RIL_SignalStrengthMeasurementType>(t);
+                appendPrintBuf("%smeasurement type[%d]=%d, ", printBuf, k,
+                    sigConfig[i].config_data[k].sig_type);
+               for (int l = 0; l < sigConfig[i].config_type_elements ; l++) {
+                   if (sigConfig[i].config_type[l] == RIL_SIGNAL_STRENGTH_CONFIG_TYPE_DELTA)
+                   {
+                       status = p.readInt32(&t);
+                       sigConfig[i].config_data[k].ConfigData.delta = static_cast<uint16_t>(t);
+                       appendPrintBuf("%sdelta=%u, ", printBuf,
+                           sigConfig[i].config_data[k].ConfigData.delta);
+                   }
+                   if (sigConfig[i].config_type[l] == RIL_SIGNAL_STRENGTH_CONFIG_TYPE_THRESHOLD)
+                   {
+                       status = p.readInt32(&t);
+                       sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
+                           .threshold_elements = static_cast<int>(t);
+                       appendPrintBuf("%sthreshold list length=%d, ", printBuf,
+                           sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
+                               .threshold_elements);
+                       for (int m = 0;
+                           m < sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
+                           .threshold_elements; m++)
+                       {
+                           status = p.readInt32(&t);
+                           sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.threshold
+                               .threshold_info[m] = static_cast<int32_t>(t);
+                           appendPrintBuf("%sitemID = %d, threshold = %d, ", printBuf, m,
+                               sigConfig[i].config_data[k].ConfigData.ConfigThresholdList
+                                   .threshold.threshold_info[m]);
+                       }
+                   }
+                   if (sigConfig[i].config_type[l] ==
+                       RIL_SIGNAL_STRENGTH_CONFIG_TYPE_HYSTERESIS_DB)
+                   {
+                       status = p.readInt32(&t);
+                       sigConfig[i].config_data[k].ConfigData.ConfigThresholdList.hysteresis_db =
+                           static_cast<uint16_t>(t);
+                       appendPrintBuf("%shysteresis delta=%u, ", printBuf,
+                           sigConfig[i].config_data[k].ConfigData.ConfigThresholdList
+                               .hysteresis_db);
+                   }
+                }
+            }
+            status = p.readInt32(&t);
+            sigConfig[i].hysteresis_ms = static_cast<uint16_t>(t);
+            appendPrintBuf("%shysteresis timer=%u]", printBuf, sigConfig[i].hysteresis_ms);
+        }
+        closeRequest;
+        printRequest(pRI->token, pRI->pCI->requestNumber);
+
+        if (status != NO_ERROR) {
+           free(sigConfig);
+           free(sigConfigPtrs);
+           goto invalid;
+        }
+        CALL_ONREQUEST(pRI->pCI->requestNumber,
+                              sigConfigPtrs,
+                              no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx *),
+                              pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+        memset(sigConfig, 0, no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx));
+        memset(sigConfigPtrs, 0, no_of_sigConfigEx * sizeof(RIL_SignalStrengthConfigEx *));
+#endif
+        free(sigConfig);
+        free(sigConfigPtrs);
+    }
+
+    return;
+
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+#endif /* RIL_FOR_MDM_LE */
 
 static int
 blockingWrite(int fd, const void *buffer, size_t len) {
@@ -3642,6 +3771,8 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->GSM_SignalStrength.bitErrorRate);
     p.writeInt32(p_cur->WCDMA_SignalStrength.signalStrength);
     p.writeInt32(p_cur->WCDMA_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.ecio);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rscp);
     p.writeInt32(p_cur->CDMA_SignalStrength.dbm);
     p.writeInt32(p_cur->CDMA_SignalStrength.ecio);
     p.writeInt32(p_cur->EVDO_SignalStrength.dbm);
@@ -3716,7 +3847,7 @@ static int responseRilSignalStrength(Parcel &p,
     responseRilSignalStrengthV11(p, p_cur);
     startResponse;
     appendPrintBuf("%s[GSM_SS.signalStrength=%d,GSM_SS.bitErrorRate=%d,\
-            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,\
+            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,WCDMA_SS.ecio=%d, WCDMA_SS.rscp=%d\
             CDMA_SS.dbm=%d,CDMA_SSecio=%d,\
             EVDO_SS.dbm=%d,EVDO_SS.ecio=%d,\
             EVDO_SS.signalNoiseRatio=%d,\
@@ -3728,6 +3859,8 @@ static int responseRilSignalStrength(Parcel &p,
             p_cur->GSM_SignalStrength.bitErrorRate,
             p_cur->WCDMA_SignalStrength.signalStrength,
             p_cur->WCDMA_SignalStrength.bitErrorRate,
+            p_cur->WCDMA_SignalStrength.ecio,
+            p_cur->WCDMA_SignalStrength.rscp,
             p_cur->CDMA_SignalStrength.dbm,
             p_cur->CDMA_SignalStrength.ecio,
             p_cur->EVDO_SignalStrength.dbm,
@@ -3935,6 +4068,8 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.psc);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -4029,6 +4164,8 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.uarfcn);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -6553,6 +6690,7 @@ requestToString(int request) {
         case RIL_REQUEST_RESET_WWAN: return "RIL_REQUEST_RESET_WWAN";
 #ifdef RIL_FOR_MDM_LE
         case RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH: return "CONFIGURE_SIGNAL_STRENGTH";
+        case RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX: return "CONFIGURE_SIGNAL_STRENGTH_EX";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
@@ -6604,6 +6742,7 @@ requestToString(int request) {
         case RIL_UNSOL_RESPONSE_ADN_RECORDS: return "RIL_UNSOL_RESPONSE_ADN_RECORDS";
         case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
         case RIL_UNSOL_EMERGENCY_SCAN_FAIL: return "RIL_UNSOL_EMERGENCY_SCAN_FAIL";
+        case RIL_UNSOL_OPERATOR_INFO: return "RIL_UNSOL_OPERATOR_INFO";
         default: return "<unknown request>";
     }
 }

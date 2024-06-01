@@ -57,7 +57,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -859,6 +859,7 @@ typedef enum {
     CALL_FAIL_CDMA_NOT_EMERGENCY = 1008, /* For non-emergency number dialed
                                             during emergency callback mode */
     CALL_FAIL_CDMA_ACCESS_BLOCKED = 1009, /* CDMA network access probes blocked */
+    CALL_FAIL_THERMAL_EMERGENCY = 3100,  /* Thermal emergency. */
     CALL_FAIL_ERROR_UNSPECIFIED = 0xffff /* This error will be deprecated soon,
                                             vendor code should make sure to map error
                                             code to specific error */
@@ -1212,6 +1213,15 @@ typedef struct {
 typedef struct {
     int signalStrength;  /* Valid values are (0-31, 99) as defined in TS 27.007 8.5 */
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
+    int rscp;            /* Received Signal Code Power in dBm multipled by -1.
+                          * Range : 24 to 120
+                          * INT_MAX: 0x7FFFFFFF denotes invalid value.
+                          * Reference: 3GPP TS 25.123, section 9.1.1.1 */
+    int ecio;            /* Valid values are positive integers.  This value is the actual
+                          * Ec/Io multiplied by -10.
+                          * Example: If the actual Ec/Io is -12.5 dB, then this response
+                          * value will be 125.
+                          */
 } RIL_SignalStrengthWcdma;
 
 typedef struct {
@@ -1871,14 +1881,23 @@ typedef struct {
     RIL_AdnRecordInfo adn_record_info[RIL_NUM_ADN_RECORDS];
 } RIL_AdnRecord_v1;
 
+#define RIL_SIG_CONFIG_MAX 3
+#define RIL_THRESHOLD_LIST_MAX 10
+#define RIL_SIG_MEASUREMENT_TYPE_MAX 8
 typedef enum {
-   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_DELTA = 1,
-   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_THRESHOLD = 2
+   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_DELTA = 1,        /* Signal strength delta provided. */
+   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_THRESHOLD = 2,    /* Signal strength threshold list provided. */
+   RIL_SIGNAL_STRENGTH_CONFIG_TYPE_HYSTERESIS_DB = 3 /* Signal strength hysteresis delta
+                                                        provided. */
 } RIL_SignalStrengthConfigType;
 
+/*
+ * @deprecated Use RIL_SignalStrengthMeasurementType with RIL_RadioTechnology.
+ */
 typedef enum {
     RIL_SIGNAL_STRENGTH_TYPE_GSM_RSSI,
     RIL_SIGNAL_STRENGTH_TYPE_WCDMA_RSSI,
+    RIL_SIGNAL_STRENGTH_TYPE_LTE_RSSI,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_SNR,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRQ,
     RIL_SIGNAL_STRENGTH_TYPE_LTE_RSRP,
@@ -1886,6 +1905,17 @@ typedef enum {
     RIL_SIGNAL_STRENGTH_TYPE_NR5G_RSRP,
     RIL_SIGNAL_STRENGTH_TYPE_NR5G_RSRQ
 } RIL_SignalStrengthConfigRATType;
+
+typedef enum {
+    RIL_SIGNAL_STRENGTH_TYPE_RSSI,  /* Received signal strength indicator. */
+    RIL_SIGNAL_STRENGTH_TYPE_ECIO,  /* Energy per chip to interference power ratio. */
+    RIL_SIGNAL_STRENGTH_TYPE_SINR,  /* Signal-to-interference-plus-noise ratio. */
+    RIL_SIGNAL_STRENGTH_TYPE_IO,    /* Interference power ratio. */
+    RIL_SIGNAL_STRENGTH_TYPE_RSRQ,  /* Reference signal received quality. */
+    RIL_SIGNAL_STRENGTH_TYPE_RSRP,  /* Reference signal received power. */
+    RIL_SIGNAL_STRENGTH_TYPE_SNR,   /* Signal-to-noise ratio. */
+    RIL_SIGNAL_STRENGTH_TYPE_RSCP   /* Received signal code power. */
+} RIL_SignalStrengthMeasurementType;
 
 #ifdef RIL_FOR_MDM_LE
 typedef struct {
@@ -1901,6 +1931,42 @@ typedef struct {
        RIL_SignalStrengthThreshold threshold;
     } SignalStrengthConfigData;
 } RIL_SignalStrengthConfig;
+
+typedef struct {
+    int threshold_elements;                         /* Number of elements in threshold list
+                                                       array. */
+    int32_t threshold_info[RIL_THRESHOLD_LIST_MAX]; /* Threshold list. */
+} RIL_SignalStrengthThresholdList;
+
+typedef struct {
+    RIL_SignalStrengthMeasurementType sig_type;       /* Signal strength measurement types. */
+    /** Signal strength data. */
+   union {
+      uint16_t delta;                                 /* Delta for signal strength configuration.
+                                                       */
+      struct {
+          RIL_SignalStrengthThresholdList threshold;  /* Threshold list information. */
+          uint16_t hysteresis_db;                     /* Hysteresis value, applicable if threshold
+                                                         list is specified. */
+      } ConfigThresholdList;
+   } ConfigData;
+} RIL_SignalStrengthConfigData;
+
+typedef struct {
+   int config_type_elements;                                     /* Number of elements in config
+                                                                    type array. */
+   RIL_SignalStrengthConfigType config_type[RIL_SIG_CONFIG_MAX]; /* Signal strength config type. */
+   RIL_RadioTechnology radio_tech;                               /* Radio technology for signal
+                                                                    strength configuration. */
+
+   int config_data_elements;                                    /* Number of elements in config
+                                                                   data array. */
+   RIL_SignalStrengthConfigData config_data[RIL_SIG_MEASUREMENT_TYPE_MAX];
+                                                                /* Signal strength config data. */
+   uint16_t hysteresis_ms;                                      /* Hysteresis timer, applicable if
+                                                                   threshold list is specified. */
+} RIL_SignalStrengthConfigEx;
+
 #endif /* RIL_FOR_MDM_LE */
 
 /**
@@ -2560,6 +2626,8 @@ typedef struct {
  *                                  or NULL if unregistered
  * ((const char **)response)[2] is 5 or 6 digit numeric code (MCC + MNC)
  *                                  or NULL if unregistered
+ * ((const char **)response)[3] is the string code for whether it is a home network
+ *                                 Valid values are "unknown", "true" and "false"
  *
  * Valid errors:
  *  SUCCESS
@@ -5508,6 +5576,21 @@ typedef struct {
  */
  #define RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH 147
 
+/**
+ * RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX
+ *
+ * Configure Signal strength delta or threshold and hysteresis data for notification.
+ *
+ * "data" is an const RIL_SignalStrengthConfigEx **
+ * "datalen" is count * sizeof(const RIL_SignalStrengthConfigEx *)
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ */
+ #define RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX 148
+
 /***********************************************************************/
 
 /**
@@ -6176,6 +6259,16 @@ typedef struct {
  */
 #define RIL_UNSOL_EMERGENCY_SCAN_FAIL 1050
 
+
+/**
+ * RIL_UNSOL_OPERATOR_INFO
+ *
+ * Called when operator information changes.
+ *
+ * "data" is null
+ *
+ */
+#define RIL_UNSOL_OPERATOR_INFO 1051
 
 /***********************************************************************/
 
