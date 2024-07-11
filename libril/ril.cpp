@@ -351,6 +351,9 @@ static void dispatchRadioCapability(Parcel &p, RequestInfo *pRI);
 static void dispatchCarrierRestrictions(Parcel &p, RequestInfo *pRI);
 static void dispatchOpenChannelWithP2(Parcel &p, RequestInfo *pRI);
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI);
+#ifdef RIL_FOR_MDM_LE
+static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI);
+#endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
 static int responseStrings(Parcel &p, void *response, size_t responselen);
@@ -2462,6 +2465,53 @@ invalid:
     invalidCommandBlock(pRI);
     return;
 }
+
+#ifdef RIL_FOR_MDM_LE
+static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI)
+{
+    RIL_EcallHlapTimer eCallHlapTimer;
+    int32_t  t;
+    status_t status;
+
+    RLOGD("dispatchRestartEcallHlapTimer");
+
+    memset(&eCallHlapTimer, 0, sizeof(eCallHlapTimer));
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchRestartEcallHlapTimer invalid timerId");
+        goto invalid;
+    }
+    eCallHlapTimer.timerId = static_cast<RIL_Hlap_Timer_Id> (t);
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchRestartEcallHlapTimer invalid duration");
+        goto invalid;
+    }
+    eCallHlapTimer.duration = static_cast<int>(t);
+
+    startRequest;
+    appendPrintBuf("timerId=%d, duration=%d ", eCallHlapTimer.timerId,
+        eCallHlapTimer.duration);
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &eCallHlapTimer, sizeof(eCallHlapTimer),
+        pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memset(&eCallHlapTimer, 0, sizeof(eCallHlapTimer));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+#endif /* RIL_FOR_MDM_LE */
 
 static int
 blockingWrite(int fd, const void *buffer, size_t len) {

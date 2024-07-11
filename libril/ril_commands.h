@@ -167,3 +167,6 @@
     {RIL_REQUEST_SET_ECALL_OPRT_MODE, dispatchInts, responseVoid},
     {RIL_REQUEST_QUERY_EMERGENCY_CALLBACK_MODE, dispatchVoid, responseInts},
     {RIL_REQUEST_ECALL_STOP_DFT, dispatchVoid, responseVoid},
+#ifdef RIL_FOR_MDM_LE
+    {RIL_REQUEST_RESTART_ECALL_HLAP_TIMER, dispatchRestartEcallHlapTimer, responseVoid},
+#endif  /* RIL_FOR_MDM_LE */
