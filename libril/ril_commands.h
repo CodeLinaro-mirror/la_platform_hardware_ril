@@ -170,4 +170,5 @@
     {RIL_REQUEST_RESET_WWAN, dispatchVoid, responseVoid},
 #ifdef RIL_FOR_MDM_LE
     {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH, dispatchSignalStrengthConfig, responseVoid},
+    {RIL_REQUEST_RESTART_ECALL_HLAP_TIMER, dispatchRestartEcallHlapTimer, responseVoid},
 #endif  /* RIL_FOR_MDM_LE */
