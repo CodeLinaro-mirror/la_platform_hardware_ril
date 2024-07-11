@@ -790,6 +790,18 @@ typedef struct {
                                          */
 } RIL_CarrierRestrictions;
 
+typedef enum {
+    T9 = 5,     /**< Timer ID for T9 timer for a regulatory eCall or test eCall.
+                     Applicable for both the eCall operating modes ( Normal and eCall only ). */
+    T10 = 6,    /**< Timer ID for T10 timer for a regulatory eCall or test eCall.
+                     Applicable for eCall only operating mode. */
+} RIL_Hlap_Timer_Id;
+
+typedef struct {
+  RIL_Hlap_Timer_Id timerId;
+  int32_t duration;
+} RIL_EcallHlapTimer;
+
 /* See RIL_REQUEST_LAST_CALL_FAIL_CAUSE */
 typedef enum {
     CALL_FAIL_UNOBTAINABLE_NUMBER = 1,
@@ -5609,6 +5621,20 @@ typedef struct {
  *  RADIO_NOT_AVAILABLE
  */
  #define RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH 147
+
+/**
+ * RIL_REQUEST_RESTART_ECALL_HLAP_TIMER
+ *
+ * Send the request to restart eCall HLAP timers ( T9 or T10 ).
+ *
+ * "data" is an const RIL_EcallHlapTimer *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  DEVICE_NOT_READY
+ */
+ #define RIL_REQUEST_RESTART_ECALL_HLAP_TIMER 148
 
 /***********************************************************************/
 
