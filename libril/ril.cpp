@@ -3249,6 +3249,7 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
         p.writeInt32(p_cur->rttMode);
         p.writeInt32(p_cur->localRttCap);
         p.writeInt32(p_cur->peerRttCap);
+        p.writeInt32(p_cur->type);
         // Remove when partners upgrade to version 3
         if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
             p.writeInt32(0); /* UUS Information is absent */
@@ -3278,12 +3279,13 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
             p_cur->numberPresentation,
             p_cur->name,
             p_cur->namePresentation);
-        appendPrintBuf("%s,rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d]",
+        appendPrintBuf("%s,rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d]",
             printBuf,
             p_cur->rttModeValid,
             p_cur->rttMode,
             p_cur->localRttCap,
-            p_cur->peerRttCap);
+            p_cur->peerRttCap,
+            p_cur->type);
     }
     removeLastChar;
     closeResponse;
