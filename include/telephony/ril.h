@@ -1903,7 +1903,8 @@ typedef struct {
     RIL_AdnRecordInfo adn_record_info[RIL_NUM_ADN_RECORDS];
 } RIL_AdnRecord_v1;
 
-#define RIL_SIG_CONFIG_MAX 3
+#define RIL_SIG_CONFIG_MAX 4
+#define RIL_SIG_CONFIG_TYPE_MAX 3
 #define RIL_THRESHOLD_LIST_MAX 10
 #define RIL_SIG_MEASUREMENT_TYPE_MAX 8
 typedef enum {
@@ -1956,7 +1957,8 @@ typedef struct {
 
 typedef struct {
     int threshold_elements;                         /* Number of elements in threshold list
-                                                       array. */
+                                                       array. Maximum value will be
+                                                       RIL_THRESHOLD_LIST_MAX. */
     int32_t threshold_info[RIL_THRESHOLD_LIST_MAX]; /* Threshold list. */
 } RIL_SignalStrengthThresholdList;
 
@@ -1976,18 +1978,29 @@ typedef struct {
 
 typedef struct {
    int config_type_elements;                                     /* Number of elements in config
-                                                                    type array. */
-   RIL_SignalStrengthConfigType config_type[RIL_SIG_CONFIG_MAX]; /* Signal strength config type. */
+                                                                    type array. Maximum value will
+                                                                    be RIL_SIG_CONFIG_TYPE_MAX. */
+   RIL_SignalStrengthConfigType config_type[RIL_SIG_CONFIG_TYPE_MAX];
+                                                                 /* Signal strength config type. */
    RIL_RadioTechnology radio_tech;                               /* Radio technology for signal
                                                                     strength configuration. */
 
-   int config_data_elements;                                    /* Number of elements in config
-                                                                   data array. */
+   int config_data_elements;                                     /* Number of elements in config
+                                                                    data array.
+                                                                    Maximum value will be
+                                                                    RIL_SIG_MEASUREMENT_TYPE_MAX. */
    RIL_SignalStrengthConfigData config_data[RIL_SIG_MEASUREMENT_TYPE_MAX];
                                                                 /* Signal strength config data. */
+} RIL_SignalStrengthConfigEx;
+
+typedef struct {
+   int config_ex_elements;                                      /* Number of elements in config
+                                                                   criteria array. Maximum value
+                                                                   will be RIL_SIG_CONFIG_MAX. */
+   RIL_SignalStrengthConfigEx config_ex[RIL_SIG_CONFIG_MAX];    /* Signal strength config values. */
    uint16_t hysteresis_ms;                                      /* Hysteresis timer, applicable if
                                                                    threshold list is specified. */
-} RIL_SignalStrengthConfigEx;
+} RIL_SignalStrengthConfigCriteria;
 
 #endif /* RIL_FOR_MDM_LE */
 
