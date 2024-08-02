@@ -2703,10 +2703,13 @@ static int responseFailCause(Parcel &p, void *response, size_t responselen) {
     } else if (responselen == sizeof(RIL_LastCallFailCauseInfo)) {
       startResponse;
       RIL_LastCallFailCauseInfo *p_fail_cause_info = (RIL_LastCallFailCauseInfo *) response;
-      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s]", printBuf, p_fail_cause_info->cause_code,
-                     p_fail_cause_info->vendor_cause);
+      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d]", printBuf,
+                     p_fail_cause_info->cause_code,
+                     p_fail_cause_info->vendor_cause,
+                     p_fail_cause_info->sip_error_code);
       p.writeInt32(p_fail_cause_info->cause_code);
       p.writeString8AsString16(p_fail_cause_info->vendor_cause);
+      p.writeInt32(p_fail_cause_info->sip_error_code);
       removeLastChar;
       closeResponse;
     } else {
@@ -2788,6 +2791,12 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
+    if (response == NULL || responselen != sizeof(RIL_Call_with_LastFailureCauseInfo)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+            (int)responselen, (int)sizeof(RIL_Call_with_LastFailureCauseInfo));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
     startResponse;
     RLOGD(" start response ");
     RIL_Call_with_LastFailureCauseInfo *p_call_with_last_failure_cause_info =
@@ -2799,11 +2808,14 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
         RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" numOfCalls= %d ", p_call_with_last_failure_cause_info->numOfCalls);
+    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+            (p_call_with_last_failure_cause_info->info).sip_error_code,
+            p_call_with_last_failure_cause_info->numOfCalls);
 
     p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
+    p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
 
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
