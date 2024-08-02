@@ -847,6 +847,23 @@ typedef enum {
     CALL_FAIL_DIAL_MODIFIED_TO_USSD = 244, /* STK Call Control */
     CALL_FAIL_DIAL_MODIFIED_TO_SS = 245,
     CALL_FAIL_DIAL_MODIFIED_TO_DIAL = 246,
+    CALL_FAIL_RADIO_OFF = 247, /* Radio is OFF */
+    CALL_FAIL_OUT_OF_SERVICE = 248, /* No cellular coverage */
+    CALL_FAIL_NO_VALID_SIM = 249, /* No valid SIM is present */
+    CALL_FAIL_RADIO_INTERNAL_ERROR = 250, /* Internal error at Modem */
+    CALL_FAIL_NETWORK_RESP_TIMEOUT = 251, /* No response from network */
+    CALL_FAIL_NETWORK_REJECT = 252, /* Explicit network reject */
+    CALL_FAIL_RADIO_ACCESS_FAILURE = 253, /* RRC connection failure. Eg.RACH */
+    CALL_FAIL_RADIO_LINK_FAILURE = 254, /* Radio Link Failure */
+    CALL_FAIL_RADIO_LINK_LOST = 255, /* Radio link lost due to poor coverage */
+    CALL_FAIL_RADIO_UPLINK_FAILURE = 256, /* Radio uplink failure */
+    CALL_FAIL_RADIO_SETUP_FAILURE = 257, /* RRC connection setup failure */
+    CALL_FAIL_RADIO_RELEASE_NORMAL = 258, /* RRC connection release, normal */
+    CALL_FAIL_RADIO_RELEASE_ABNORMAL = 259, /* RRC connection release, abnormal */
+    CALL_FAIL_ACCESS_CLASS_BLOCKED = 260, /* Access class barring */
+    CALL_FAIL_NETWORK_DETACH = 261, /* Explicit network detach */
+    CALL_FAIL_EMERGENCY_TEMP_FAILURE = 325, /* CALL_END_CAUSE_TEMP_REDIAL_ALLOWED = 0x145 */
+    CALL_FAIL_EMERGENCY_PERM_FAILURE = 326, /* CALL_END_CAUSE_PERM_REDIAL_NOT_NEEDED = 0x146 */
     CALL_FAIL_CDMA_LOCKED_UNTIL_POWER_CYCLE = 1000,
     CALL_FAIL_CDMA_DROP = 1001,
     CALL_FAIL_CDMA_INTERCEPT = 1002,
@@ -875,6 +892,7 @@ typedef enum {
 typedef struct {
   RIL_LastCallFailCause cause_code;
   char *                vendor_cause;
+  int                   sip_error_code;
 } RIL_LastCallFailCauseInfo;
 
 #define RIL_MAX_CALL 20
