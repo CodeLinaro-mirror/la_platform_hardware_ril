@@ -1075,7 +1075,8 @@ typedef enum {
     RIL_APPSTATE_PUK                   = 3, /* If PUK1 or Puk for UPin is required */
     RIL_APPSTATE_SUBSCRIPTION_PERSO    = 4, /* perso_substate should be look at
                                                when app_state is assigned to this value */
-    RIL_APPSTATE_READY                 = 5
+    RIL_APPSTATE_READY                 = 5,
+    RIL_APPSTATE_ILLEGAL               = 6  /* If recovery actions is required */
 } RIL_AppState;
 
 typedef enum {
