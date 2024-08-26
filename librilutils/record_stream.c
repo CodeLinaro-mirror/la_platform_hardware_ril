@@ -70,14 +70,15 @@ extern RecordStream *record_stream_new(int fd, size_t maxRecordLen)
 
 extern void record_stream_free(RecordStream *rs)
 {
-    if(rs->buffer != NULL) {
-        free(rs->buffer);
-        rs->buffer = NULL;
-    }
-    if(rs != NULL) {
+    if (rs != NULL) {
+        if (rs->buffer != NULL) {
+            free(rs->buffer);
+            rs->buffer = NULL;
+        }
         free(rs);
         rs = NULL;
     }
+
 }
 
 
