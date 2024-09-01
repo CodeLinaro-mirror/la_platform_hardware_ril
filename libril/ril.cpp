@@ -2743,6 +2743,8 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
             sigConfig[i].config_type_elements = static_cast<int>(t);
             if (sigConfig[i].config_type_elements <= 0 ||
                 sigConfig[i].config_type_elements > RIL_SIG_CONFIG_TYPE_MAX) {
+                free(sigConfig);
+                free(sigConfigPtrs);
                 goto invalid;
             }
             appendPrintBuf("%ssignal strength config length=%d, ",printBuf,
@@ -2756,6 +2758,8 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
             sigConfig[i].config_data_elements = static_cast<int>(t);
             if (sigConfig[i].config_data_elements <= 0 ||
                 sigConfig[i].config_data_elements > RIL_SIG_MEASUREMENT_TYPE_MAX) {
+                free(sigConfig);
+                free(sigConfigPtrs);
                 goto invalid;
             }
             appendPrintBuf("%ssignal strength config data length=%d, ",printBuf,
@@ -2782,6 +2786,8 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
                        int threshold_len = sigConfig[i].config_data[k].ConfigData
                            .ConfigThresholdList.threshold.threshold_elements;
                        if (threshold_len <= 0 || threshold_len >RIL_THRESHOLD_LIST_MAX) {
+                           free(sigConfig);
+                           free(sigConfigPtrs);
                            goto invalid;
                        }
                        appendPrintBuf("%sthreshold list length=%d, ", printBuf, threshold_len);
@@ -3243,6 +3249,7 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
         p.writeInt32(p_cur->rttMode);
         p.writeInt32(p_cur->localRttCap);
         p.writeInt32(p_cur->peerRttCap);
+        p.writeInt32(p_cur->type);
         // Remove when partners upgrade to version 3
         if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
             p.writeInt32(0); /* UUS Information is absent */
@@ -3272,12 +3279,13 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
             p_cur->numberPresentation,
             p_cur->name,
             p_cur->namePresentation);
-        appendPrintBuf("%s,rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d]",
+        appendPrintBuf("%s,rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d]",
             printBuf,
             p_cur->rttModeValid,
             p_cur->rttMode,
             p_cur->localRttCap,
-            p_cur->peerRttCap);
+            p_cur->peerRttCap,
+            p_cur->type);
     }
     removeLastChar;
     closeResponse;

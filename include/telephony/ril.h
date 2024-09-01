@@ -264,6 +264,15 @@ typedef enum {
 } RIL_CallState;
 
 typedef enum {
+    CALL_TYPE_UNKNOWN = -1,      /**< Unknown, when the information is not available */
+    CALL_TYPE_VOICE = 0,         /**< Voice call, include custom number ecall over CS*/
+    CALL_TYPE_VOICE_IP = 1,      /**< Voice IP call, include private ecall over PS*/
+    CALL_TYPE_EMERGENCY = 2,     /**< Emergency call*/
+    CALL_TYPE_EMERGENCY_IP = 3,  /**< Emergency IP call*/
+    CALL_TYPE_ECALL = 4          /**< Automotive emergency call*/
+} RIL_CallType;
+
+typedef enum {
     RADIO_STATE_OFF = 0,                   /* Radio explictly powered off (eg CFUN=0) */
     RADIO_STATE_UNAVAILABLE = 1,           /* Radio unavailable (eg, resetting or not booted) */
     /* States 2-9 below are deprecated. Just leaving them here for backward compatibility. */
@@ -484,6 +493,8 @@ typedef struct {
     RIL_RTT_Info    localRttCap;  /*  0  = local UE is not RTT capable , 1 = local UE is RTT capable */
     RIL_RTT_Info    peerRttCap;   /*  0  = peer UE is not RTT capable , 1 = peer UE is RTT capable */
     RIL_UUS_Info *  uusInfo;      /* NULL or Pointer to User-User Signaling Information */
+    RIL_CallType    type;         /* -1 = Unknown , 0 = voice call, 1 = voice ip call, 2 = emergency call,
+                                     3 = emergency ip call, 4 = automotive eCall */
 } RIL_Call;
 
 typedef struct {
