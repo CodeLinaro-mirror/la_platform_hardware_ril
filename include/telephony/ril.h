@@ -310,7 +310,8 @@ typedef enum {
     RADIO_TECH_TD_SCDMA = 17,
     RADIO_TECH_IWLAN = 18,
     RADIO_TECH_LTE_CA = 19,
-    RADIO_TECH_5G = 20
+    RADIO_TECH_5G = 20,
+    RADIO_TECH_NB1_NTN = 21 // NB1 NTN
 } RIL_RadioTechnology;
 
 typedef enum {
@@ -1161,6 +1162,7 @@ typedef struct
   int           ims_subscription_app_index;      /* value < RIL_CARD_MAX_APPS, -1 if none */
   int           num_applications;                /* value <= RIL_CARD_MAX_APPS */
   RIL_AppStatus applications[RIL_CARD_MAX_APPS];
+  int           is_ntn_profile_active;           /* NTN profile is activated on card or not */
 } RIL_CardStatus_v6;
 
 /** The result of a SIM refresh, returned in data[0] of RIL_UNSOL_SIM_REFRESH
@@ -1419,6 +1421,7 @@ typedef struct {
     RIL_LTE_SignalStrength_v8   LTE_SignalStrength;
     RIL_TD_SCDMA_SignalStrength TD_SCDMA_SignalStrength;
     RIL_NR5G_SignalStrength     NR5G_SignalStrength;
+    RIL_LTE_SignalStrength_v8   NB1_NTN_SignalStrength;
 } RIL_SignalStrength_v11;
 
 typedef struct {
@@ -1556,7 +1559,8 @@ typedef enum {
   RIL_CELL_INFO_TYPE_LTE    = 3,
   RIL_CELL_INFO_TYPE_WCDMA  = 4,
   RIL_CELL_INFO_TYPE_TD_SCDMA  = 5,
-  RIL_CELL_INFO_TYPE_NR5G  = 6
+  RIL_CELL_INFO_TYPE_NR5G  = 6,
+  RIL_CELL_INFO_TYPE_NB1_NTN = 7     /**< NB1 NTN */
 } RIL_CellInfoType;
 
 // Must be the same as CellInfo.TIMESTAMP_TYPE_XXX
@@ -1594,6 +1598,7 @@ typedef struct {
     RIL_CellInfoWcdma_v12   wcdma;
     RIL_CellInfoTdscdma     tdscdma;
     RIL_CellInfoNr          nr;
+    RIL_CellInfoLte_v12     nb1_ntn;
   } CellInfo;
 } RIL_CellInfo_v12;
 
