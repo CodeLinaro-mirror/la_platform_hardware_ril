@@ -173,4 +173,5 @@
     {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH_EX, dispatchSignalStrengthConfigEx, responseVoid},
     {RIL_REQUEST_MODIFY_CALL_INITIATE, dispatchModify, responseVoid},
     {RIL_REQUEST_MODIFY_CALL_CONFIRM, dispatchModify, responseVoid},
+    {RIL_REQUEST_RESTART_ECALL_HLAP_TIMER, dispatchRestartEcallHlapTimer, responseVoid},
 #endif  /* RIL_FOR_MDM_LE */
