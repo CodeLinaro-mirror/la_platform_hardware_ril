@@ -883,6 +883,15 @@ typedef struct {
   char *                vendor_cause;
 } RIL_LastCallFailCauseInfo;
 
+#define RIL_MAX_CALL 20
+
+typedef struct {
+    int isLastFailCauseInfoValid;   /* Indicates last failure causeinfo is valid or not */
+    RIL_LastCallFailCauseInfo info; /* Indicates last failure causeinfo */
+    int numOfCalls;                 /* Indicates number of current calls */
+    RIL_Call call[RIL_MAX_CALL];    /* List of current calls */
+} RIL_Call_with_LastFailureCauseInfo;
+
 /* See RIL_REQUEST_LAST_DATA_CALL_FAIL_CAUSE */
 typedef enum {
     PDP_FAIL_NONE = 0, /* No error, connection ok */
@@ -1916,6 +1925,99 @@ typedef struct {
        RIL_SignalStrengthThreshold threshold;
     } SignalStrengthConfigData;
 } RIL_SignalStrengthConfig;
+
+/**
+ * Represents the status of an eCall High Level Application Protocol(HLAP) timer that is maintained
+ * by the UE state machine.
+ */
+typedef enum {
+   RIL_HLAP_TIMER_STATUS_UNKNOWN = -1,    /**< Unknown */
+   RIL_HLAP_TIMER_STATUS_INACTIVE,        /**< eCall Timer is Inactive i.e it has not started or
+                                               it has stopped/expired */
+   RIL_HLAP_TIMER_STATUS_ACTIVE,          /**< eCall Timer is Active i.e it has started but not yet
+                                               stopped/expired */
+} RIL_HlapTimerStatus;
+
+/**
+ * Represents an event causing a change in the status of eCall High Level Application Protocol
+ * (HLAP) timer that is maintained by the UE state machine.
+ *
+ */
+typedef enum {
+   RIL_HLAP_TIMER_EVENT_UNKNOWN = -1,             /**< Unknown */
+   RIL_HLAP_TIMER_EVENT_UNCHANGED,                /**< No change in timer status */
+   RIL_HLAP_TIMER_EVENT_STARTED,                  /**< eCall Timer is Started */
+   RIL_HLAP_TIMER_EVENT_STOPPED,                  /**< eCall Timer is Stopped */
+   RIL_HLAP_TIMER_EVENT_EXPIRED,                  /**< eCall Timer is expired */
+   RIL_HLAP_TIMER_EVENT_RESUMED,                  /**< eCall Timer is resumed */
+} RIL_HlapTimerEvent;
+
+/**
+ * Represents events that changes the status of various eCall High Level Application Protocol(HLAP)
+ * timers that are maintained by UE state machine. This does not retrieve events of timers
+ * maintained by the PSAP.
+ * The timers are represented according to EN 16062:2015 standard.
+ */
+typedef struct {
+   RIL_HlapTimerEvent t2;   /**< T2 Timer event */
+   RIL_HlapTimerEvent t5;   /**< T5 Timer event */
+   RIL_HlapTimerEvent t6;   /**< T6 Timer event */
+   RIL_HlapTimerEvent t7;   /**< T7 Timer event */
+   RIL_HlapTimerEvent t9;   /**< T9 Timer event */
+   RIL_HlapTimerEvent t10;  /**< T10 Timer event */
+} RIL_ECallHlapTimerEvents;
+
+/**
+ * MSD Transmission Status
+ */
+typedef enum {
+   RIL_ECall_Msd_Transmission_UNKNOWN = -1, /**< MSD transmission is unknown */
+   RIL_ECall_Msd_Transmission_SUCCESS = 0, /**< In-band MSD transmission is successful */
+   RIL_ECall_Msd_Transmission_FAILURE = 1, /**< In-band MSD transmission failed */
+   MSD_TRANSMISSION_STARTED = 2, /**< In-band MSD transmission started */
+   NACK_OUT_OF_ORDER = 3,        /**< Out of order NACK message detected during in-band MSD
+                                      transmission*/
+   ACK_OUT_OF_ORDER = 4,         /**< Out of order ACK message detected during in-band MSD
+                                      transmission*/
+   START_RECEIVED = 5,           /**< SEND-MSD(START) is received and SYNC is locked during in-band
+                                      MSD transmission*/
+   LL_ACK_RECEIVED = 6,          /**< Link-Layer Acknowledgement(LL-ACK) is received during in-band
+                                      MSD transmission*/
+   OUTBAND_MSD_TRANSMISSION_STARTED = 10,    /**< Outband MSD transmission started in NG eCall */
+   OUTBAND_MSD_TRANSMISSION_SUCCESS = 11,    /**< Outband MSD transmission succeeded in NG eCall
+                                                  or Third Party Service (TPS) eCall */
+   OUTBAND_MSD_TRANSMISSION_FAILURE = 12,    /**< Outband MSD transmission failed in NG eCall
+                                                  or Third Party Service (TPS) eCall */
+   LL_NACK_DUE_TO_T7_EXPIRY = 13,   /**< Link-Layer Acknowledgement(LL-NACK) is received during
+                                         in-band MSD transmission due to expiry of T7 HLAP eCall
+                                         timer */
+   MSD_AL_ACK_CLEARDOWN = 14,   /**< Modem can cleardown the eCall after receipt of
+                                     Application-Layer Acknowledgement(AL-LCK) during in-band MSD
+                                     transmission */
+} RIL_ECall_Msd_Transmission_Status;
+
+typedef enum {
+    RIL_Reason_NONE = 0,                   /**< Redial reason is NONE */
+    RIL_Reason_CALL_ORIG_FAILURE = 1,      /**< Redial will be attempted due to eCall origination
+                                                failure */
+    RIL_Reason_CALL_DROP = 2,              /**< Redial will be attempted as the eCall is terminated
+                                                before the reciept of MSD Transmission status */
+    RIL_Reason_MAX_REDIAL_ATTEMPTED = 3,   /**< Redial will not be attempted as the maximum redial
+                                                count is reached */
+    RIL_Reason_CALL_CONNECTED = 4,         /**< Redial will not be attempted as the eCall is
+                                                connected successfully. */
+} RIL_Reason_Type;
+
+/*
+ * Represents information about the redial eCall.
+ */
+
+typedef struct {
+   int willECallRedial; /**< Indicates whether redial of eCall will be attempted by modem or not
+                             0 - redial of eCall will not be attempted
+                             1 - redial of eCall will be attempted */
+   RIL_Reason_Type reason; /**< Indicates the reason for redial of eCall to be performed or not */
+} RIL_ECall_Redial_Info;
 #endif /* RIL_FOR_MDM_LE */
 
 /**
@@ -6207,7 +6309,6 @@ typedef struct {
  */
 #define RIL_UNSOL_EMERGENCY_SCAN_FAIL 1050
 
-
 /**
  * RIL_UNSOL_OPERATOR_INFO
  *
@@ -6217,6 +6318,47 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_OPERATOR_INFO 1051
+
+/**
+ * RIL_UNSOL_ECALL_HLAP_TIMER_EVENT
+ *
+ * Called when eCall High Level Application Protocol(HLAP) timers status is changed.
+ *
+ * "data" is RIL_ECallHlapTimerEvents
+ *
+ */
+#define RIL_UNSOL_ECALL_HLAP_TIMER_EVENT 1052
+
+/**
+ * RIL_UNSOL_ECALL_STATUS_EVENT
+ *
+ * Called when eCall MSD Transmission status is changed.
+ *
+ * "data" is RIL_ECall_Msd_Transmission_Status
+ *
+ */
+#define RIL_UNSOL_ECALL_STATUS_EVENT 1053
+
+/**
+ * RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT
+ *
+ * Called to notify the clients whether eCall will be redialed or not by the modem along with the
+ * reason for the operation.
+ *
+ * "data" is RIL_ECall_Redial_Info
+ *
+ */
+#define RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT 1054
+
+/**
+ * RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE
+ *
+ * Called to notify the current calls with call failure cause when call state is ended by modem.
+ *
+ * "data" is RIL_Call_with_LastFailureCauseInfo
+ *
+ */
+#define RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE 1055
 
 /***********************************************************************/
 
