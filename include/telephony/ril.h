@@ -5717,6 +5717,38 @@ typedef struct {
  */
  #define RIL_REQUEST_RESTART_ECALL_HLAP_TIMER 151
 
+/**
+ * RIL_REQUEST_GET_HIGH_CAPABILITY
+ *
+ * Request to find out which SIM/slot is allowed to use advance Radio Technology like 5G at a
+ * time.
+ *
+ * "data" is NULL
+ * "response" is slotID
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RIL_E_MODEM_ERR
+ */
+ #define RIL_REQUEST_GET_HIGH_CAPABILITY 152
+
+ /**
+ * RIL_REQUEST_SET_HIGH_CAPABILITY
+ *
+ * Set SIM/slot with high capability asynchronously. On dual SIM devices, only one SIM may be
+ * allowed to use advanced Radio technology like 5G at a time.
+ *
+ * "data" is slotID
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  RIL_E_MODEM_ERR
+ *  RIL_E_SYSTEM_ERR
+ */
+ #define RIL_REQUEST_SET_HIGH_CAPABILITY 153
+
 /***********************************************************************/
 
 /**
@@ -6405,6 +6437,17 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_MODIFY_CALL 1052
+
+/**
+ * RIL_UNSOL_HIGH_CAPABILITY_SUB
+ *
+ * This function is called whenever there is change in high capability for SIM/slot.
+ *
+ * "data" is int[1] *.
+ * data[0] is high capability subscription information.
+ *
+ */
+#define RIL_UNSOL_HIGH_CAPABILITY_SUB 1053
 
 /***********************************************************************/
 
