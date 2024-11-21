@@ -374,6 +374,8 @@ static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI);
 static void dispatchModify(Parcel &p, RequestInfo *pRI);
 static void dispatchAnswer(Parcel &p, RequestInfo *pRI);
 static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI);
+static void dispatchEuiccProfileList(Parcel &p, RequestInfo *pRI);
+static void dispatchEuiccProfileOperation(Parcel &p, RequestInfo *pRI);
 #endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
@@ -413,6 +415,7 @@ static int responseAdnRecords(Parcel &p, void *response, size_t responselen);
 #ifdef RIL_FOR_MDM_LE
 static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, size_t responselen);
 static void decodeCalls(Parcel &p, RIL_Call *p_cur);
+static int responseEuiccProfileOperation(Parcel &p, void *response, size_t responselen);
 #endif /* RIL_FOR_MDM_LE */
 static int decodeVoiceRadioTechnology (RIL_RadioState radioState);
 static int decodeCdmaSubscriptionSource (RIL_RadioState radioState);
@@ -2896,6 +2899,106 @@ invalid:
     invalidCommandBlock(pRI);
     return;
 }
+
+static void dispatchEuiccProfileList(Parcel &p, RequestInfo *pRI)
+{
+    int32_t t;
+    status_t status;
+    int32_t num;
+    RIL_SimProfileDetails details;
+
+#if VDBG
+    RLOGD("dispatchEuiccProfileList");
+#endif
+    memset(&details, 0, sizeof(RIL_SimProfileDetails));
+    startRequest;
+    status = p.readInt32(&t);
+    details.result = static_cast<RIL_ApduResponseStatus> (t);
+    status = p.readInt32(&t);
+    details.reference_id = static_cast<int> (t);
+    appendPrintBuf("%s[result =%d, refId=%d, ", printBuf, details.result, details.reference_id);
+    status = p.readInt32(&num);
+    if (status != NO_ERROR || num <= 0) {
+        goto invalid;
+    }
+    details.num_iccids = num;
+    appendPrintBuf("num_iccids=%d, ", num);
+    if (num > RIL_MAX_PROFILES) {
+        RLOGE("Max profiles limit exceeded");
+        goto invalid;
+    }
+
+    for (int i = 0; i < num; i++) {
+        details.iccid_list[i].iccid = strdupReadString(p);
+        if (strlen(details.iccid_list[i].iccid) > RIL_MAX_ICCID_LEN+1) {
+            RLOGE("ICCID is not valid");
+            goto invalid;
+        }
+        appendPrintBuf("iccid=%s ", details.iccid_list[i].iccid);
+    }
+    appendPrintBuf("]");
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &details, sizeof(RIL_SimProfileDetails), pRI,
+        pRI->socket_id);
+
+    for (int i = 0; i < num; i++) {
+#ifdef MEMSET_FREED
+        memsetString(details.iccid_list[i].iccid);
+#endif
+        free(details.iccid_list[i].iccid);
+    }
+
+#ifdef MEMSET_FREED
+    memset(&details, 0, sizeof(RIL_SimProfileDetails));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+
+static void dispatchEuiccProfileOperation(Parcel &p, RequestInfo *pRI)
+{
+    int32_t t;
+    status_t status;
+    RIL_SimProfileOperationResponse response;
+
+#if VDBG
+    RLOGD("dispatchEuiccProfileOperation");
+#endif
+    memset(&response, 0, sizeof(RIL_SimProfileOperationResponse));
+    startRequest;
+    status = p.readInt32(&t);
+    response.result = static_cast<RIL_ApduResponseStatus> (t);
+    status = p.readInt32(&t);
+    response.reference_id = static_cast<int> (t);
+    appendPrintBuf("%s[result =%d, refId=%d] ", printBuf, response.result, response.reference_id);
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &response, sizeof(RIL_SimProfileOperationResponse),
+        pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memset(&response, 0, sizeof(RIL_SimProfileOperationResponse));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+
 #endif /* RIL_FOR_MDM_LE */
 
 static int
@@ -3180,7 +3283,7 @@ static int responseFailCause(Parcel &p, void *response, size_t responselen) {
     } else if (responselen == sizeof(RIL_LastCallFailCauseInfo)) {
       startResponse;
       RIL_LastCallFailCauseInfo *p_fail_cause_info = (RIL_LastCallFailCauseInfo *) response;
-      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code]", printBuf,
+      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d]", printBuf,
                      p_fail_cause_info->cause_code,
                      p_fail_cause_info->vendor_cause,
                      p_fail_cause_info->sip_error_code);
@@ -5094,6 +5197,31 @@ static int responseAdnRecords(Parcel &p, void *response, size_t responselen) {
     return 0;
 }
 
+static int responseEuiccProfileOperation(Parcel &p, void *response, size_t responselen) {
+    if (response == NULL && responselen != 0) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen % sizeof (RIL_SimProfileOperation *) != 0) {
+        RLOGE("responseEuiccProfileOperation: invalid response length %d expected multiple of %d\n",
+            (int)responselen, (int)sizeof (RIL_SimProfileOperation *));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_SimProfileOperation *p_cur = (RIL_SimProfileOperation *)response;
+    p.writeInt32(p_cur->is_enable);
+    p.writeInt32(p_cur->reference_id);
+    p.writeCString(p_cur->iccid);
+    startResponse;
+    appendPrintBuf("%s[is_enable=%d,refId=%d,iccid=%s],", printBuf, p_cur->is_enable,
+        p_cur->reference_id, p_cur->iccid);
+    removeLastChar;
+    closeResponse;
+
+    return 0;
+}
+
 /**
  * A write on the wakeup fd is done just to pop us out of select()
  * We empty the buffer here and then ril_event will reset the timers on the
@@ -6944,6 +7072,8 @@ requestToString(int request) {
         case RIL_REQUEST_SET_HIGH_CAPABILITY : return "RIL_REQUEST_SET_HIGH_CAPABILITY";
         case RIL_REQUEST_SET_IMS_VONR : return "RIL_REQUEST_SET_IMS_VONR";
         case RIL_REQUEST_GET_IMS_VONR : return "RIL_REQUEST_GET_IMS_VONR";
+        case RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE: return "EUICC_PROFILE_OPERATION_RESPONSE";
+        case RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE: return "EUICC_PROFILE_LIST_RESPONSE";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
@@ -7003,6 +7133,8 @@ requestToString(int request) {
         case RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT: return "RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT";
         case RIL_UNSOL_ECALL_STATUS_EVENT: return "RIL_UNSOL_ECALL_STATUS_EVENT";
         case RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE: return "RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE";
+        case RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST: return "UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST";
+        case RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST: return "UNSOL_ON_EUICC_PROFILE_LIST_REQUEST";
 #endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }

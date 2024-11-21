@@ -177,5 +177,7 @@
     {RIL_REQUEST_GET_HIGH_CAPABILITY, dispatchVoid, responseInts},
     {RIL_REQUEST_SET_HIGH_CAPABILITY, dispatchInts, responseVoid},
     {RIL_REQUEST_SET_IMS_VONR, dispatchInts, responseVoid},
-    {RIL_REQUEST_GET_IMS_VONR, dispatchVoid, responseInts}
+    {RIL_REQUEST_GET_IMS_VONR, dispatchVoid, responseInts},
+    {RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE, dispatchEuiccProfileOperation, responseVoid},
+    {RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE, dispatchEuiccProfileList, responseVoid}
 #endif  /* RIL_FOR_MDM_LE */

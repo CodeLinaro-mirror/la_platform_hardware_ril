@@ -2163,6 +2163,40 @@ typedef struct {
 
 #endif /* RIL_FOR_MDM_LE */
 
+#define RIL_MAX_ICCID_LEN                       20
+#define RIL_MAX_PROFILES                        8
+
+/* APDU exchange status for retrieve profile list, enable or disable profile */
+typedef enum {
+   APDU_RESPONSE_SUCCESS = 0,           /* APDU exchange is success. */
+   APDU_RESPONSE_FAILURE = 1            /* APDU exchange is failed. */
+} RIL_ApduResponseStatus;
+
+/* The eUICC profile enable or disable response */
+typedef struct {
+   RIL_ApduResponseStatus result;  /* APDU exchange status for enable or disable profile. */
+   uint32_t reference_id;          /* Token for enable or disable profile. */
+} RIL_SimProfileOperationResponse;
+
+typedef struct {
+   char* iccid;          /* ICCID value. */
+} RIL_Iccid;
+
+/* The eUICC profile enable or disable request */
+typedef struct {
+   uint32_t is_enable;           /* 0 - disable 1 - enable */
+   uint32_t reference_id;        /* Token for enable or disable profile.*/
+   char* iccid;                  /* ICCID value. */
+} RIL_SimProfileOperation;
+
+/* Retrieve profile list response */
+typedef struct {
+   RIL_ApduResponseStatus result; /* APDU exchange status for the retrieve profile list. */
+   uint32_t reference_id;        /* Token for retrieve profile list. */
+   uint32_t num_iccids;          /* Number of ICCIDs in the list. */
+   RIL_Iccid iccid_list[RIL_MAX_PROFILES]; /* List of ICCIDs for profiles. */
+} RIL_SimProfileDetails;
+
 /**
  * RIL_REQUEST_GET_SIM_STATUS
  *
@@ -5844,7 +5878,7 @@ typedef struct {
  */
  #define RIL_REQUEST_GET_HIGH_CAPABILITY 152
 
- /**
+/**
  * RIL_REQUEST_SET_HIGH_CAPABILITY
  *
  * Set SIM/slot with high capability asynchronously. On dual SIM devices, only one SIM may be
@@ -5895,6 +5929,38 @@ typedef struct {
  *  RIL_E_GENERIC_FAILURE
  */
  #define RIL_REQUEST_GET_IMS_VONR 155
+
+/**
+ * RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE
+ *
+ * Sends response to eUICC profile enable or disable request from modem.
+ *
+ * "data" is an const RIL_SimProfileOperationResponse **
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  INVALID_ARGUMENTS
+ *  INTERNAL_ERR
+ *  NO_MEMORY
+ */
+ #define RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE 156
+
+/**
+ * RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE
+ *
+ * Sends response to eUICC profiles list request from modem.
+ *
+ * "data" is an const RIL_SimProfileDetails **
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  INVALID_ARGUMENTS
+ *  INTERNAL_ERR
+ *  NO_MEMORY
+ */
+ #define RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE 157
 
 /***********************************************************************/
 
@@ -6564,7 +6630,6 @@ typedef struct {
  */
 #define RIL_UNSOL_EMERGENCY_SCAN_FAIL 1050
 
-
 /**
  * RIL_UNSOL_OPERATOR_INFO
  *
@@ -6636,6 +6701,31 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE 1057
+
+/**
+ * RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST
+ *
+ * Called when eUICC profile enable or disable request from modem.
+ *
+ * "data" is RIL_SimProfileOperation
+ *
+ * Callee will subsequently confirm the response with
+ * RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE
+ *
+ */
+#define RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST 1058
+
+/**
+ * RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST
+ *
+ * Called when eUICC profiles information required from AP.
+ *
+ * "data" is const int *
+ *
+ * Callee will subsequently confirm the response with
+ * RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE
+ */
+#define RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST 1059
 
 /***********************************************************************/
 
