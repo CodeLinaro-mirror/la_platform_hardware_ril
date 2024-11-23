@@ -174,4 +174,6 @@
     {RIL_REQUEST_MODIFY_CALL_INITIATE, dispatchModify, responseVoid},
     {RIL_REQUEST_MODIFY_CALL_CONFIRM, dispatchModify, responseVoid},
     {RIL_REQUEST_RESTART_ECALL_HLAP_TIMER, dispatchRestartEcallHlapTimer, responseVoid},
+    {RIL_REQUEST_SET_IMS_VONR, dispatchInts, responseVoid},
+    {RIL_REQUEST_GET_IMS_VONR, dispatchVoid, responseInts}
 #endif  /* RIL_FOR_MDM_LE */
