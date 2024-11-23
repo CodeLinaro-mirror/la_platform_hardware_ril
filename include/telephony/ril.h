@@ -5749,6 +5749,41 @@ typedef struct {
  */
  #define RIL_REQUEST_SET_HIGH_CAPABILITY 153
 
+/**
+ * RIL_REQUEST_SET_IMS_VONR
+ *
+ * Enable or disable the IMS voice over NR service.
+ *
+ * "data" is int *, IMS VoNR to be set to enable or disable
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  RIL_E_MODEM_ERR
+ *  RIL_E_SYSTEM_ERR
+ *  RIL_E_INVALID_ARGUMENTS
+ *  RIL_E_GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_SET_IMS_VONR 154
+
+/**
+ * RIL_REQUEST_GET_IMS_VONR
+ *
+ * Request the status of the IMS voice over NR service.
+ *
+ * "data" is NULL
+ * "response" is int *, used to feedback IMS VoNR is enabled or disabled
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  RIL_E_MODEM_ERR
+ *  RIL_E_SYSTEM_ERR
+ *  RIL_E_GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_GET_IMS_VONR 155
+
 /***********************************************************************/
 
 /**
