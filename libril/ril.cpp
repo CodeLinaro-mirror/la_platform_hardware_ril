@@ -58,7 +58,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -2932,6 +2932,7 @@ blockingSend(int fd, const void *buffer, size_t len, QrtrAddress addr) {
    const uint8_t *toWrite = (const uint8_t *)buffer;
    toWrite = (const uint8_t *)buffer;
    struct sockaddr_qrtr sq;
+   int32_t localErrno = 0;
    while(writeOffset < len) {
       ssize_t written;
       sq.sq_family = AF_QIPCRTR;
@@ -2940,13 +2941,14 @@ blockingSend(int fd, const void *buffer, size_t len, QrtrAddress addr) {
       do {
          written = sendto(fd, toWrite + writeOffset, len - writeOffset, 0,
                         (sockaddr *)&sq, sizeof(sq));
-      } while(written < 0 && ((errno == EINTR) || (errno == EAGAIN)));
+         localErrno = errno;
+      } while(written < 0 && (localErrno == EINTR));
 
         if (written >= 0) {
             writeOffset += written;
         } else {   // written < 0
-            RLOGE ("RIL Response: unexpected error on send to client socket of node:%d",
-                addr.node, " port:%d", addr.port, ", errno:%d", errno);
+            RLOGE ("RIL Response: unexpected error on send to client socket");
+            RLOGE ("node:%d, port:%d, errno:%d", addr.node, addr.port, localErrno);
             return -1;
         }
     }
@@ -5857,6 +5859,12 @@ static void startListen(RIL_SOCKET_ID socket_id, SocketListenParam* socket_liste
     if(serverFd < 0) {
       RLOGE("Failed to create socket %s", socket_name);
       exit(-1);
+    }
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 500000;
+    if (setsockopt(serverFd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0) {
+      RLOGE(" Failed to set socket timeout");
     }
     socket_listen_p->fdListen = serverFd;
 
