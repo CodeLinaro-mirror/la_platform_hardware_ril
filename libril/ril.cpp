@@ -3995,6 +3995,13 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->NR5G_SignalStrength.rsrp);
     p.writeInt32(p_cur->NR5G_SignalStrength.rsrq);
     p.writeInt32(p_cur->NR5G_SignalStrength.rssnr);
+
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.signalStrength);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.rsrp);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.rsrq);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.rssnr);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.cqi);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.timingAdvance);
 }
 
 static int responseRilSignalStrength(Parcel &p,
@@ -4023,7 +4030,9 @@ static int responseRilSignalStrength(Parcel &p,
             EVDO_SS.signalNoiseRatio=%d,\
             LTE_SS.signalStrength=%d,LTE_SS.rsrp=%d,LTE_SS.rsrq=%d,\
             LTE_SS.rssnr=%d,LTE_SS.cqi=%d,LTE_SS.timingAdvance=%d,TDSCDMA_SS.rssnr=%d,\
-            NR5G_SS.rsrp=%d,NR5G_SS.rsrq=%d,NR5G_SS.rsrp=%d]",
+            NR5G_SS.rsrp=%d,NR5G_SS.rsrq=%d,NR5G_SS.rsrp=%d, NB1_NTN_SS.signalStrength=%d,\
+            NB1_NTN_SS.rsrp=%d,NB1_NTN_SS.rsrq=%d,NB1_NTN_SS.rssnr=%d,NB1_NTN_SS.cqi=%d,\
+            NB1_NTN_SS.timingAdvance=%d]",
             printBuf,
             p_cur->GSM_SignalStrength.signalStrength,
             p_cur->GSM_SignalStrength.bitErrorRate,
@@ -4045,7 +4054,13 @@ static int responseRilSignalStrength(Parcel &p,
             p_cur->TD_SCDMA_SignalStrength.rscp,
             p_cur->NR5G_SignalStrength.rsrp,
             p_cur->NR5G_SignalStrength.rsrq,
-            p_cur->NR5G_SignalStrength.rssnr);
+            p_cur->NR5G_SignalStrength.rssnr,
+            p_cur->NB1_NTN_SignalStrength.signalStrength,
+            p_cur->NB1_NTN_SignalStrength.rsrp,
+            p_cur->NB1_NTN_SignalStrength.rsrq,
+            p_cur->NB1_NTN_SignalStrength.rssnr,
+            p_cur->NB1_NTN_SignalStrength.cqi,
+            p_cur->NB1_NTN_SignalStrength.timingAdvance);
     closeResponse;
     return 0;
 }
@@ -4390,6 +4405,22 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.nr.signalStrengthNr.rssnr);
                 break;
             }
+            case RIL_CELL_INFO_TYPE_NB1_NTN: {
+                p.writeCString(p_cur->CellInfo.nb1_ntn.cellIdentityLte.mcc);
+                p.writeCString(p_cur->CellInfo.nb1_ntn.cellIdentityLte.mnc);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.cellIdentityLte.ci);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.cellIdentityLte.pci);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.cellIdentityLte.tac);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.cellIdentityLte.earfcn);
+
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.signalStrength);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.rsrp);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.rsrq);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.rssnr);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.cqi);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.timingAdvance);
+                break;
+            }
         }
         p_cur += 1;
     }
@@ -4651,6 +4682,8 @@ static void responseSimStatusV6(Parcel &p, void *response) {
     p.writeInt32(p_cur->ims_subscription_app_index);
 
     sendSimStatusAppInfo(p, p_cur->num_applications, p_cur->applications);
+    // write ntn profile status
+    p.writeInt32(p_cur->is_ntn_profile_active);
 }
 
 static int responseSimStatus(Parcel &p, void *response, size_t responselen) {
