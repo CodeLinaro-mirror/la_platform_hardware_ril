@@ -3373,6 +3373,12 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
+    if (response == NULL || responselen != sizeof(RIL_CallWithLastFailureCauseInfo)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+            (int)responselen, (int)sizeof(RIL_CallWithLastFailureCauseInfo));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
     startResponse;
     RLOGD(" start response ");
     RIL_CallWithLastFailureCauseInfo *p_call_with_last_failure_cause_info =
@@ -5205,9 +5211,9 @@ static int responseEuiccProfileOperation(Parcel &p, void *response, size_t respo
         return RIL_ERRNO_INVALID_RESPONSE;
     }
 
-    if (responselen % sizeof (RIL_SimProfileOperation *) != 0) {
-        RLOGE("responseEuiccProfileOperation: invalid response length %d expected multiple of %d\n",
-            (int)responselen, (int)sizeof (RIL_SimProfileOperation *));
+    if (response == NULL || responselen != sizeof(RIL_SimProfileOperation)) {
+        RLOGE("responseEuiccProfileOperation: invalid response length %d expected  %d\n",
+            (int)responselen, (int)sizeof(RIL_SimProfileOperation));
         return RIL_ERRNO_INVALID_RESPONSE;
     }
 
