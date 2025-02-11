@@ -2890,6 +2890,12 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
+    if (response == NULL || responselen != sizeof(RIL_Call_with_LastFailureCauseInfo)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+            (int)responselen, (int)sizeof(RIL_Call_with_LastFailureCauseInfo));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
     startResponse;
     RLOGD(" start response ");
     RIL_Call_with_LastFailureCauseInfo *p_call_with_last_failure_cause_info =
