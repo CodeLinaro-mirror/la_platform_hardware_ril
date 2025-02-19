@@ -16,11 +16,10 @@
 */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
-
     {0, NULL, NULL},                   //none
     {RIL_REQUEST_GET_SIM_STATUS, dispatchVoid, responseSimStatus},
     {RIL_REQUEST_ENTER_SIM_PIN, dispatchStrings, responseInts},
@@ -179,5 +178,7 @@
     {RIL_REQUEST_SET_IMS_VONR, dispatchInts, responseVoid},
     {RIL_REQUEST_GET_IMS_VONR, dispatchVoid, responseInts},
     {RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE, dispatchEuiccProfileOperation, responseVoid},
-    {RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE, dispatchEuiccProfileList, responseVoid}
+    {RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE, dispatchEuiccProfileList, responseVoid},
+    {RIL_REQUEST_SET_SMS_STORAGE_TYPE, dispatchInts, responseVoid},
+    {RIL_REQUEST_GET_SMS_STORAGE_TYPE, dispatchVoid, responseInts}
 #endif  /* RIL_FOR_MDM_LE */
