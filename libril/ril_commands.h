@@ -181,5 +181,17 @@
     {RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE, dispatchEuiccProfileList, responseVoid},
     {RIL_REQUEST_SET_SMS_STORAGE_TYPE, dispatchInts, responseVoid},
     {RIL_REQUEST_GET_SMS_STORAGE_TYPE, dispatchVoid, responseInts},
-    {RIL_REQUEST_SET_ANT_SWITCH, dispatchInts, responseVoid}
+    {RIL_REQUEST_SET_ANT_SWITCH, dispatchInts, responseVoid},
+    {RIL_REQUEST_DIAL_ECALL, dispatchEcallDial, responseVoid},
+    {RIL_REQUEST_DIAL_PRIVATE_ECALL, dispatchPrivateEcallDial, responseVoid},
+    {RIL_REQUEST_UPDATE_MSD, dispatchUpdateMsd, responseVoid},
+    {RIL_REQUEST_CONFIGURE_ECALL_REDIAL, dispatchConfigureEcallRedial, responseVoid},
+    {RIL_REQUEST_GET_ECALL_REDIAL_CONFIG, dispatchInts, responseGetEcallRedialConfig},
+    {RIL_REQUEST_SEND_POST_TEST_REGISTRATION_TIMER_REQUEST, dispatchInts, responseVoid},
+    {RIL_REQUEST_GET_POST_TEST_REGISTRATION_TIMER_REQUEST, dispatchInts, responseInts},
+    {RIL_REQUEST_GET_ECALL_HLAP_TIMER_STATUS, dispatchVoid, responseInts},
+    {RIL_REQUEST_SEND_UPDATE_ECALL_HLAP_TIMER, dispatchInts, responseVoid},
+    {RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER, dispatchInts, responseInts},
+    {RIL_REQUEST_SET_ECALL_CONFIG_REQUEST, dispatchECallConfig, responseInts},
+    {RIL_REQUEST_GET_ECALL_CONFIG_REQUEST, dispatchInts, responseGetEcallConfig},
 #endif  /* RIL_FOR_MDM_LE */
