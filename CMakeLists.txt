@@ -10,6 +10,8 @@ add_compile_options(${GLIB_CFLAGS} -include glib.h)
 add_definitions(-Dstrlcpy=g_strlcpy)
 add_definitions(-Dstrlcat=g_strlcat)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I =/usr/include/qmi-framework-vendor -Wnon-virtual-dtor")
+
 # Supported configurations
 set(CMAKE_CONFIGURATION_TYPES
     "Debug"
