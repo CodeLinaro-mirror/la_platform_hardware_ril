@@ -1276,6 +1276,9 @@ typedef enum {
 typedef struct {
     int signalStrength;  /* Valid values are (0-31, 99) as defined in TS 27.007 8.5 */
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
+    int rssi;            /* Received RSSI in GSM. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_GW_SignalStrength;
 
 typedef struct {
@@ -1297,6 +1300,9 @@ typedef struct {
                           * Example: If the actual Ec/Io is -12.5 dB, then this response
                           * value will be 125.
                           */
+    int rssi;            /* Received RSSI in UMTS. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_SignalStrengthWcdma;
 
 typedef struct {
@@ -1367,6 +1373,9 @@ typedef struct {
                           * INT_MAX : 0x7FFFFFFF denotes invalid value.
                           * Reference: 3GPP 36.321 section 6.1.3.5
                           * also: http://www.cellular-planningoptimization.com/2010/02/timing-advance-with-calculation.html */
+    int rssi;            /* Received RSSI in LTE. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_LTE_SignalStrength_v8;
 
 typedef struct {
