@@ -3571,8 +3571,12 @@ static int responseCdmaInformationRecords(Parcel &p,
 static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cur) {
     p.writeInt32(p_cur->GSM_SignalStrength.signalStrength);
     p.writeInt32(p_cur->GSM_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->GSM_SignalStrength.rssi);
     p.writeInt32(p_cur->WCDMA_SignalStrength.signalStrength);
     p.writeInt32(p_cur->WCDMA_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.ecio);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rscp);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rssi);
     p.writeInt32(p_cur->CDMA_SignalStrength.dbm);
     p.writeInt32(p_cur->CDMA_SignalStrength.ecio);
     p.writeInt32(p_cur->EVDO_SignalStrength.dbm);
@@ -3610,7 +3614,7 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->LTE_SignalStrength.rssnr);
     p.writeInt32(p_cur->LTE_SignalStrength.cqi);
     p.writeInt32(p_cur->LTE_SignalStrength.timingAdvance);
-
+    p.writeInt32(p_cur->LTE_SignalStrength.rssi);
     p.writeInt32(p_cur->TD_SCDMA_SignalStrength.rscp);
 
     if (p_cur->NR5G_SignalStrength.rsrp == -1*SHRT_MIN) {
@@ -3647,7 +3651,7 @@ static int responseRilSignalStrength(Parcel &p,
     responseRilSignalStrengthV11(p, p_cur);
     startResponse;
     appendPrintBuf("%s[GSM_SS.signalStrength=%d,GSM_SS.bitErrorRate=%d,\
-            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,\
+            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,WCDMA_SS.ecio=%d, WCDMA_SS.rscp=%d,\
             CDMA_SS.dbm=%d,CDMA_SSecio=%d,\
             EVDO_SS.dbm=%d,EVDO_SS.ecio=%d,\
             EVDO_SS.signalNoiseRatio=%d,\
@@ -3659,6 +3663,8 @@ static int responseRilSignalStrength(Parcel &p,
             p_cur->GSM_SignalStrength.bitErrorRate,
             p_cur->WCDMA_SignalStrength.signalStrength,
             p_cur->WCDMA_SignalStrength.bitErrorRate,
+            p_cur->WCDMA_SignalStrength.ecio,
+            p_cur->WCDMA_SignalStrength.rscp,
             p_cur->CDMA_SignalStrength.dbm,
             p_cur->CDMA_SignalStrength.ecio,
             p_cur->EVDO_SignalStrength.dbm,
@@ -3866,6 +3872,8 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.psc);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -3949,6 +3957,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.signalStrength);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.bitErrorRate);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_WCDMA: {
@@ -3960,6 +3969,9 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.uarfcn);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -3990,6 +4002,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssnr);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.cqi);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_TD_SCDMA: {
