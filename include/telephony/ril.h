@@ -19,45 +19,8 @@
  * limitations under the License.
  */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021, 2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -1223,6 +1186,9 @@ typedef enum {
 typedef struct {
     int signalStrength;  /* Valid values are (0-31, 99) as defined in TS 27.007 8.5 */
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
+    int rssi;            /* Received RSSI in GSM. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_GW_SignalStrength;
 
 typedef struct {
@@ -1230,11 +1196,26 @@ typedef struct {
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
     int timingAdvance;   /* Timing Advance in bit periods. 1 bit period = 48/13 us.
                           * INT_MAX denotes invalid value */
+    int rssi;            /* Received RSSI in GSM. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_GSM_SignalStrength_v12;
 
 typedef struct {
     int signalStrength;  /* Valid values are (0-31, 99) as defined in TS 27.007 8.5 */
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
+    int rscp;            /* Received Signal Code Power in dBm multipled by -1.
+                          * Range : 24 to 120
+                          * INT_MAX: 0x7FFFFFFF denotes invalid value.
+                          * Reference: 3GPP TS 25.123, section 9.1.1.1 */
+    int ecio;            /* Valid values are positive integers.  This value is the actual
+                          * Ec/Io multiplied by -10.
+                          * Example: If the actual Ec/Io is -12.5 dB, then this response
+                          * value will be 125.
+                          */
+    int rssi;            /* Received RSSI in UMTS. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_SignalStrengthWcdma;
 
 typedef struct {
@@ -1305,6 +1286,9 @@ typedef struct {
                           * INT_MAX : 0x7FFFFFFF denotes invalid value.
                           * Reference: 3GPP 36.321 section 6.1.3.5
                           * also: http://www.cellular-planningoptimization.com/2010/02/timing-advance-with-calculation.html */
+    int rssi;            /* Received RSSI in LTE. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_LTE_SignalStrength_v8;
 
 typedef struct {

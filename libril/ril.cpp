@@ -20,45 +20,8 @@
 ** limitations under the License.
 */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024,2025 Qualcomm Innovation Center, Inc. All rights reserved.
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -3598,8 +3561,12 @@ static int responseCdmaInformationRecords(Parcel &p,
 static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cur) {
     p.writeInt32(p_cur->GSM_SignalStrength.signalStrength);
     p.writeInt32(p_cur->GSM_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->GSM_SignalStrength.rssi);
     p.writeInt32(p_cur->WCDMA_SignalStrength.signalStrength);
     p.writeInt32(p_cur->WCDMA_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.ecio);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rscp);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rssi);
     p.writeInt32(p_cur->CDMA_SignalStrength.dbm);
     p.writeInt32(p_cur->CDMA_SignalStrength.ecio);
     p.writeInt32(p_cur->EVDO_SignalStrength.dbm);
@@ -3637,7 +3604,7 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->LTE_SignalStrength.rssnr);
     p.writeInt32(p_cur->LTE_SignalStrength.cqi);
     p.writeInt32(p_cur->LTE_SignalStrength.timingAdvance);
-
+    p.writeInt32(p_cur->LTE_SignalStrength.rssi);
     p.writeInt32(p_cur->TD_SCDMA_SignalStrength.rscp);
 
     if (p_cur->NR5G_SignalStrength.rsrp == -1*SHRT_MIN) {
@@ -3674,7 +3641,7 @@ static int responseRilSignalStrength(Parcel &p,
     responseRilSignalStrengthV11(p, p_cur);
     startResponse;
     appendPrintBuf("%s[GSM_SS.signalStrength=%d,GSM_SS.bitErrorRate=%d,\
-            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,\
+            WCDMA_SS.signalStrength=%d,WCDMA_SS.ErrorRate=%d,WCDMA_SS.ecio=%d, WCDMA_SS.rscp=%d,\
             CDMA_SS.dbm=%d,CDMA_SSecio=%d,\
             EVDO_SS.dbm=%d,EVDO_SS.ecio=%d,\
             EVDO_SS.signalNoiseRatio=%d,\
@@ -3686,6 +3653,8 @@ static int responseRilSignalStrength(Parcel &p,
             p_cur->GSM_SignalStrength.bitErrorRate,
             p_cur->WCDMA_SignalStrength.signalStrength,
             p_cur->WCDMA_SignalStrength.bitErrorRate,
+            p_cur->WCDMA_SignalStrength.ecio,
+            p_cur->WCDMA_SignalStrength.rscp,
             p_cur->CDMA_SignalStrength.dbm,
             p_cur->CDMA_SignalStrength.ecio,
             p_cur->EVDO_SignalStrength.dbm,
@@ -3893,6 +3862,8 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.psc);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -3976,6 +3947,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.signalStrength);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.bitErrorRate);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_WCDMA: {
@@ -3987,6 +3959,9 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.wcdma.cellIdentityWcdma.uarfcn);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.signalStrength);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -4017,6 +3992,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssnr);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.cqi);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_TD_SCDMA: {
