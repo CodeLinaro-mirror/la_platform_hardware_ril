@@ -351,6 +351,9 @@ static void dispatchRadioCapability(Parcel &p, RequestInfo *pRI);
 static void dispatchCarrierRestrictions(Parcel &p, RequestInfo *pRI);
 static void dispatchOpenChannelWithP2(Parcel &p, RequestInfo *pRI);
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI);
+#ifdef RIL_FOR_MDM_LE
+static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI);
+#endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
 static int responseStrings(Parcel &p, void *response, size_t responselen);
@@ -386,7 +389,10 @@ static int responseActivityData(Parcel &p, void *response, size_t responselen);
 static int responseCarrierRestrictions(Parcel &p, void *response, size_t responselen);
 static int responsePcoData(Parcel &p, void *response, size_t responselen);
 static int responseAdnRecords(Parcel &p, void *response, size_t responselen);
-
+#ifdef RIL_FOR_MDM_LE
+static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, size_t responselen);
+static void decodeCalls(Parcel &p, RIL_Call *p_cur);
+#endif /* RIL_FOR_MDM_LE */
 static int decodeVoiceRadioTechnology (RIL_RadioState radioState);
 static int decodeCdmaSubscriptionSource (RIL_RadioState radioState);
 static RIL_RadioState processRadioState(RIL_RadioState newRadioState);
@@ -2460,6 +2466,53 @@ invalid:
     return;
 }
 
+#ifdef RIL_FOR_MDM_LE
+static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI)
+{
+    RIL_EcallHlapTimer eCallHlapTimer;
+    int32_t  t;
+    status_t status;
+
+    RLOGD("dispatchRestartEcallHlapTimer");
+
+    memset(&eCallHlapTimer, 0, sizeof(eCallHlapTimer));
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchRestartEcallHlapTimer invalid timerId");
+        goto invalid;
+    }
+    eCallHlapTimer.timerId = static_cast<RIL_Hlap_Timer_Id> (t);
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        RLOGD("dispatchRestartEcallHlapTimer invalid duration");
+        goto invalid;
+    }
+    eCallHlapTimer.duration = static_cast<int>(t);
+
+    startRequest;
+    appendPrintBuf("timerId=%d, duration=%d ", eCallHlapTimer.timerId,
+        eCallHlapTimer.duration);
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &eCallHlapTimer, sizeof(eCallHlapTimer),
+        pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memset(&eCallHlapTimer, 0, sizeof(eCallHlapTimer));
+#endif
+
+    return;
+invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+#endif /* RIL_FOR_MDM_LE */
+
 static int
 blockingWrite(int fd, const void *buffer, size_t len) {
     size_t writeOffset = 0;
@@ -2604,7 +2657,6 @@ sendResponse (Parcel &p, RIL_SOCKET_ID socket_id) {
 static int
 responseInts(Parcel &p, void *response, size_t responselen) {
     int numInts;
-
     if (response == NULL && responselen != 0) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
@@ -2651,10 +2703,13 @@ static int responseFailCause(Parcel &p, void *response, size_t responselen) {
     } else if (responselen == sizeof(RIL_LastCallFailCauseInfo)) {
       startResponse;
       RIL_LastCallFailCauseInfo *p_fail_cause_info = (RIL_LastCallFailCauseInfo *) response;
-      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s]", printBuf, p_fail_cause_info->cause_code,
-                     p_fail_cause_info->vendor_cause);
+      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d]", printBuf,
+                     p_fail_cause_info->cause_code,
+                     p_fail_cause_info->vendor_cause,
+                     p_fail_cause_info->sip_error_code);
       p.writeInt32(p_fail_cause_info->cause_code);
       p.writeString8AsString16(p_fail_cause_info->vendor_cause);
+      p.writeInt32(p_fail_cause_info->sip_error_code);
       removeLastChar;
       closeResponse;
     } else {
@@ -2729,6 +2784,56 @@ static int responseVoid(Parcel &p, void *response, size_t responselen) {
     return 0;
 }
 
+static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, size_t responselen) {
+    int num;
+    RLOGD(" In responseUpdateCurrentCallsAndFailureCause ");
+    if (response == NULL && responselen != 0) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+    if (response == NULL || responselen != sizeof(RIL_Call_with_LastFailureCauseInfo)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+            (int)responselen, (int)sizeof(RIL_Call_with_LastFailureCauseInfo));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    startResponse;
+    RLOGD(" start response ");
+    RIL_Call_with_LastFailureCauseInfo *p_call_with_last_failure_cause_info =
+        (RIL_Call_with_LastFailureCauseInfo *) response;
+    RLOGD(" [isLastFailCauseInfoValid= %d, cause_code= %d ",
+            p_call_with_last_failure_cause_info->isLastFailCauseInfoValid,
+            (p_call_with_last_failure_cause_info->info).cause_code);
+
+    if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
+        RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
+    }
+    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+            (p_call_with_last_failure_cause_info->info).sip_error_code,
+            p_call_with_last_failure_cause_info->numOfCalls);
+
+    p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
+    p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
+    p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
+    p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
+
+    p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
+
+    /* number of call info's */
+    num = p_call_with_last_failure_cause_info->numOfCalls;
+
+    for (int i = 0 ; i < num ; i++) {
+        RIL_Call *p_cur = &(p_call_with_last_failure_cause_info->call[i]);
+        /* each call info */
+        decodeCalls(p, p_cur);
+    }
+    removeLastChar;
+    closeResponse;
+    RLOGD(" close response ");
+
+    return 0;
+}
+
 static int responseCallList(Parcel &p, void *response, size_t responselen) {
     int num;
 
@@ -2747,57 +2852,56 @@ static int responseCallList(Parcel &p, void *response, size_t responselen) {
     /* number of call info's */
     num = responselen / sizeof(RIL_Call *);
     p.writeInt32(num);
-
     for (int i = 0 ; i < num ; i++) {
         RIL_Call *p_cur = ((RIL_Call **) response)[i];
-
-        /* each call info */
-        p.writeInt32(p_cur->state);
-        p.writeInt32(p_cur->index);
-        p.writeInt32(p_cur->toa);
-        p.writeInt32(p_cur->isMpty);
-        p.writeInt32(p_cur->isMT);
-        p.writeInt32(p_cur->als);
-        p.writeInt32(p_cur->isVoice);
-        p.writeInt32(p_cur->isVoicePrivacy);
-        p.writeString8AsString16(p_cur->number);
-        p.writeInt32(p_cur->numberPresentation);
-        p.writeString8AsString16(p_cur->name);
-        p.writeInt32(p_cur->namePresentation);
-        // Remove when partners upgrade to version 3
-        if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
-            p.writeInt32(0); /* UUS Information is absent */
-        } else {
-            RIL_UUS_Info *uusInfo = p_cur->uusInfo;
-            p.writeInt32(1); /* UUS Information is present */
-            p.writeInt32(uusInfo->uusType);
-            p.writeInt32(uusInfo->uusDcs);
-            p.writeInt32(uusInfo->uusLength);
-            p.write(uusInfo->uusData, uusInfo->uusLength);
-        }
-        appendPrintBuf("%s[id=%d,%s,toa=%d,",
-            printBuf,
-            p_cur->index,
-            callStateToString(p_cur->state),
-            p_cur->toa);
-        appendPrintBuf("%s%s,%s,als=%d,%s,%s,",
-            printBuf,
-            (p_cur->isMpty)?"conf":"norm",
-            (p_cur->isMT)?"mt":"mo",
-            p_cur->als,
-            (p_cur->isVoice)?"voc":"nonvoc",
-            (p_cur->isVoicePrivacy)?"evp":"noevp");
-        appendPrintBuf("%s%s,cli=%d,name='%s',%d]",
-            printBuf,
-            p_cur->number,
-            p_cur->numberPresentation,
-            p_cur->name,
-            p_cur->namePresentation);
+        decodeCalls(p, p_cur);
     }
     removeLastChar;
     closeResponse;
 
     return 0;
+}
+
+static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
+    /* each call info */
+    p.writeInt32(p_cur->state);
+    p.writeInt32(p_cur->index);
+    p.writeInt32(p_cur->toa);
+    p.writeInt32(p_cur->isMpty);
+    p.writeInt32(p_cur->isMT);
+    p.writeInt32(p_cur->als);
+    p.writeInt32(p_cur->isVoice);
+    p.writeInt32(p_cur->isVoicePrivacy);
+    p.writeString8AsString16(p_cur->number);
+    p.writeInt32(p_cur->numberPresentation);
+    p.writeString8AsString16(p_cur->name);
+    p.writeInt32(p_cur->namePresentation);
+    // Remove when partners upgrade to version 3
+    if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
+        p.writeInt32(0); /* UUS Information is absent */
+    } else {
+        RIL_UUS_Info *uusInfo = p_cur->uusInfo;
+        p.writeInt32(1); /* UUS Information is present */
+        p.writeInt32(uusInfo->uusType);
+        p.writeInt32(uusInfo->uusDcs);
+        p.writeInt32(uusInfo->uusLength);
+        p.write(uusInfo->uusData, uusInfo->uusLength);
+    }
+    RLOGD("[id=%d,%s,toa=%d,",
+        p_cur->index,
+        callStateToString(p_cur->state),
+        p_cur->toa);
+    RLOGD("%s,%s,als=%d,%s,%s,",
+        (p_cur->isMpty)?"conf":"norm",
+        (p_cur->isMT)?"mt":"mo",
+        p_cur->als,
+        (p_cur->isVoice)?"voc":"nonvoc",
+        (p_cur->isVoicePrivacy)?"evp":"noevp");
+    RLOGD("%s,cli=%d,name='%s',%d,",
+        p_cur->number,
+        p_cur->numberPresentation,
+        p_cur->name,
+        p_cur->namePresentation);
 }
 
 static int responseSMS(Parcel &p, void *response, size_t responselen) {
@@ -6195,6 +6299,11 @@ requestToString(int request) {
         case RIL_UNSOL_RESPONSE_ADN_INIT_DONE: return "RIL_UNSOL_RESPONSE_ADN_INIT_DONE";
         case RIL_UNSOL_RESPONSE_ADN_RECORDS: return "RIL_UNSOL_RESPONSE_ADN_RECORDS";
         case RIL_UNSOL_ECALL_OPRT_MODE: return "RIL_UNSOL_ECALL_OPRT_MODE";
+#ifdef RIL_FOR_MDM_LE
+        case RIL_UNSOL_ECALL_HLAP_TIMER_EVENT: return "RIL_UNSOL_ECALL_HLAP_TIMER_EVENT";
+        case RIL_UNSOL_ECALL_STATUS_EVENT: return "RIL_UNSOL_ECALL_STATUS_EVENT";
+        case RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE: return "RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE";
+#endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }
 }
