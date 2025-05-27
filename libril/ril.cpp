@@ -4094,10 +4094,12 @@ static int responseCdmaInformationRecords(Parcel &p,
 static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cur) {
     p.writeInt32(p_cur->GSM_SignalStrength.signalStrength);
     p.writeInt32(p_cur->GSM_SignalStrength.bitErrorRate);
+    p.writeInt32(p_cur->GSM_SignalStrength.rssi);
     p.writeInt32(p_cur->WCDMA_SignalStrength.signalStrength);
     p.writeInt32(p_cur->WCDMA_SignalStrength.bitErrorRate);
     p.writeInt32(p_cur->WCDMA_SignalStrength.ecio);
     p.writeInt32(p_cur->WCDMA_SignalStrength.rscp);
+    p.writeInt32(p_cur->WCDMA_SignalStrength.rssi);
     p.writeInt32(p_cur->CDMA_SignalStrength.dbm);
     p.writeInt32(p_cur->CDMA_SignalStrength.ecio);
     p.writeInt32(p_cur->EVDO_SignalStrength.dbm);
@@ -4135,7 +4137,7 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->LTE_SignalStrength.rssnr);
     p.writeInt32(p_cur->LTE_SignalStrength.cqi);
     p.writeInt32(p_cur->LTE_SignalStrength.timingAdvance);
-
+    p.writeInt32(p_cur->LTE_SignalStrength.rssi);
     p.writeInt32(p_cur->TD_SCDMA_SignalStrength.rscp);
 
     if (p_cur->NR5G_SignalStrength.rsrp == -1*SHRT_MIN) {
@@ -4157,6 +4159,7 @@ static void responseRilSignalStrengthV11(Parcel &p, RIL_SignalStrength_v11 *p_cu
     p.writeInt32(p_cur->NB1_NTN_SignalStrength.rssnr);
     p.writeInt32(p_cur->NB1_NTN_SignalStrength.cqi);
     p.writeInt32(p_cur->NB1_NTN_SignalStrength.timingAdvance);
+    p.writeInt32(p_cur->NB1_NTN_SignalStrength.rssi);
 }
 
 static int responseRilSignalStrength(Parcel &p,
