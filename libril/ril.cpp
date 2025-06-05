@@ -2673,6 +2673,7 @@ static void resetConnection(RIL_SOCKET_ID socket_id) {
         param->fdCommand = -1;
         ril_event_del(param->commands_event);
         record_stream_free(param->p_rs);
+        param->p_rs = NULL;
         /* start listening for new connections again */
         rilEventAddWakeup(param->listen_event);
         onCommandsSocketClosed(socket_id);
@@ -4785,6 +4786,7 @@ static void processCommandsCallback(int fd, short flags, void *param) {
         ril_event_del(p_info->commands_event);
 
         record_stream_free(p_rs);
+        p_rs = NULL;
 
         /* start listening for new connections again */
         rilEventAddWakeup(&s_listen_event);
