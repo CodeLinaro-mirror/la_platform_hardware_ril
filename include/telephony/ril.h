@@ -1286,6 +1286,9 @@ typedef struct {
     int bitErrorRate;    /* bit error rate (0-7, 99) as defined in TS 27.007 8.5 */
     int timingAdvance;   /* Timing Advance in bit periods. 1 bit period = 48/13 us.
                           * INT_MAX denotes invalid value */
+    int rssi;            /* Received RSSI in GSM. Valid values are positive integers.
+                          * This value is the actual RSSI value multiplied by -1.
+                          * Range: 25 to 100 dBm */
 } RIL_GSM_SignalStrength_v12;
 
 typedef struct {

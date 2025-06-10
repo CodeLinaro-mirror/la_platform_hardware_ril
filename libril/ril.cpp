@@ -4496,6 +4496,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.signalStrength);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.bitErrorRate);
                 p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.gsm.signalStrengthGsm.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_WCDMA: {
@@ -4509,6 +4510,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.bitErrorRate);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.ecio);
                 p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rscp);
+                p.writeInt32(p_cur->CellInfo.wcdma.signalStrengthWcdma.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_CDMA: {
@@ -4539,6 +4541,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssnr);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.cqi);
                 p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.lte.signalStrengthLte.rssi);
                 break;
             }
             case RIL_CELL_INFO_TYPE_TD_SCDMA: {
@@ -4577,6 +4580,7 @@ static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen
                 p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.rssnr);
                 p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.cqi);
                 p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.timingAdvance);
+                p.writeInt32(p_cur->CellInfo.nb1_ntn.signalStrengthLte.rssi);
                 break;
             }
         }
