@@ -4658,8 +4658,8 @@ static void processCommandsCallback(int fd, short flags, void *param) {
 
         ril_event_del(p_info->commands_event);
 
-        record_stream_free(p_rs);
-        p_rs = NULL;
+        record_stream_free(p_info->p_rs);
+        p_info->p_rs = NULL;
 
         /* start listening for new connections again */
         rilEventAddWakeup(&s_listen_event);
