@@ -6335,7 +6335,7 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
 
     if (!checkAndDequeueRequestInfoIfAck(pRI, false)) {
         RLOGE ("RIL_onRequestComplete: invalid RIL_Token");
-        return;
+        goto done;
     }
 
     socket_id = pRI->socket_id;
