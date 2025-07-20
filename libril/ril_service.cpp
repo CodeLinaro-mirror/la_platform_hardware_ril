@@ -734,7 +734,7 @@ void checkReturnStatus(int32_t slotId, Return<void>& ret, bool isRadioService) {
         // write lock is acquired.
         int counter = mCounterRadio[slotId];
         pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock(slotId);
-        int ret = pthread_rwlock_unlock(radioServiceRwlockPtr);
+        [[maybe_unused]] int ret = pthread_rwlock_unlock(radioServiceRwlockPtr);
         assert(ret == 0);
 
         // acquire wrlock
@@ -773,7 +773,7 @@ Return<void> RadioImpl::setResponseFunctions(
     RLOGD("setResponseFunctions");
 
     pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock(mSlotId);
-    int ret = pthread_rwlock_wrlock(radioServiceRwlockPtr);
+    [[maybe_unused]] int ret = pthread_rwlock_wrlock(radioServiceRwlockPtr);
     assert(ret == 0);
 
     mRadioResponse = radioResponseParam;
@@ -8438,7 +8438,7 @@ void radio::registerService(RIL_RadioFunctions *callbacks, CommandInfo *commands
     configureRpcThreadpool(1, true /* callerWillJoin */);
     for (int i = 0; i < simCount; i++) {
         pthread_rwlock_t *radioServiceRwlockPtr = getRadioServiceRwlock(i);
-        int ret = pthread_rwlock_wrlock(radioServiceRwlockPtr);
+        [[maybe_unused]] int ret = pthread_rwlock_wrlock(radioServiceRwlockPtr);
         assert(ret == 0);
 
         radioService[i] = new RadioImpl;
