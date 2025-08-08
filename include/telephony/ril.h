@@ -20,10 +20,11 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 #ifndef ANDROID_RIL_H
 #define ANDROID_RIL_H 1
 
@@ -225,6 +226,14 @@ typedef enum {
     RIL_CALL_WAITING = 5,    /* MT call only */
     RIL_CALL_CC_IN_PROGRESS = 6 /* MO call only */
 } RIL_CallState;
+
+typedef enum {
+    CALL_MODE_UNKNOWN = -1,  /**< Unknown, when the information is not available */
+    CALL_MODE_GSM = 0,       /**< GSM call*/
+    CALL_MODE_UMTS = 1,      /**< UMTS call*/
+    CALL_MODE_LTE = 2,       /**< LTE call*/
+    CALL_MODE_NR5G = 3       /**< NR5G call*/
+} RIL_CallMode;
 
 typedef enum {
     RADIO_STATE_OFF = 0,                   /* Radio explictly powered off (eg CFUN=0) */
@@ -435,6 +444,7 @@ typedef struct {
     char *          name;       /* Remote party name */
     int             namePresentation; /* 0=Allowed, 1=Restricted, 2=Not Specified/Unknown 3=Payphone */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
+    RIL_CallMode    mode;       /* -1 = Unknown , 0 = GSM call, 1 = UMTS call, 2 = LTE call, 3 = NR5G call */
 } RIL_Call;
 
 /* Deprecated, use RIL_Data_Call_Response_v6 */
