@@ -2946,6 +2946,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
     p.writeInt32(p_cur->numberPresentation);
     p.writeString8AsString16(p_cur->name);
     p.writeInt32(p_cur->namePresentation);
+    p.writeInt32(p_cur->mode);
     // Remove when partners upgrade to version 3
     if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
         p.writeInt32(0); /* UUS Information is absent */
@@ -2974,6 +2975,8 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
+
+   RLOGD("callMode=%d", p_cur->mode);
    RLOGD("reason = %s,", p_cur->reason);
    RLOGD(" aecs call state = %d]", p_cur->aecs_call_state);
 }
