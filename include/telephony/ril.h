@@ -376,6 +376,14 @@ typedef enum {
 } RIL_CallType;
 
 typedef enum {
+    CALL_MODE_UNKNOWN = -1,  /**< Unknown, when the information is not available */
+    CALL_MODE_GSM = 0,       /**< GSM call*/
+    CALL_MODE_UMTS = 1,      /**< UMTS call*/
+    CALL_MODE_LTE = 2,       /**< LTE call*/
+    CALL_MODE_NR5G = 3       /**< NR5G call*/
+} RIL_CallMode;
+
+typedef enum {
     RADIO_STATE_OFF = 0,                   /* Radio explictly powered off (eg CFUN=0) */
     RADIO_STATE_UNAVAILABLE = 1,           /* Radio unavailable (eg, resetting or not booted) */
     /* States 2-9 below are deprecated. Just leaving them here for backward compatibility. */
@@ -618,6 +626,7 @@ typedef struct {
                                      3 = emergency ip call, 4 = automotive eCall */
     char *          reason;       /* Call reason for incoming PS call. */
     RIL_AecsCallState aecs_call_state; /* Call state for an AECS call. */
+    RIL_CallMode    mode;       /* -1 = Unknown , 0 = GSM call, 1 = UMTS call, 2 = LTE call, 3 = NR5G call */
 } RIL_Call;
 
 typedef struct {
