@@ -3628,13 +3628,16 @@ static int responseFailCause(Parcel &p, void *response, size_t responselen) {
     } else if (responselen == sizeof(RIL_LastCallFailCauseInfo)) {
       startResponse;
       RIL_LastCallFailCauseInfo *p_fail_cause_info = (RIL_LastCallFailCauseInfo *) response;
-      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d]", printBuf,
+      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d, raw_cause_code=%d]",
+                     printBuf,
                      p_fail_cause_info->cause_code,
                      p_fail_cause_info->vendor_cause,
-                     p_fail_cause_info->sip_error_code);
+                     p_fail_cause_info->sip_error_code,
+                     p_fail_cause_info->raw_cause_code);
       p.writeInt32(p_fail_cause_info->cause_code);
       p.writeString8AsString16(p_fail_cause_info->vendor_cause);
       p.writeInt32(p_fail_cause_info->sip_error_code);
+      p.writeInt32(p_fail_cause_info->raw_cause_code);
       removeLastChar;
       closeResponse;
     } else {
@@ -3733,8 +3736,9 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
         RLOGD(" vendor_cause= %s, ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" sip_error_code= %d, numOfCalls= %d, ",
+    RLOGD(" sip_error_code= %d, raw_cause_code= %d, numOfCalls= %d, ",
             (p_call_with_last_failure_cause_info->info).sip_error_code,
+            (p_call_with_last_failure_cause_info->info).raw_cause_code,
             p_call_with_last_failure_cause_info->numOfCalls);
     RLOGD(" aecs_call_end_reason= %d,",
         p_call_with_last_failure_cause_info->aecs_call_end_reason);
@@ -3743,6 +3747,7 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
+    p.writeInt32((p_call_with_last_failure_cause_info->info).raw_cause_code);
     p.writeInt32(p_call_with_last_failure_cause_info->aecs_call_end_reason);
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
