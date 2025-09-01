@@ -57,8 +57,8 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -7095,6 +7095,8 @@ requestToString(int request) {
         case RIL_REQUEST_GET_IMS_VONR : return "RIL_REQUEST_GET_IMS_VONR";
         case RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE: return "EUICC_PROFILE_OPERATION_RESPONSE";
         case RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE: return "EUICC_PROFILE_LIST_RESPONSE";
+        case RIL_REQUEST_SET_SMS_STORAGE_TYPE : return "RIL_REQUEST_SET_SMS_STORAGE_TYPE";
+        case RIL_REQUEST_GET_SMS_STORAGE_TYPE : return "RIL_REQUEST_GET_SMS_STORAGE_TYPE";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
@@ -7156,6 +7158,7 @@ requestToString(int request) {
         case RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE: return "RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE";
         case RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST: return "UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST";
         case RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST: return "UNSOL_ON_EUICC_PROFILE_LIST_REQUEST";
+        case RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV: return "RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV";
 #endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }

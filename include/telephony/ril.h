@@ -56,8 +56,8 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -5974,6 +5974,41 @@ typedef struct {
  */
  #define RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE 157
 
+/**
+ * RIL_REQUEST_SET_SMS_STORAGE_TYPE
+ *
+ * Set the storage type for the SMS message.
+ *
+ * "data" is int *, the SMS storage type
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  MODEM_ERR
+ *  SYSTEM_ERR
+ *  INVALID_ARGUMENTS
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_SET_SMS_STORAGE_TYPE 158
+
+/**
+ * RIL_REQUEST_GET_SMS_STORAGE_TYPE
+ *
+ * Request the storage type for the SMS message.
+ *
+ * "data" is NULL
+ * "response" is int *, used to feedback the SMS storage type
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  MODEM_ERR
+ *  SYSTEM_ERR
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_GET_SMS_STORAGE_TYPE 159
+
 /***********************************************************************/
 
 /**
@@ -6738,6 +6773,17 @@ typedef struct {
  * RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE
  */
 #define RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST 1059
+
+/**
+ * RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV
+ *
+ * Called when new SMS has been stored on NV
+ *
+ * "data" is const int *
+ * ((const int *)data)[0] contains the slot index on the NV that contains
+ * the new message
+ */
+#define RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV 1060
 
 /***********************************************************************/
 
