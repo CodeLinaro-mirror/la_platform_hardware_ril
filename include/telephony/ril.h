@@ -682,6 +682,124 @@ typedef struct {
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;
 
+/** Used by RIL_REQUEST_DIAL_ECALL */
+#define RIL_ECALL_MSD_MAX 140 // in bytes
+
+/** Used by RIL_REQUEST_DIAL_PRIVATE_ECALL */
+#define RIL_IP_CALLER_INFO_MAX 255
+#define RIL_IP_CALLER_INFO_CONTENT_EXT_TYPE_MAX 128
+#define RIL_IP_ACCEPT_INFO_MAX 128
+
+/**
+ * Structure representing an eCall configuration.
+ */
+typedef struct {
+    /**
+     * The phone number to be used for the eCall.
+     */
+    char * address;
+
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_ECALL_MSD_MAX.
+     */
+    uint8_t msd[RIL_ECALL_MSD_MAX];
+
+    /**
+     * Flag indicating whether the MSD should be transmitted.
+     * A value of 1 indicates that the MSD should be transmitted, while a value of 0 indicates that
+     * it should not.
+     */
+    int transmit_msd;
+
+    /**
+     * The emergency category of the eCall.
+     * This value determines the type of emergency call being made.
+     */
+    int emergency_category;
+
+    /**
+     * The type of call being made.
+     * This value determines the type of call, such as a voice call or a emergency call.
+     */
+    int call_type;
+
+    /**
+     * The variant of the eCall being made.
+     * This value determines the specific variant of the eCall protocol being used.
+     */
+    int eCall_variant;
+} RIL_ECall;
+
+/**
+ * Structure representing a private eCall configuration.
+ */
+typedef struct {
+    /**
+     * The phone number to be used for the private eCall.
+     */
+    char * address;
+
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_IP_CALLER_INFO_MAX.
+     */
+    uint8_t msd[RIL_IP_CALLER_INFO_MAX];
+
+    /**
+     * The type of call being made.
+     * This value determines the type of call, such as a voice call.
+     */
+    int call_type;
+
+    /**
+     * The content type of the private eCall.
+     * Represents custom SIP headers for content type for a PSAP.
+     * This provides clients the ability to transfer custom SIP headers with the SIP INVITE
+     * that is sent as part of call connect on TPS eCall over IMS.
+     * The value corresponding to these data fields should be recognised by a PSAP
+     * otherwise no acknowledgement would be received by device.
+     */
+    char * content_type;
+
+    /**
+     * The accept info for the private eCall.
+     * Represents custom SIP headers for accept info for a PSAP.
+     * This provides clients the ability to transfer custom SIP headers with the SIP INVITE
+     * that is sent as part of call connect on TPS eCall over IMS.
+     * The value corresponding to these data fields should be recognised by a PSAP
+     * otherwise no acknowledgement would be received by device.
+     */
+    char * accept_info;
+} RIL_DialPrivateECall;
+
+
+/**
+ * Structure representing an MSD (Minimum Set of Data) configuration.
+ */
+typedef struct {
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_ECALL_MSD_MAX.
+     */
+    uint8_t msd[RIL_ECALL_MSD_MAX];
+} RIL_Msd;
+
 typedef struct {
     int command;    /* one of the commands listed for TS 27.007 +CRSM*/
     int fileid;     /* EF id */
@@ -835,6 +953,71 @@ typedef struct {
   RIL_Hlap_Timer_Id timerId;
   int32_t duration;
 } RIL_EcallHlapTimer;
+
+typedef enum {
+    CALL_DROP = 0,  /**< Redial configuration for eCall termination before reciept of MSD
+                         Transmission status */
+    CALL_ORIG = 1,  /**< Redial configuration for eCall origination failure */
+} RIL_Redial_Config_Type;
+
+#define ECALL_REDIAL_MAX_LEN 255
+
+/**
+ * Structure representing an eCall redial configuration.
+ */
+typedef struct {
+    /**
+     * The type of redial configuration.
+     * This value determines the type of redial, such as a eCall origination failure or eCall drop.
+     */
+    RIL_Redial_Config_Type type;
+
+    /**
+     * The size of the time gap array.
+     */
+    int32_t time_gap_size;
+
+    /**
+     * The time gap array.
+     * This array stores the time gaps for the redial configuration,
+     * with a maximum size of ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t time_gap[ECALL_REDIAL_MAX_LEN];
+} RIL_Ecall_Redial_Config;
+
+/**
+ * Structure representing the result of getting an eCall redial configuration.
+ */
+typedef struct {
+    /**
+     * The length of the call origination time gap array.
+     */
+    int32_t length_call_orig_time_gap;
+
+    /**
+     * The call origination time gap array.
+     * This array stores the time gaps for the call origination, with a maximum size of
+     * ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t call_orig_time_gap[ECALL_REDIAL_MAX_LEN];
+
+    /**
+     * The length of the call drop time gap array.
+     */
+    int32_t length_call_drop_time_gap;
+
+    /**
+     * The call drop time gap array.
+     * This array stores the time gaps for the call drop, with a maximum size of
+     * ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t call_drop_time_gap[ECALL_REDIAL_MAX_LEN];
+
+    /**
+     * The identifier for the redial configuration.
+     */
+    int identifier;
+} RIL_Ecall_Get_Redial_Config;
 
 /* See RIL_REQUEST_LAST_CALL_FAIL_CAUSE */
 typedef enum {
@@ -2100,6 +2283,15 @@ typedef struct {
    RIL_HlapTimerEvent t10;  /**< T10 Timer event */
 } RIL_ECallHlapTimerEvents;
 
+typedef struct {
+    RIL_HlapTimerStatus t2;   /**< T2 Timer status */
+    RIL_HlapTimerStatus t5;   /**< T5 Timer status */
+    RIL_HlapTimerStatus t6;   /**< T6 Timer status */
+    RIL_HlapTimerStatus t7;   /**< T7 Timer status */
+    RIL_HlapTimerStatus t9;   /**< T9 Timer status */
+    RIL_HlapTimerStatus t10;  /**< T10 Timer status */
+} RIL_ECallHlapTimerStatus;
+
 /**
  * MSD Transmission Status
  */
@@ -2160,6 +2352,71 @@ typedef struct {
                              1 - redial of eCall will be attempted */
    RIL_ReasonType reason; /**< Indicates the reason for redial of eCall to be performed or not */
 } RIL_ECallRedialInfo;
+
+#define ECALL_CONFIG_MAX_OVERRIDDEN_NUM_LEN 32
+#define ECALL_CONFIG_ELEMENTS 8
+
+/**
+ * Enum representing various eCall configuration parameters.
+ */
+typedef enum {
+    ECALL_CONFIG_MUTE_RX_AUDIO = 0,        /**< Mute the local audio device during MSD
+                                                transmission */
+    ECALL_CONFIG_NUM_TYPE,                 /**< Type of number to be dialed when an eCall is
+                                                initiated */
+    ECALL_CONFIG_OVERRIDDEN_NUM,           /**< User-configured/overridden number for eCall */
+    ECALL_CONFIG_USE_CANNED_MSD,           /**< Use pre-defined MSD in modem for eCall */
+    ECALL_CONFIG_GNSS_UPDATE_INTERVAL,     /**< GNSS update interval in milliseconds */
+    ECALL_CONFIG_T2_TIMER,                 /**< T2 timer value in milliseconds */
+    ECALL_CONFIG_T7_TIMER,                 /**< T7 timer value in milliseconds */
+    ECALL_CONFIG_T9_TIMER,                 /**< T9 timer value in milliseconds */
+    ECALL_CONFIG_MSD_VERSION,              /**< MSD version to be used by modem */
+    ECALL_CONFIG_COUNT                     /**< Total number of configuration parameters */
+} RIL_EcallConfigType;
+
+/**
+ * Configuration that represents the type of the number to be dialed when an automotive emergency
+ * call is initiated.
+ */
+typedef enum {
+   RIL_ECALL_NUM_TYPE_DEFAULT,         /* Default configured number is dialed */
+   RIL_ECALL_NUM_TYPE_OVERRIDDEN,      /* User configured/overridden number is dialed */
+}RIL_ECallNumType;
+
+/**
+ * Structure representing the configuration parameters for automotive emergency call (eCall).
+ */
+typedef struct {
+    uint8_t config_validity_mask[(ECALL_CONFIG_COUNT + 7) / 8];
+    /**< Bitmask indicating which configuration parameters are valid.
+         Each bit corresponds to a value in RIL_EcallConfigType.
+         A bit set to 1 denotes that the corresponding parameter is valid. */
+
+    uint8_t mute_rx_audio;
+    /**< Mute the local audio device (e.g., speaker) during MSD transmission.
+         0 = disabled, 1 = enabled */
+
+    RIL_ECallNumType num_type;
+    /**< Type of number to be dialed when eCall is initiated. */
+
+    char* overridden_num;
+    /**< User-configured/overridden number to be dialed when num_type is set to override.*/
+
+    uint8_t use_canned_msd;
+    /**< Use the pre-defined MSD stored in the modem.
+         0 = disabled, 1 = enabled */
+
+    uint32_t gnss_update_interval;
+    /**< Time interval in milliseconds at which the modem updates GNSS information
+         in its internally generated MSD. */
+
+    uint32_t t2_timer; /**< T2 timer value in milliseconds, as per EN 16062:2015 standard. */
+    uint32_t t7_timer; /**< T7 timer value in milliseconds, as per EN 16062:2015 standard. */
+    uint32_t t9_timer;/**< T9 timer value in milliseconds, as per EN 16062:2015 standard.*/
+    uint8_t msd_version; /**< MSD version to be used by modem when generating MSD internally.
+         Supported values: 1 or 2. */
+    int identifier; /*< Identifier for the request.>*/
+} RIL_EcallConfig;
 
 #endif /* RIL_FOR_MDM_LE */
 
@@ -5962,6 +6219,187 @@ typedef struct {
  */
  #define RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE 157
 
+/**
+ * RIL_REQUEST_DIAL_ECALL
+ *
+ * Initiate an automotive emergency eCall.
+ *
+ * "data" is const RIL_DialECall *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE (radio resetting)
+ *  INVALID_ARGUMENTS
+ *  NO_RESOURCES
+ *  INTERNAL_ERR
+ *  MODEM_ERR
+ *  NO_SUBSCRIPTION
+ *  NO_NETWORK_FOUND
+ *  INVALID_CALL_ID
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_DIAL_ECALL 158
+
+/**
+ * RIL_REQUEST_DIAL_PRIVATE_ECALL
+ *
+ * Initiate an automotive private eCall.
+ *
+ * "data" is const RIL_DialPrivateECall *
+ * "response" is NULL
+ *
+ * This method is never used for supplementary service codes
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE (radio resetting)
+ *  INVALID_ARGUMENTS
+ *  NO_RESOURCES
+ *  INTERNAL_ERR
+ *  MODEM_ERR
+ *  NO_SUBSCRIPTION
+ *  NO_NETWORK_FOUND
+ *  INVALID_CALL_ID
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_DIAL_PRIVATE_ECALL 159
+
+/**
+ * RIL_REQUEST_UPDATE_MSD
+ *
+ * Initiate an automotive private eCall.
+ *
+ * "data" is const RIL_Msd *
+ * "response" is NULL
+ *
+ * This method is never used for supplementary service codes
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  INVALID_ARGUMENTS
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_UPDATE_MSD 160
+
+
+/**
+ * RIL_REQUEST_CONFIGURE_ECALL_REDIAL
+ *
+ * Configure eCall redial
+ *
+ * "data" is const RIL_Ecall_Redial_Config *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_CONFIGURE_ECALL_REDIAL 161
+
+/**
+ * RIL_REQUEST_GET_ECALL_REDIAL_CONFIG
+ *
+ * Get the eCall redial configuration.
+ *
+ * "data" is int *
+ * "response" is RIL_Ecall_Get_Redial_Config *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_REDIAL_CONFIG 162
+
+/**
+ * RIL request to send a post-test registration timer request.
+ * "data" is const int *
+ * "response" is int *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_POST_TEST_REGISTRATION_TIMER_REQUEST 163
+
+/**
+ * RIL request to get the post-test registration timer request.
+ * "data" is const int *
+ * "response" is int *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_POST_TEST_REGISTRATION_TIMER_REQUEST 164
+
+/**
+ * RIL request to get the eCall HLAP timer status.
+ * "data" is NULL
+ * "response" is RIL_ECallHlapTimerStatus
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_HLAP_TIMER_STATUS 165
+
+/**
+ * RIL request to send an update eCall HLAP timer request.
+ * "data" is const RIL_DialPrivateECall *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_UPDATE_ECALL_HLAP_TIMER 166
+
+/**
+ * RIL request to send a get eCall HLAP timer request.
+ * "data" is NULL
+ * "response" is int*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER 167
+
+/**
+ * RIL request to set the eCall configuration.
+ * "data" is const RIL_EcallConfig *
+ * "response" is int*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SET_ECALL_CONFIG_REQUEST 168
+
+/**
+ * RIL request to get the eCall configuration.
+ * "data" is const  int*
+ * "response" is RIL_EcallConfig*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_CONFIG_REQUEST 169
+
 /***********************************************************************/
 
 /**
@@ -6726,6 +7164,27 @@ typedef struct {
  * RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE
  */
 #define RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST 1059
+
+/**
+ * RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT
+ *
+ * Called whenever there is change in MSD transmission status at call connect for a Tps eCall over
+ * IMS.
+ *
+ * "data" is const int *
+ *
+ */
+#define RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT 1060
+
+/**
+ * RIL_UNSOL_MSD_UPDATE_REQUEST
+ *
+ * Called whenever PSAP request for MSD update.
+ *
+ * "data" is NULL
+ *
+ */
+#define RIL_UNSOL_MSD_UPDATE_REQUEST 1061
 
 /***********************************************************************/
 
