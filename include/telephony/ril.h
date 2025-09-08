@@ -496,6 +496,7 @@ typedef struct {
     RIL_UUS_Info *  uusInfo;      /* NULL or Pointer to User-User Signaling Information */
     RIL_CallType    type;         /* -1 = Unknown , 0 = voice call, 1 = voice ip call, 2 = emergency call,
                                      3 = emergency ip call, 4 = automotive eCall */
+    char *          reason;       /* Call reason for incoming PS call. */
 } RIL_Call;
 
 typedef struct {
