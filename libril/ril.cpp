@@ -196,7 +196,7 @@ char * RIL_getServiceName() {
 RequestInfo *
 addRequestToList(int serial, int slotId, int request) {
     RequestInfo *pRI;
-    int ret;
+    [[maybe_unused]] int ret;
     RIL_SOCKET_ID socket_id = (RIL_SOCKET_ID) slotId;
     /* Hook for current context */
     /* pendingRequestsMutextHook refer to &s_pendingRequestsMutex */
@@ -287,7 +287,7 @@ static void resendLastNITZTimeData(RIL_SOCKET_ID socket_id) {
         // nitzTimeReceived in ril_service
         pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock(
                 (int) socket_id);
-        int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
+        [[maybe_unused]] int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
         assert(rwlockRet == 0);
 
         int ret = radio::nitzTimeReceivedInd(
@@ -576,7 +576,7 @@ RIL_onRequestAck(RIL_Token t) {
     if (pRI->cancelled == 0) {
         pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock(
                 (int) socket_id);
-        int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
+        [[maybe_unused]] int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
         assert(rwlockRet == 0);
 
         radio::acknowledgeRequest((int) socket_id, pRI->token);
@@ -588,7 +588,6 @@ RIL_onRequestAck(RIL_Token t) {
 extern "C" void
 RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responselen) {
     RequestInfo *pRI;
-    int ret;
     RIL_SOCKET_ID socket_id = RIL_SOCKET_1;
 
     pRI = (RequestInfo *)t;
@@ -632,10 +631,10 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
 #endif
 
         pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock((int) socket_id);
-        int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
+        [[maybe_unused]] int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
         assert(rwlockRet == 0);
 
-        ret = pRI->pCI->responseFunction((int) socket_id,
+        pRI->pCI->responseFunction((int) socket_id,
                 responseType, pRI->token, e, response, responselen);
 
         rwlockRet = pthread_rwlock_unlock(radioServiceRwlockPtr);
@@ -647,7 +646,7 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
 static void
 grabPartialWakeLock() {
     if (s_callbacks.version >= 13) {
-        int ret;
+        [[maybe_unused]] int ret;
         ret = pthread_mutex_lock(&s_wakeLockCountMutex);
         assert(ret == 0);
         acquire_wake_lock(PARTIAL_WAKE_LOCK, ANDROID_WAKE_LOCK_NAME);
@@ -673,7 +672,7 @@ grabPartialWakeLock() {
 void
 releaseWakeLock() {
     if (s_callbacks.version >= 13) {
-        int ret;
+        [[maybe_unused]] int ret;
         ret = pthread_mutex_lock(&s_wakeLockCountMutex);
         assert(ret == 0);
 
@@ -702,7 +701,7 @@ wakeTimeoutCallback (void *param) {
     // We're using "param != NULL" as a cancellation mechanism
     if (s_callbacks.version >= 13) {
         if (param == NULL) {
-            int ret;
+            [[maybe_unused]] int ret;
             ret = pthread_mutex_lock(&s_wakeLockCountMutex);
             assert(ret == 0);
             s_wakelock_count = 0;
@@ -778,7 +777,7 @@ void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
     }
 
     pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock((int) soc_id);
-    int rwlockRet;
+    [[maybe_unused]] int rwlockRet;
 
     if (unsolResponse == RIL_UNSOL_NITZ_TIME_RECEIVED) {
         // get a write lock in caes of NITZ since setNitzTimeReceived() is called
