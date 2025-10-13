@@ -3849,6 +3849,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p.writeInt32(uusInfo->uusLength);
         p.write(uusInfo->uusData, uusInfo->uusLength);
     }
+    p.writeString8AsString16(p_cur->reason);
     RLOGD("[id=%d,%s,toa=%d,",
         p_cur->index,
         callStateToString(p_cur->state),
@@ -3864,12 +3865,13 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD(",rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d]",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
         p_cur->type);
+   RLOGD("reason = %s]", p_cur->reason);
 }
 
 static int responseGetEcallRedialConfig(Parcel &p, void *response, size_t responselen) {
