@@ -5538,6 +5538,23 @@ typedef enum {
  */
  #define RIL_REQUEST_RESTART_ECALL_HLAP_TIMER 146
 
+ /**
+  * RIL_REQUEST_SET_EMERGENCY_MODE_AND_ANT_SWITCH
+  *
+  * Set emergency mode and allows antenna switching for AECS call.
+  *
+  * "data" is int *, the configuration of cellular antenna switching
+  * "response" is NULL
+  *
+  * Valid errors:
+  *  SUCCESS
+  *  RADIO_NOT_AVAILABLE
+  *  MODEM_ERR
+  *  SYSTEM_ERR
+  *  GENERIC_FAILURE
+  */
+ #define RIL_REQUEST_SET_EMERGENCY_MODE_AND_ANT_SWITCH 147
+
 /***********************************************************************/
 
 /**
