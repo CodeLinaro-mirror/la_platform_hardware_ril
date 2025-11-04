@@ -5642,6 +5642,23 @@ typedef struct {
  */
  #define RIL_REQUEST_RESTART_ECALL_HLAP_TIMER 148
 
+ /**
+  * RIL_REQUEST_SET_ANT_SWITCH
+  *
+  * Set the cellular antenna switching configuration.
+  *
+  * "data" is int *, the configuration of cellular antenna switching
+  * "response" is NULL
+  *
+  * Valid errors:
+  *  SUCCESS
+  *  RADIO_NOT_AVAILABLE
+  *  MODEM_ERR
+  *  SYSTEM_ERR
+  *  GENERIC_FAILURE
+  */
+ #define RIL_REQUEST_SET_ANT_SWITCH 149
+
 /***********************************************************************/
 
 /**

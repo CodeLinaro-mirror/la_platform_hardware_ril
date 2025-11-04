@@ -17,7 +17,7 @@
 
 /*
  * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023, 2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -171,4 +171,5 @@
 #ifdef RIL_FOR_MDM_LE
     {RIL_REQUEST_CONFIGURE_SIGNAL_STRENGTH, dispatchSignalStrengthConfig, responseVoid},
     {RIL_REQUEST_RESTART_ECALL_HLAP_TIMER, dispatchRestartEcallHlapTimer, responseVoid},
+    {RIL_REQUEST_SET_ANT_SWITCH, dispatchInts, responseVoid}
 #endif  /* RIL_FOR_MDM_LE */
