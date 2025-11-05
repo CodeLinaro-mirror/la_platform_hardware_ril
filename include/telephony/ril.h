@@ -219,11 +219,149 @@ typedef enum {
     RIL_E_DEVICE_IN_USE = 64,                   /* Operation cannot be performed because the device
                                                    is currently in use */
     RIL_E_ABORTED = 65,                         /* Operation aborted */
-
+    RIL_E_INCOMPATIBLE_STATE = 90,              /* Operation cannot be performed because the device
+                                                   is in incompatible state */
+    RIL_E_NO_EFFECT = 101,                      /* Given request had to no effect */
+    RIL_E_DEVICE_NOT_READY = 102,               /* Device not ready */
     RIL_E_PIN_PERM_BLOCKED = 201,               /* PIN is permanently blocked.
                                                    The SIM is unusable */
     RIL_E_PIN_BLOCKED = 202,                     /* PIN is blocked.
                                                    Unblock operation must be issued. */
+    /* Note: The error codes defined below do not currently follow Android conventions.
+     * If future requirements mandate alignment with Android standards, the 1000-series
+     * codes will need to be adjusted accordingly.
+     */
+    RIL_E_MALFORMED_MSG = 1001,                 /* Message was not formulated correctly
+                                                    by the control point or the message was
+                                                    corrupted during transmission */
+    RIL_E_INTERNAL = 1003,                      /* Internal error*/
+    RIL_E_CLIENT_IDS_EXHAUSTED = 1005,          /* Client IDs exhausted */
+    RIL_E_UNABORTABLE_TRANSACTION = 1006,       /* The specified transaction could not be
+                                                   aborted*/
+    RIL_E_INVALID_CLIENT_ID = 1007,             /* Could not find client's request */
+    RIL_E_NO_THRESHOLDS = 1008,                 /* No thresholds specified in enable signal
+                                                   strength */
+    RIL_E_INVALID_HANDLE = 1009,                /* Invalid client handle was received */
+    RIL_E_INVALID_PROFILE = 1010,               /* Invalid profile index specified */
+    RIL_E_INVALID_PINID = 1011,                 /* PIN in the request is invalid. */
+    RIL_E_INCORRECT_PIN = 1012,                 /* PIN in the request is incorrect. */
+    RIL_E_CALL_FAILED = 1014,                   /* Call origination failed in the lower layers */
+    RIL_E_OUT_OF_CALL = 1015,                   /* Request issued when packet data session
+                                                   disconnected */
+    RIL_E_MISSING_ARG = 1017,                   /* TLV was missing in the request. */
+    RIL_E_ARG_TOO_LONG = 1019,                  /* Path in the request was too long. */
+    RIL_E_INVALID_TX_ID = 1022,                 /* The transaction ID supplied in the request
+                                                   does not match any pending transaction i.e.
+                                                   either the transaction was not received or it is
+                                                   already executed by the device */
+    RIL_E_OP_NETWORK_UNSUPPORTED = 1024,        /* Selected operation is not supported by the
+                                                   network */
+    RIL_E_OP_DEVICE_UNSUPPORTED = 1025,         /* Operation is not supported by device or SIM
+                                                   card */
+    RIL_E_NO_FREE_PROFILE = 1027,               /* Maximum number of profiles are stored in the
+                                                   device and there is no more storage available to
+                                                   create a new profile */
+    RIL_E_INVALID_PDP_TYPE = 1028,              /* PDP type specified is not supported */
+    RIL_E_INVALID_TECH_PREF = 1029,             /* Invalid technology preference */
+    RIL_E_INVALID_PROFILE_TYPE = 1030,          /* Invalid profile type is specified */
+    RIL_E_INVALID_SERVICE_TYPE = 1031,          /* Invalid service type */
+    RIL_E_INVALID_REGISTER_ACTION = 1032,       /* Invalid register action value specified in
+                                                   request */
+    RIL_E_INVALID_PS_ATTACH_ACTION = 1033,      /* Invalid PS attach action value specified in
+                                                   request */
+    RIL_E_AUTHENTICATION_FAILED = 1034,         /* Authentication error. */
+    RIL_E_SIM_NOT_INITIALIZED = 1037,           /* PIN is not yet initialized because the SIM
+                                                   initialization has not finished. Try the PIN
+                                                   operation later. */
+    RIL_E_MAX_QOS_REQUESTS_IN_USE = 1038,       /* Maximum QoS requests in use */
+    RIL_E_INCORRECT_FLOW_FILTER = 1039,         /* Incorrect flow filter  */
+    RIL_E_NETWORK_QOS_UNAWARE = 1040,           /* Network QoS unaware */
+    RIL_E_INVALID_ID = 1041,                    /* Invalid call ID was sent in the request */
+    RIL_E_REQUESTED_NUM_UNSUPPORTED = 1042,     /* Requested message ID is not supported by the
+                                              currently running software */
+    RIL_E_INTERFACE_NOT_FOUND = 1043,           /* Cannot retrieve the FMC interface */
+    RIL_E_FLOW_SUSPENDED = 1044,                /* Flow suspended */
+    RIL_E_INVALID_DATA_FORMAT = 1045,           /* Invalid data format */
+    RIL_E_GENERAL = 1046,                       /* General error */
+    RIL_E_UNKNOWN = 1047,                       /* Unknown error */
+    RIL_E_INVALID_ARG = 1048,                   /* Parameters passed as input were invalid */
+    RIL_E_INVALID_INDEX = 1049,                 /* MIP profile index is not within the valid
+                                                   range */
+    RIL_E_NO_ENTRY = 1050,                      /* No message exists at the specified memory
+                                                   storage designation */
+    RIL_E_DEVICE_STORAGE_FULL = 1051,           /* Memory storage specified in the request is
+                                                   full */
+    RIL_E_CAUSE_CODE = 1054,                    /* There was an error in the request */
+    RIL_E_MESSAGE_NOT_SENT = 1055,              /* Message could not be sent */
+    RIL_E_MESSAGE_DELIVERY_FAILURE = 1056,      /*  Message could not be delivered */
+    RIL_E_INVALID_MESSAGE_ID = 1057,            /* Message ID specified for the message is
+                                                   invalid */
+    RIL_E_ENCODING = 1058,                      /* Message is not encoded properly */
+    RIL_E_AUTHENTICATION_LOCK = 1059,           /* Maximum number of authentication failures
+                                                   has been reached */
+    RIL_E_INVALID_TRANSITION = 1060,            /* Selected operating mode transition from the
+                                                   current operating mode is invalid */
+    RIL_E_NOT_A_MCAST_IFACE = 1061,             /* Not a MCAST interface */
+    RIL_E_MAX_MCAST_REQUESTS_IN_USE = 1062,     /* MCAST request in use */
+    RIL_E_INVALID_MCAST_HANDLE = 1063,          /* An invalid MCAST handle */
+    RIL_E_INVALID_IP_FAMILY_PREF = 1064,        /* IP family preference is invalid */
+    RIL_E_SESSION_INACTIVE = 1065,              /* Session inactive */
+    RIL_E_SESSION_INVALID = 1066,               /* Session not valid */
+    RIL_E_SESSION_OWNERSHIP = 1067,             /* Session ownership error */
+    RIL_E_INSUFFICIENT_RESOURCES = 1068,        /* Response is longer than the maximum supported
+                                                   size */
+    RIL_E_DISABLED = 1069,                      /* Disabled */
+    RIL_E_INVALID_OPERATION = 1070,             /* Device is not expecting the request. */
+    RIL_E_INVALID_QMI_CMD = 1071,               /* Invalid QMI command */
+    RIL_E_TPDU_TYPE = 1072,                     /* Message in memory contains a TPDU type that
+                                                   cannot be read */
+    RIL_E_SMSC_ADDR = 1073,                     /* SMSC address specified is invalid */
+    RIL_E_INFO_UNAVAILABLE = 1074,              /* Information is not available */
+    RIL_E_SEGMENT_TOO_LONG = 1075,              /* PRL segment size is too large */
+    RIL_E_SEGMENT_ORDER = 1076,                 /* PRL segment order is incorrect */
+    RIL_E_BUNDLING_NOT_SUPPORTED = 1077,        /* Bundling not supported */
+    RIL_E_OP_PARTIAL_FAILURE = 1078,            /* Some personalization codes were set but
+                                                   an error prevented */
+    RIL_E_POLICY_MISMATCH = 1079,               /* Network policy does not match a valid NAT */
+    RIL_E_SIM_FILE_NOT_FOUND = 1080,            /* File is not present on the card. */
+    RIL_E_EXTENDED_INTERNAL = 1081,             /* Error from the the DS profile module,
+                                                   the extended error */
+    RIL_E_ACCESS_DENIED = 1082,                 /* Access to the requested file is denied. This can
+                                                   occur when there is an attempt to access a
+                                                   PIN-protected file. */
+    RIL_E_HARDWARE_RESTRICTED = 1083,           /* Selected operating mode is invalid with the
+                                                   current wireless disable setting */
+    RIL_E_ACK_NOT_SENT = 1084,                  /* ACK could not be sent */
+    RIL_E_INJECT_TIMEOUT = 1085,                /* Inject timeout */
+    RIL_E_FDN_RESTRICT = 1091,                  /* FDN restriction */
+    RIL_E_SUPS_FAILURE_CAUSE = 1092,            /* Indicates supplementary services failure
+                                                   information; */
+    RIL_E_NO_RADIO = 1093,                      /* Radio is not available */
+    RIL_E_NOT_SUPPORTED = 1094,                 /* Operation is not supported */
+    RIL_E_CARD_CALL_CONTROL_FAILED = 1096,      /* SIM/R-UIM call control failed */
+    RIL_E_NETWORK_ABORTED = 1097,               /* Operation was released abruptly by the
+                                                   network */
+    RIL_E_MSG_BLOCKED = 1098,                   /* Message blocked */
+    RIL_E_INVALID_SESSION_TYPE = 1100,          /* Invalid session type */
+    RIL_E_INVALID_PB_TYPE = 1101,               /* Invalid Phone Book type */
+    RIL_E_NO_SIM = 1102,                        /* Action is being performed on a SIM that is not
+                                                   initialized. */
+    RIL_E_PB_NOT_READY = 1103,                  /* Phone Book not ready */
+    RIL_E_PIN_RESTRICTION = 1104,               /* PIN restriction */
+    RIL_E_PIN2_RESTRICTION = 1105,              /* PIN2 restriction */
+    RIL_E_PUK_RESTRICTION = 1106,               /* PUK restriction */
+    RIL_E_PUK2_RESTRICTION = 1107,              /* PUK2 restriction */
+    RIL_E_PB_ACCESS_RESTRICTED = 1108,          /* Phone Book access restricted */
+    RIL_E_PB_DELETE_IN_PROG = 1109,             /* Phone Book delete in progress */
+    RIL_E_PB_TEXT_TOO_LONG = 1110,              /* Phone Book text too long */
+    RIL_E_PB_NUMBER_TOO_LONG = 1111,            /* Phone Book number too long */
+    RIL_E_PB_HIDDEN_KEY_RESTRICTION = 1112,     /* Phone Book hidden key restriction */
+    RIL_E_PB_NOT_AVAILABLE = 1113,              /* Phone Book not available */
+    RIL_E_DEVICE_MEMORY_ERROR = 1114,           /* Device memory error */
+    RIL_E_NO_PERMISSION = 1115,                 /* No permission */
+    RIL_E_TOO_SOON = 1116,                      /* Too soon */
+    RIL_E_TIME_NOT_ACQUIRED = 1117,             /* Time not acquired */
+    RIL_E_OP_IN_PROGRESS = 1118,                /* Operation is in progress */
     // OEM specific error codes. To be used by OEM when they don't want to reveal
     // specific error codes which would be replaced by Generic failure.
     RIL_E_OEM_ERROR_1 = 501,
