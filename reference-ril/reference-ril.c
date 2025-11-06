@@ -519,7 +519,7 @@ static void requestCallSelection(
     static char conference[]       = "AT+CHLD=3";
     static char reject[]           = "ATH";
 
-    char* atCommand;
+    char* atCommand = NULL;
 
     if (getSIMStatus() == SIM_ABSENT) {
         RIL_onRequestComplete(t, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
