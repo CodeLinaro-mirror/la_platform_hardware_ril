@@ -19,45 +19,8 @@
  * limitations under the License.
  */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021, 2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -483,6 +446,23 @@ typedef enum {
     RTT_MODE_FULL = 1,               /* RTT call */
 } RIL_RTT_Info;
 
+/*
+ * Represents automotive Accident Emergency Call System (AECS) call states.
+ */
+typedef enum {
+    RIL_AECS_CALL_STATE_UNKNOWN = 0,       /* Unknown AECS call state. */
+    RIL_AECS_CALL_STATE_CONNECTED,         /* AECS call is connected. */
+    RIL_AECS_CALL_STATE_DROPPED,           /* Indicates when an AECS call is dropped. */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_START, /* Indicates when a call failed to originate and the
+                                              modem has started automatic redial attempts
+                                              (duration: 45 seconds). */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_END,   /* Indicates when the modem has completed its automatic
+                                              redial attempts. Upon receiving this state, the
+                                              application is expected to initiate a new call. */
+    RIL_AECS_CALL_STATE_FAILED,            /* Indicates when an AECS call is failed permanently. */
+    RIL_AECS_CALL_STATE_COMPLETED          /* AECS call is ended or completed. */
+} RIL_AecsCallState;
+
 typedef struct {
     RIL_CallState   state;
     int             index;      /* Connection Index for use with, eg, AT+CHLD */
@@ -505,6 +485,7 @@ typedef struct {
     RIL_CallType    type;         /* -1 = Unknown , 0 = voice call, 1 = voice ip call, 2 = emergency call,
                                      3 = emergency ip call, 4 = automotive eCall */
     RIL_CallMode    mode;       /* -1 = Unknown , 0 = GSM call, 1 = UMTS call, 2 = LTE call, 3 = NR5G call */
+    RIL_AecsCallState aecs_call_state; /* Call state for an AECS call. */
 } RIL_Call;
 
 typedef struct {
@@ -688,6 +669,10 @@ typedef struct {
              * rttMode == 0 when a normal voice call is initiated by user
              * rttMode == 1 when a RTT voice call is initiated by user
              */
+    int is_aecs_call; /* Indicates whether the call is AECS or not.
+                  * is_aecs_call == 0 when a normal voice call is initiated by user
+                  * is_aecs_call == 1 when a AECS call is initiated by user
+                  */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;
 
@@ -1192,6 +1177,14 @@ typedef enum {
                                             code to specific error */
 } RIL_LastCallFailCause;
 
+typedef enum {
+   AECS_CALL_END_DROPPED = 2,          /* AECS call connected and failed unexpectedly */
+   AECS_CALL_END_ORIG_FAILED = 4,      /* AECS call origination fails */
+   AECS_CALL_END_FAILED = 5,           /* AECS call failed permanently */
+   AECS_CALL_END_COMPLETED = 6,        /* AECS call ended or disconnected */
+   AECS_CALL_END_UNSPECIFIED = 0xffff  /* AECS call fail reason is not available */
+} RIL_AecsCallEndReason;
+
 typedef struct {
   RIL_LastCallFailCause cause_code;
   char *                vendor_cause;
@@ -1204,6 +1197,7 @@ typedef struct {
 typedef struct {
     int isLastFailCauseInfoValid;   /* Indicates last failure causeinfo is valid or not */
     RIL_LastCallFailCauseInfo info; /* Indicates last failure causeinfo */
+    RIL_AecsCallEndReason aecs_call_end_reason; /* Indicates AECS call end reason */
     int numOfCalls;                 /* Indicates number of current calls */
     RIL_Call call[RIL_MAX_CALL];    /* List of current calls */
 } RIL_CallWithLastFailureCauseInfo;
