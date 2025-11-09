@@ -1018,6 +1018,9 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     status = p.readInt32(&t);
     dial.rttMode = static_cast<int>(t);
 
+    status = p.readInt32(&t);
+    dial.is_aecs_call = (int)t;
+
     if (status != NO_ERROR || dial.address == NULL) {
         goto invalid;
     }
@@ -1065,7 +1068,8 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     }
 
     startRequest;
-    appendPrintBuf("%snum=%s,clir=%d, rttMode%d", printBuf, dial.address, dial.clir, dial.rttMode);
+    appendPrintBuf("%snum=%s,clir=%d, rttMode%d, is_aecs_call=%d", printBuf, dial.address,
+        dial.clir, dial.rttMode, dial.is_aecs_call);
     if (uusPresent) {
         appendPrintBuf("%s,uusType=%d,uusDcs=%d,uusLen=%d", printBuf,
                 dial.uusInfo->uusType, dial.uusInfo->uusDcs,
@@ -3727,17 +3731,19 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
             (p_call_with_last_failure_cause_info->info).cause_code);
 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
-        RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
+        RLOGD(" vendor_cause= %s, ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+    RLOGD(" sip_error_code= %d, numOfCalls= %d, ",
             (p_call_with_last_failure_cause_info->info).sip_error_code,
             p_call_with_last_failure_cause_info->numOfCalls);
+    RLOGD(" aecs_call_end_reason= %d,",
+        p_call_with_last_failure_cause_info->aecs_call_end_reason);
 
     p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
-
+    p.writeInt32(p_call_with_last_failure_cause_info->aecs_call_end_reason);
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
     /* number of call info's */
@@ -3814,6 +3820,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p.write(uusInfo->uusData, uusInfo->uusLength);
     }
     p.writeString8AsString16(p_cur->reason);
+    p.writeInt32(p_cur->aecs_call_state);
     RLOGD("[id=%d,%s,toa=%d,",
         p_cur->index,
         callStateToString(p_cur->state),
@@ -3829,13 +3836,13 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,",
+    RLOGD(",rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
         p_cur->type);
-   RLOGD("reason = %s]", p_cur->reason);
+   RLOGD(" aecs call state = %d]", p_cur->aecs_call_state);
 }
 
 static int responseGetEcallRedialConfig(Parcel &p, void *response, size_t responselen) {
