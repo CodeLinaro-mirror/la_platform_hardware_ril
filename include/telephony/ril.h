@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-/*
- * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -422,6 +421,23 @@ typedef struct {
   char signal;       /* as defined 3.7.5.5-3, 3.7.5.5-4 or 3.7.5.5-5 */
 } RIL_CDMA_SignalInfoRecord;
 
+/*
+ * Represents automotive Accident Emergency Call System (AECS) call states.
+ */
+typedef enum {
+    RIL_AECS_CALL_STATE_UNKNOWN = 0,       /* Unknown AECS call state. */
+    RIL_AECS_CALL_STATE_CONNECTED,         /* AECS call is connected. */
+    RIL_AECS_CALL_STATE_DROPPED,           /* Indicates when an AECS call is dropped. */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_START, /* Indicates when a call failed to originate and the
+                                              modem has started automatic redial attempts
+                                              (duration: 45 seconds). */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_END,   /* Indicates when the modem has completed its automatic
+                                              redial attempts. Upon receiving this state, the
+                                              application is expected to initiate a new call. */
+    RIL_AECS_CALL_STATE_FAILED,            /* Indicates when an AECS call is failed permanently. */
+    RIL_AECS_CALL_STATE_COMPLETED          /* AECS call is ended or completed. */
+} RIL_AecsCallState;
+
 typedef struct {
     RIL_CallState   state;
     int             index;      /* Connection Index for use with, eg, AT+CHLD */
@@ -437,6 +453,7 @@ typedef struct {
     char *          name;       /* Remote party name */
     int             namePresentation; /* 0=Allowed, 1=Restricted, 2=Not Specified/Unknown 3=Payphone */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
+    RIL_AecsCallState aecs_call_state; /* Call state for an AECS call. */
 } RIL_Call;
 
 /* Deprecated, use RIL_Data_Call_Response_v6 */
@@ -610,6 +627,10 @@ typedef struct {
              * clir == 1 on "CLIR invocation" (restrict CLI presentation)
              * clir == 2 on "CLIR suppression" (allow CLI presentation)
              */
+    int is_aecs_call; /* Indicates whether the call is AECS or not.
+                  * is_aecs_call == 0 when a normal voice call is initiated by user
+                  * is_aecs_call == 1 when a AECS call is initiated by user
+                  */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;
 
@@ -859,6 +880,14 @@ typedef enum {
                                             code to specific error */
 } RIL_LastCallFailCause;
 
+typedef enum {
+   AECS_CALL_END_DROPPED = 2,          /* AECS call connected and failed unexpectedly */
+   AECS_CALL_END_ORIG_FAILED = 4,      /* AECS call origination fails */
+   AECS_CALL_END_FAILED = 5,           /* AECS call failed permanently */
+   AECS_CALL_END_COMPLETED = 6,        /* AECS call ended or disconnected */
+   AECS_CALL_END_UNSPECIFIED = 0xffff  /* AECS call fail reason is not available */
+} RIL_AecsCallEndReason;
+
 typedef struct {
   RIL_LastCallFailCause cause_code;
   char *                vendor_cause;
@@ -870,6 +899,7 @@ typedef struct {
 typedef struct {
     int isLastFailCauseInfoValid;   /* Indicates last failure causeinfo is valid or not */
     RIL_LastCallFailCauseInfo info; /* Indicates last failure causeinfo */
+    RIL_AecsCallEndReason aecs_call_end_reason; /* Indicates AECS call end reason */
     int numOfCalls;                 /* Indicates number of current calls */
     RIL_Call call[RIL_MAX_CALL];    /* List of current calls */
 } RIL_Call_with_LastFailureCauseInfo;
