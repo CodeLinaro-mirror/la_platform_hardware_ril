@@ -6749,7 +6749,7 @@ int radio::radioStateChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), radioState);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("radioStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("radioStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6766,7 +6766,7 @@ int radio::callStateChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("callStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("callStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6783,8 +6783,7 @@ int radio::networkStateChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("networkStateChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("networkStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6850,7 +6849,7 @@ int radio::newSmsInd(int slotId, int indicationType,
         radioService[slotId]->checkReturnStatus(retStatus);
         free(bytes);
     } else {
-        RLOGE("newSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("newSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6881,7 +6880,7 @@ int radio::newSmsStatusReportInd(int slotId,
         radioService[slotId]->checkReturnStatus(retStatus);
         free(bytes);
     } else {
-        RLOGE("newSmsStatusReportInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("newSmsStatusReportInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6902,7 +6901,7 @@ int radio::newSmsOnSimInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), recordNumber);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("newSmsOnSimInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("newSmsOnSimInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6926,7 +6925,7 @@ int radio::onUssdInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), modeType, msg);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("onUssdInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("onUssdInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -6950,7 +6949,7 @@ int radio::nitzTimeReceivedInd(int slotId,
                 nitzTimeReceived[slotId]);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("nitzTimeReceivedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("nitzTimeReceivedInd: radioService[%d]->mRadioIndication == NULL", slotId);
         return -1;
     }
 
@@ -7023,8 +7022,7 @@ int radio::currentSignalStrengthInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), signalStrength);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("currentSignalStrengthInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("currentSignalStrengthInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7074,7 +7072,7 @@ int radio::dataCallListChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), dcList);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("dataCallListChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("dataCallListChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7104,7 +7102,7 @@ int radio::suppSvcNotifyInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), suppSvc);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("suppSvcNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("suppSvcNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7120,7 +7118,7 @@ int radio::stkSessionEndInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("stkSessionEndInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("stkSessionEndInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7142,7 +7140,7 @@ int radio::stkProactiveCommandInd(int slotId,
                 convertCharPtrToHidlString((char *) response));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("stkProactiveCommandInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("stkProactiveCommandInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7163,7 +7161,7 @@ int radio::stkEventNotifyInd(int slotId, int indicationType,
                 convertCharPtrToHidlString((char *) response));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("stkEventNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("stkEventNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7184,7 +7182,7 @@ int radio::stkCallSetupInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), timeout);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("stkCallSetupInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("stkCallSetupInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7201,7 +7199,7 @@ int radio::simSmsStorageFullInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("simSmsStorageFullInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("simSmsStorageFullInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7229,7 +7227,7 @@ int radio::simRefreshInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), refreshResult);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("simRefreshInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("simRefreshInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7266,7 +7264,7 @@ int radio::callRingInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), isGsm, record);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("callRingInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("callRingInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7283,7 +7281,7 @@ int radio::simStatusChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("simStatusChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("simStatusChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7331,7 +7329,7 @@ int radio::cdmaNewSmsInd(int slotId, int indicationType,
                 convertIntToRadioIndicationType(indicationType), msg);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaNewSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("cdmaNewSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7355,7 +7353,7 @@ int radio::newBroadcastSmsInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), data);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("newBroadcastSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("newBroadcastSmsInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7372,8 +7370,7 @@ int radio::cdmaRuimSmsStorageFullInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaRuimSmsStorageFullInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("cdmaRuimSmsStorageFullInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7395,8 +7392,7 @@ int radio::restrictedStateChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), (PhoneRestrictedState) state);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("restrictedStateChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("restrictedStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7413,8 +7409,7 @@ int radio::enterEmergencyCallbackModeInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("enterEmergencyCallbackModeInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("enterEmergencyCallbackModeInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7447,7 +7442,7 @@ int radio::cdmaCallWaitingInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), callWaitingRecord);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaCallWaitingInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("cdmaCallWaitingInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7469,8 +7464,7 @@ int radio::cdmaOtaProvisionStatusInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), (CdmaOtaProvisionStatus) status);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaOtaProvisionStatusInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("cdmaOtaProvisionStatusInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7648,7 +7642,7 @@ int radio::cdmaInfoRecInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), records);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaInfoRecInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("cdmaInfoRecInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7670,7 +7664,7 @@ int radio::indicateRingbackToneInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), start);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("indicateRingbackToneInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("indicateRingbackToneInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7687,7 +7681,7 @@ int radio::resendIncallMuteInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("resendIncallMuteInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("resendIncallMuteInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7710,8 +7704,7 @@ int radio::cdmaSubscriptionSourceChangedInd(int slotId,
                 (CdmaSubscriptionSource) cdmaSource);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaSubscriptionSourceChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("cdmaSubscriptionSourceChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7733,7 +7726,7 @@ int radio::cdmaPrlChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), version);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cdmaPrlChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("cdmaPrlChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7750,8 +7743,7 @@ int radio::exitEmergencyCallbackModeInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("exitEmergencyCallbackModeInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("exitEmergencyCallbackModeInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7766,7 +7758,7 @@ int radio::rilConnectedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("rilConnectedInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("rilConnectedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7788,8 +7780,7 @@ int radio::voiceRadioTechChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), (RadioTechnology) rat);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("voiceRadioTechChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("voiceRadioTechChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7961,7 +7952,7 @@ int radio::cellInfoListInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), records);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("cellInfoListInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("cellInfoListInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -7978,8 +7969,7 @@ int radio::imsNetworkStateChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("imsNetworkStateChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("imsNetworkStateChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8001,8 +7991,7 @@ int radio::subscriptionStatusChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), activate);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("subscriptionStatusChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("subscriptionStatusChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8024,7 +8013,7 @@ int radio::srvccStateNotifyInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), (SrvccState) state);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("srvccStateNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("srvccStateNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8083,8 +8072,7 @@ int radio::hardwareConfigChangedInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), configs);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("hardwareConfigChangedInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("hardwareConfigChangedInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8118,8 +8106,7 @@ int radio::radioCapabilityIndicationInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), rc);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("radioCapabilityIndicationInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("radioCapabilityIndicationInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8211,8 +8198,7 @@ int radio::onSupplementaryServiceIndicationInd(int slotId,
                 ss);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("onSupplementaryServiceIndicationInd: "
-                "radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("onSupplementaryServiceIndicationInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8234,8 +8220,7 @@ int radio::stkCallControlAlphaNotifyInd(int slotId,
                 convertCharPtrToHidlString((char *) response));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("stkCallControlAlphaNotifyInd: radioService[%d]->mRadioIndication == NULL",
-                slotId);
+        RLOGW("stkCallControlAlphaNotifyInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8266,7 +8251,7 @@ int radio::lceDataInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), lce);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("lceDataInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("lceDataInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8295,7 +8280,7 @@ int radio::pcoDataInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), pco);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("pcoDataInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("pcoDataInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8317,7 +8302,7 @@ int radio::modemResetInd(int slotId,
                 convertCharPtrToHidlString((char *) response));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("modemResetInd: radioService[%d]->mRadioIndication == NULL", slotId);
+        RLOGW("modemResetInd: radioService[%d]->mRadioIndication == NULL", slotId);
     }
 
     return 0;
@@ -8354,7 +8339,7 @@ int radio::networkScanResultInd(int slotId,
                 convertIntToRadioIndicationType(indicationType), result);
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("networkScanResultInd: radioService[%d]->mRadioIndicationV1_1 == NULL", slotId);
+        RLOGW("networkScanResultInd: radioService[%d]->mRadioIndicationV1_1 == NULL", slotId);
     }
     return 0;
 }
@@ -8372,8 +8357,7 @@ int radio::carrierInfoForImsiEncryption(int slotId,
                 carrierInfoForImsiEncryption(convertIntToRadioIndicationType(indicationType));
         radioService[slotId]->checkReturnStatus(retStatus);
     } else {
-        RLOGE("carrierInfoForImsiEncryption: radioService[%d]->mRadioIndicationV1_1 == NULL",
-                slotId);
+        RLOGW("carrierInfoForImsiEncryption: radioService[%d]->mRadioIndicationV1_1 == NULL", slotId);
     }
 
     return 0;
@@ -8386,7 +8370,7 @@ int radio::keepaliveStatusInd(int slotId,
     RLOGD("%s(): token=%d", __FUNCTION__, token);
 #endif
     if (radioService[slotId] == NULL || radioService[slotId]->mRadioIndication == NULL) {
-        RLOGE("%s: radioService[%d]->mRadioIndication == NULL", __FUNCTION__, slotId);
+        RLOGW("%s: radioService[%d]->mRadioIndication == NULL", __FUNCTION__, slotId);
         return 0;
     }
 
