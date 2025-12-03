@@ -715,6 +715,7 @@ typedef struct {
 /* Used by RIL_REQUEST_SIM_TRANSMIT_APDU_CHANNEL and
  * RIL_REQUEST_SIM_TRANSMIT_APDU_BASIC. */
 typedef struct {
+    int is_ES_10;   /* flag indicating whether the streamed APDU is an ES10 command*/
     int sessionid;  /* "sessionid" from TS 27.007 +CGLA command. Should be
                        ignored for +CSIM command. */
 
@@ -1140,6 +1141,13 @@ typedef enum {
 
 typedef struct
 {
+  uint8_t is_mep;
+  int32_t port_id;
+  int32_t negotiated_mep_mode;
+} RIL_mep_information;
+
+typedef struct
+{
   RIL_AppType      app_type;
   RIL_AppState     app_state;
   RIL_PersoSubstate perso_substate; /* applicable only if app_state ==
@@ -1173,6 +1181,7 @@ typedef struct
   int           num_applications;                /* value <= RIL_CARD_MAX_APPS */
   RIL_AppStatus applications[RIL_CARD_MAX_APPS];
   int           is_ntn_profile_active;           /* NTN profile is activated on card or not */
+  RIL_mep_information info;
 } RIL_CardStatus_v6;
 
 /** The result of a SIM refresh, returned in data[0] of RIL_UNSOL_SIM_REFRESH
