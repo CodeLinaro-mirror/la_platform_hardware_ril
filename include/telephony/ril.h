@@ -20,8 +20,8 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #ifndef ANDROID_RIL_H
@@ -1919,6 +1919,8 @@ typedef enum {
                                                   or Third Party Service (TPS) eCall */
    OUTBAND_MSD_TRANSMISSION_FAILURE = 12,    /**< Outband MSD transmission failed in NG eCall
                                                   or Third Party Service (TPS) eCall */
+   INIT_SENT = 15, /**< Initialization frames sent to public safety answering point (PSAP) */
+   NACK_RECEIVED = 16, /**< NACK received from public safety answering point (PSAP) */
 } RIL_ECall_Msd_Transmission_Status;
 
 /**
