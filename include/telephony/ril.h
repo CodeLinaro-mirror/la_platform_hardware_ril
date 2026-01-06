@@ -6756,6 +6756,16 @@ typedef struct {
  */
 #define RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST 1059
 
+/**
+ * RIL_UNSOL_DTMF
+ *
+ * Called to notify the clients when DTMF tone is detected on the downlink path only for PS calls.
+ *
+ * "data" is string
+ *
+ */
+#define RIL_UNSOL_DTMF 1060
+
 /***********************************************************************/
 
 
