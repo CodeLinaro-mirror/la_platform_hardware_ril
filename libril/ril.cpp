@@ -7179,6 +7179,7 @@ requestToString(int request) {
         case RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST: return "UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST";
         case RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST: return "UNSOL_ON_EUICC_PROFILE_LIST_REQUEST";
         case RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV: return "RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV";
+        case RIL_UNSOL_DTMF: return "RIL_UNSOL_DTMF";
 #endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }

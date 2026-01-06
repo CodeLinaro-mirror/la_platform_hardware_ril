@@ -7061,6 +7061,16 @@ typedef struct {
  */
 #define RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV 1060
 
+/**
+ * RIL_UNSOL_DTMF
+ *
+ * Called to notify the clients when DTMF tone is detected on the downlink path only for PS calls.
+ *
+ * "data" is string
+ *
+ */
+#define RIL_UNSOL_DTMF 1061
+
 /***********************************************************************/
 
 
