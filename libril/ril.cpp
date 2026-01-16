@@ -1231,6 +1231,10 @@ dispatchSIM_APDU (Parcel &p, RequestInfo *pRI) {
 
     // Note we only check status at the end. Any single failure leads to
     // subsequent reads filing.
+
+    status = p.readInt32(&t);
+    apdu.is_ES_10 = (int)t;
+
     status = p.readInt32(&t);
     apdu.sessionid = (int)t;
 
@@ -1252,8 +1256,8 @@ dispatchSIM_APDU (Parcel &p, RequestInfo *pRI) {
     apdu.data = strdupReadString(p);
 
     startRequest;
-    appendPrintBuf("%ssessionid=%d,cla=%d,ins=%d,p1=%d,p2=%d,p3=%d,data=%s",
-        printBuf, apdu.sessionid, apdu.cla, apdu.instruction, apdu.p1, apdu.p2,
+    RLOGD("is_ES_10=%d,sessionid=%d,cla=%d,ins=%d,p1=%d,p2=%d,p3=%d,data=%s",
+        apdu.is_ES_10, apdu.sessionid, apdu.cla, apdu.instruction, apdu.p1, apdu.p2,
         apdu.p3, (char*)apdu.data);
     closeRequest;
     printRequest(pRI->token, pRI->pCI->requestNumber);
@@ -4848,6 +4852,11 @@ static void responseSimStatusV6(Parcel &p, void *response) {
     sendSimStatusAppInfo(p, p_cur->num_applications, p_cur->applications);
     // write ntn profile status
     p.writeInt32(p_cur->is_ntn_profile_active);
+    p.writeInt32(p_cur->info.is_mep);
+    p.writeInt32(p_cur->info.port_id);
+    p.writeInt32(p_cur->info.negotiated_mep_mode);
+     RLOGD("is_mep %d port_id %d negotiated_mep_mode %d",
+                (int)p_cur->info.is_mep, (int)p_cur->info.port_id, (int)p_cur->info.negotiated_mep_mode);
 }
 
 static int responseSimStatus(Parcel &p, void *response, size_t responselen) {
