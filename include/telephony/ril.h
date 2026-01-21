@@ -730,6 +730,37 @@ typedef struct {
                            response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
 } RIL_SIM_IO_Response;
 
+#ifdef RIL_FOR_MDM_LE
+/*
+ * Due to QRTR socket data transfer limitations, payloads larger than 8 KB cannot be sent
+ * in a single message. As a result, the APDU response concatenation logic has been moved
+ * from the server side to the client side.
+ *
+ * To support this, the RIL_SIM_APDU_Response structure is extended to include additional
+ * metadata such as the token and total APDU length (totalApduLen).
+ *
+ * The RIL_SIM_IO_Indication structure carries the actual APDU payload (simResponse),
+ * along with the token, total APDU length and offset enabling the client to reconstruct
+ * the complete APDU response from multiple chunks.
+ */
+typedef struct {
+    int sw1;
+    int sw2;
+    char *simResponse;  /* In hex string format ([a-fA-F0-9]*), except for SIM_AUTHENTICATION
+                           response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
+    uint32_t token;
+    uint16_t tokenApduLen;
+} RIL_SIM_APDU_Response;
+
+typedef struct {
+    uint32_t token;
+    uint16_t tokenApduLen;
+    uint16_t offset;
+    char *simResponse;  /* In hex string format ([a-fA-F0-9]*), except for SIM_AUTHENTICATION
+                           response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
+} RIL_SIM_IO_Indication;
+#endif
+
 /* See also com.android.internal.telephony.gsm.CallForwardInfo */
 
 typedef struct {
@@ -5479,7 +5510,7 @@ typedef struct {
  * "data" is a const RIL_SIM_APDU *
  * "sessionid" field should be ignored.
  *
- * "response" is a const RIL_SIM_IO_Response *
+ * "response" is a const RIL_SIM_APDU_Response *
  *
  * Valid errors:
  *  SUCCESS
@@ -5538,7 +5569,7 @@ typedef struct {
  *
  * "data" is a const RIL_SIM_APDU*
  *
- * "response" is a const RIL_SIM_IO_Response *
+ * "response" is a const RIL_SIM_APDU_Response *
  *
  * Valid errors:
  *  SUCCESS
@@ -7026,6 +7057,15 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_DTMF 1060
+
+/**
+ * RIL_UNSOL_RESPONSE_ON_SIM_IO
+ *
+ * Called when APDU messages are recieved from card
+ *
+ * "data" is RIL_SIM_IO_Indication *
+ */
+#define RIL_UNSOL_RESPONSE_ON_SIM_IO 1061
 
 /***********************************************************************/
 

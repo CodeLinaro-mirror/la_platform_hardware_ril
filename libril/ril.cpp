@@ -379,6 +379,8 @@ static int responseAdnRecords(Parcel &p, void *response, size_t responselen);
 static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, size_t responselen);
 static void decodeCalls(Parcel &p, RIL_Call *p_cur);
 static int responseEuiccProfileOperation(Parcel &p, void *response, size_t responselen);
+static int responseSIMApdu(Parcel &p, void *response, size_t responselen);
+static int responseSimIoInd(Parcel &p, void *response, size_t responselen);
 #endif /* RIL_FOR_MDM_LE */
 static int decodeVoiceRadioTechnology (RIL_RadioState radioState);
 static int decodeCdmaSubscriptionSource (RIL_RadioState radioState);
@@ -3744,7 +3746,6 @@ static int responseRaw(Parcel &p, void *response, size_t responselen) {
     return 0;
 }
 
-
 static int responseSIM_IO(Parcel &p, void *response, size_t responselen) {
     if (response == NULL) {
         RLOGE("invalid response: NULL");
@@ -3770,6 +3771,63 @@ static int responseSIM_IO(Parcel &p, void *response, size_t responselen) {
 
     return 0;
 }
+
+#ifdef RIL_FOR_MDM_LE
+static int responseSIMApdu(Parcel &p, void *response, size_t responselen) {
+    if (response == NULL) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof (RIL_SIM_APDU_Response) ) {
+        RLOGE("invalid response length was %d expected %d",
+                (int)responselen, (int)sizeof (RIL_SIM_APDU_Response));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_SIM_APDU_Response *p_cur = (RIL_SIM_APDU_Response *) response;
+    p.writeInt32(p_cur->sw1);
+    p.writeInt32(p_cur->sw2);
+    const char *resp = (p_cur->simResponse != NULL) ? p_cur->simResponse : "";
+    p.writeString8AsString16(resp);
+    p.writeInt32(p_cur->token);
+    p.writeInt32(p_cur->tokenApduLen);
+
+    startResponse;
+    RLOGD("sw1=0x%X,sw2=0x%X,simResponse=%s,token=%d,tokenApduLen =%d ", p_cur->sw1, p_cur->sw2,
+        resp, p_cur->token, p_cur->tokenApduLen);
+    closeResponse;
+    return 0;
+}
+
+static int responseSimIoInd(Parcel &p, void *response, size_t responselen) {
+    if (response == NULL) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof (RIL_SIM_IO_Indication) ) {
+        RLOGE("invalid response length was %d expected %d",
+                (int)responselen, (int)sizeof (RIL_SIM_IO_Indication));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_SIM_IO_Indication *p_cur = (RIL_SIM_IO_Indication *) response;
+    p.writeInt32(p_cur->token);
+    p.writeInt32(p_cur->tokenApduLen);
+    p.writeInt32(p_cur->offset);
+    const char *resp = (p_cur->simResponse != NULL) ? p_cur->simResponse : "";
+    p.writeString8AsString16(resp);
+
+    startResponse;
+    RLOGD("token=0x%X,tokenApduLen=0x%X, offset=0x%X simResponse=%s", p_cur->token,
+        p_cur->tokenApduLen, p_cur->offset, resp);
+    closeResponse;
+
+
+    return 0;
+}
+#endif
 
 static int responseCallForwards(Parcel &p, void *response, size_t responselen) {
     int num;
