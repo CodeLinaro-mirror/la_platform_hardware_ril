@@ -4852,11 +4852,14 @@ static void responseSimStatusV6(Parcel &p, void *response) {
     sendSimStatusAppInfo(p, p_cur->num_applications, p_cur->applications);
     // write ntn profile status
     p.writeInt32(p_cur->is_ntn_profile_active);
+    // write physical slot id
+    p.write(&(p_cur->physical_slot_id), sizeof(uint8_t));
     p.writeInt32(p_cur->info.is_mep);
     p.writeInt32(p_cur->info.port_id);
     p.writeInt32(p_cur->info.negotiated_mep_mode);
-     RLOGD("is_mep %d port_id %d negotiated_mep_mode %d",
-                (int)p_cur->info.is_mep, (int)p_cur->info.port_id, (int)p_cur->info.negotiated_mep_mode);
+    RLOGD("physical_slot_id %d is_mep %d port_id %d negotiated_mep_mode %d ",
+        (int)p_cur->physical_slot_id, (int)p_cur->info.is_mep, (int)p_cur->info.port_id,
+        (int)p_cur->info.negotiated_mep_mode);
 }
 
 static int responseSimStatus(Parcel &p, void *response, size_t responselen) {

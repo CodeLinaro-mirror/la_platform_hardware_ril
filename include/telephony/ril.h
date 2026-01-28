@@ -1182,6 +1182,7 @@ typedef struct
   RIL_AppStatus applications[RIL_CARD_MAX_APPS];
   int           is_ntn_profile_active;           /* NTN profile is activated on card or not */
   RIL_mep_information info;
+  uint8_t physical_slot_id; /* Physical slot identifier for the current logical slot*/
 } RIL_CardStatus_v6;
 
 /** The result of a SIM refresh, returned in data[0] of RIL_UNSOL_SIM_REFRESH
