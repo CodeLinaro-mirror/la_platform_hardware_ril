@@ -15,9 +15,8 @@
 ** limitations under the License.
 */
 
-/*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -73,7 +72,6 @@
     {RIL_UNSOL_ECALL_OPRT_MODE, responseInts, WAKE_PARTIAL},
     {RIL_UNSOL_EMERGENCY_SCAN_FAIL, responseVoid, WAKE_PARTIAL},
     {RIL_UNSOL_OPERATOR_INFO, responseVoid, WAKE_PARTIAL},
-    {RIL_UNSOL_DTMF, responseString, WAKE_PARTIAL},
 #ifdef RIL_FOR_MDM_LE
     {RIL_UNSOL_MODIFY_CALL, responseInts, WAKE_PARTIAL},
     {RIL_UNSOL_HIGH_CAPABILITY_SUB, responseInts, WAKE_PARTIAL},
@@ -82,5 +80,6 @@
     {RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT, responseInts, WAKE_PARTIAL},
     {RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE, responseUpdateCurrentCallsAndFailureCause, WAKE_PARTIAL},
     {RIL_UNSOL_ON_EUICC_PROFILE_OPERATION_REQUEST, responseEuiccProfileOperation, WAKE_PARTIAL},
-    {RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST, responseInts, WAKE_PARTIAL}
+    {RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST, responseInts, WAKE_PARTIAL},
+    {RIL_UNSOL_DTMF, responseString, WAKE_PARTIAL}
 #endif  /* RIL_FOR_MDM_LE */
