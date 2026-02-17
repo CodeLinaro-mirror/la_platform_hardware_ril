@@ -3467,6 +3467,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
     p.writeInt32(p_cur->localRttCap);
     p.writeInt32(p_cur->peerRttCap);
     p.writeInt32(p_cur->type);
+    p.writeInt32(p_cur->mode);
     // Remove when partners upgrade to version 3
     if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
         p.writeInt32(0); /* UUS Information is absent */
@@ -3493,12 +3494,13 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD(",rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d]",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
-        p_cur->type);
+        p_cur->type,
+        p_cur->mode);
 }
 
 static int responseSMS(Parcel &p, void *response, size_t responselen) {
