@@ -20,10 +20,11 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 #ifndef ANDROID_RIL_H
 #define ANDROID_RIL_H 1
 
@@ -1919,7 +1920,38 @@ typedef enum {
                                                   or Third Party Service (TPS) eCall */
    OUTBAND_MSD_TRANSMISSION_FAILURE = 12,    /**< Outband MSD transmission failed in NG eCall
                                                   or Third Party Service (TPS) eCall */
+   RIL_ECall_MSD_TRANSMISSION_LL_NACK_DUE_TO_T7_EXPIRY = 13,
+                                            /**< Link-Layer Acknowledgement(LL-NACK) is received
+                                             * during in-band MSD transmission due to expiry of
+                                             * T7 HLAP eCall timer */
+   RIL_ECall_MSD_TRANSMISSION_MSD_AL_ACK_CLEARDOWN = 14,
+                                            /**< Modem can cleardown the eCall after receipt of
+                                                 Application-Layer Acknowledgement(AL-LCK) during
+                                                 in-band MSD transmission */
 } RIL_ECall_Msd_Transmission_Status;
+
+typedef enum {
+    RIL_REASON_NONE = 0,                   /**< Redial reason is NONE */
+    RIL_REASON_CALL_ORIG_FAILURE = 1,      /**< Redial will be attempted due to eCall origination
+                                                failure */
+    RIL_REASON_CALL_DROP = 2,              /**< Redial will be attempted as the eCall is terminated
+                                                before the reciept of MSD Transmission status */
+    RIL_REASON_MAX_REDIAL_ATTEMPTED = 3,   /**< Redial will not be attempted as the maximum redial
+                                                count is reached */
+    RIL_REASON_CALL_CONNECTED = 4,         /**< Redial will not be attempted as the eCall is
+                                                connected successfully. */
+} RIL_ReasonType;
+
+/*
+ * Represents information about the redial eCall.
+ */
+
+typedef struct {
+   int willECallRedial; /**< Indicates whether redial of eCall will be attempted by modem or not
+                             0 - redial of eCall will not be attempted
+                             1 - redial of eCall will be attempted */
+   RIL_ReasonType reason; /**< Indicates the reason for redial of eCall to be performed or not */
+} RIL_ECallRedialInfo;
 
 /**
  * RIL_REQUEST_GET_SIM_STATUS
@@ -6211,6 +6243,17 @@ typedef enum {
  *
  */
 #define RIL_UNSOL_UPDATE_CURRENT_CALLS_AND_FAILURE_CAUSE 1053
+
+/**
+ * RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT
+ *
+ * Called to notify the clients whether eCall will be redialed or not by the modem along with the
+ * reason for the operation.
+ *
+ * "data" is RIL_ECallRedialInfo
+ *
+ */
+#define RIL_UNSOL_ECALL_REDIAL_STATUS_EVENT 1054
 
 /***********************************************************************/
 
