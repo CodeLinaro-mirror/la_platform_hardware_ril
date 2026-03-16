@@ -3289,13 +3289,16 @@ static int responseFailCause(Parcel &p, void *response, size_t responselen) {
     } else if (responselen == sizeof(RIL_LastCallFailCauseInfo)) {
       startResponse;
       RIL_LastCallFailCauseInfo *p_fail_cause_info = (RIL_LastCallFailCauseInfo *) response;
-      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d]", printBuf,
+      appendPrintBuf("%s[cause_code=%d,vendor_cause=%s, sip_error_code=%d, raw_cause_code=%d]",
+                     printBuf,
                      p_fail_cause_info->cause_code,
                      p_fail_cause_info->vendor_cause,
-                     p_fail_cause_info->sip_error_code);
+                     p_fail_cause_info->sip_error_code,
+                     p_fail_cause_info->raw_cause_code);
       p.writeInt32(p_fail_cause_info->cause_code);
       p.writeString8AsString16(p_fail_cause_info->vendor_cause);
       p.writeInt32(p_fail_cause_info->sip_error_code);
+      p.writeInt32(p_fail_cause_info->raw_cause_code);
       removeLastChar;
       closeResponse;
     } else {
@@ -3402,6 +3405,7 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
+    p.writeInt32((p_call_with_last_failure_cause_info->info).raw_cause_code);
 
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
@@ -3467,6 +3471,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
     p.writeInt32(p_cur->localRttCap);
     p.writeInt32(p_cur->peerRttCap);
     p.writeInt32(p_cur->type);
+    p.writeInt32(p_cur->mode);
     // Remove when partners upgrade to version 3
     if ((s_callbacks.version < 3) || (p_cur->uusInfo == NULL || p_cur->uusInfo->uusData == NULL)) {
         p.writeInt32(0); /* UUS Information is absent */
@@ -3494,12 +3499,13 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
-        p_cur->type);
+        p_cur->type,
+        p_cur->mode);
    RLOGD("reason = %s]", p_cur->reason);
 }
 
@@ -4852,11 +4858,14 @@ static void responseSimStatusV6(Parcel &p, void *response) {
     sendSimStatusAppInfo(p, p_cur->num_applications, p_cur->applications);
     // write ntn profile status
     p.writeInt32(p_cur->is_ntn_profile_active);
+    // write physical slot id
+    p.write(&(p_cur->physical_slot_id), sizeof(uint8_t));
     p.writeInt32(p_cur->info.is_mep);
     p.writeInt32(p_cur->info.port_id);
     p.writeInt32(p_cur->info.negotiated_mep_mode);
-     RLOGD("is_mep %d port_id %d negotiated_mep_mode %d",
-                (int)p_cur->info.is_mep, (int)p_cur->info.port_id, (int)p_cur->info.negotiated_mep_mode);
+    RLOGD("physical_slot_id %d is_mep %d port_id %d negotiated_mep_mode %d ",
+        (int)p_cur->physical_slot_id, (int)p_cur->info.is_mep, (int)p_cur->info.port_id,
+        (int)p_cur->info.negotiated_mep_mode);
 }
 
 static int responseSimStatus(Parcel &p, void *response, size_t responselen) {
