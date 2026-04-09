@@ -2204,6 +2204,12 @@ typedef enum {
                                                   or Third Party Service (TPS) eCall */
    OUTBAND_MSD_TRANSMISSION_FAILURE = 12,    /**< Outband MSD transmission failed in NG eCall
                                                   or Third Party Service (TPS) eCall */
+   LL_NACK_DUE_TO_T7_EXPIRY = 13, /**< Link-Layer Acknowledgement(LL-NACK) is received
+                                    * during in-band MSD transmission due to expiry of
+                                    * T7 HLAP eCall timer */
+   AL_ACK_CLEARDOWN = 14, /**< Modem can cleardown the eCall after receipt of
+                               Application-Layer Acknowledgement(AL-LCK) during
+                               in-band MSD transmission */
    INIT_SENT = 15, /**< Initialization frames sent to public safety answering point (PSAP) */
    NACK_RECEIVED = 16, /**< NACK received from public safety answering point (PSAP) */
 } RIL_ECall_Msd_Transmission_Status;
