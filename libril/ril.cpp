@@ -860,7 +860,7 @@ dispatchInts (Parcel &p, RequestInfo *pRI) {
 
     startRequest;
     for (int i = 0 ; i < count ; i++) {
-        int32_t t;
+        int32_t t = 0;
 
         status = p.readInt32(&t);
         pInts[i] = (int)t;
@@ -898,7 +898,7 @@ invalid:
 static void
 dispatchSmsWrite (Parcel &p, RequestInfo *pRI) {
     RIL_SMS_WriteArgs args;
-    int32_t t;
+    int32_t t = 0;
     status_t status;
 
     RLOGD("dispatchSmsWrite");
@@ -1032,7 +1032,7 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     RIL_Dial dial;
     RIL_UUS_Info uusInfo;
     int32_t sizeOfDial;
-    int32_t t;
+    int32_t t = 0;
     int32_t uusPresent;
     status_t status;
 
@@ -1140,7 +1140,7 @@ dispatchSIM_IO (Parcel &p, RequestInfo *pRI) {
         RIL_SIM_IO_v5 v5;
     } simIO;
 
-    int32_t t;
+    int32_t t = 0;
     int size;
     status_t status;
 
@@ -1220,7 +1220,7 @@ invalid:
  */
 static void
 dispatchSIM_APDU (Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     RIL_SIM_APDU apdu;
 
@@ -1297,7 +1297,7 @@ invalid:
 static void
 dispatchCallForward(Parcel &p, RequestInfo *pRI) {
     RIL_CallForwardInfo cff;
-    int32_t t;
+    int32_t t = 0;
     status_t status;
 
     RLOGD("dispatchCallForward");
@@ -1394,7 +1394,7 @@ invalid:
 static status_t
 constructCdmaSms(Parcel &p, RequestInfo *pRI, RIL_CDMA_SMS_Message& rcsm) {
     int32_t  t;
-    uint8_t ut;
+    uint8_t ut = 0;
     status_t status;
     int32_t digitCount;
     int digitLimit;
@@ -1698,7 +1698,7 @@ invalid:
 
 static void
 dispatchGsmBrSmsCnf(Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     int32_t num;
 
@@ -1762,7 +1762,7 @@ invalid:
 
 static void
 dispatchCdmaBrSmsCnf(Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     int32_t num;
 
@@ -2218,7 +2218,7 @@ invalid:
 }
 
 static void dispatchDataProfile(Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     int32_t num;
 
@@ -2310,7 +2310,7 @@ invalid:
 
 static void dispatchRadioCapability(Parcel &p, RequestInfo *pRI){
     RIL_RadioCapability rc;
-    int32_t t;
+    int32_t t = 0;
     status_t status;
 
     memset (&rc, 0, sizeof(RIL_RadioCapability));
@@ -2378,7 +2378,7 @@ static void dispatchCarrierRestrictions(Parcel &p, RequestInfo *pRI) {
     RIL_CarrierRestrictions cr;
     RIL_Carrier * allowed_carriers = NULL;
     RIL_Carrier * excluded_carriers = NULL;
-    int32_t t;
+    int32_t t = 0;
     status_t status;
 
     memset(&cr, 0, sizeof(RIL_CarrierRestrictions));
@@ -2479,7 +2479,7 @@ exit:
 static void dispatchOpenChannelWithP2 (Parcel &p, RequestInfo *pRI) {
     RIL_CafOpenChannelParams openChannel;
     status_t status;
-    uint8_t p2;
+    uint8_t p2 = 0;
 
 #if VDBG
     RLOGD("dispatchOpenChannelWithP2");
@@ -2609,7 +2609,7 @@ invalid:
 
 #ifdef RIL_FOR_MDM_LE
 static void dispatchSignalStrengthConfig(Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     int32_t num;
 
@@ -2710,7 +2710,7 @@ invalid:
 }
 
 static void dispatchSignalStrengthConfigEx(Parcel &p, RequestInfo *pRI) {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     RIL_SignalStrengthConfigCriteria config_criteria;
     int32_t num;
@@ -2906,7 +2906,7 @@ invalid:
 
 static void dispatchEuiccProfileList(Parcel &p, RequestInfo *pRI)
 {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     int32_t num;
     RIL_SimProfileDetails details;
@@ -2970,7 +2970,7 @@ invalid:
 
 static void dispatchEuiccProfileOperation(Parcel &p, RequestInfo *pRI)
 {
-    int32_t t;
+    int32_t t = 0;
     status_t status;
     RIL_SimProfileOperationResponse response;
 
@@ -4952,7 +4952,7 @@ static int responseCdmaSms(Parcel &p, void *response, size_t responselen) {
     int num;
     int digitCount;
     int digitLimit;
-    uint8_t uct;
+    uint8_t uct = 0;
     void* dest;
 
     RLOGD("Inside responseCdmaSms");
