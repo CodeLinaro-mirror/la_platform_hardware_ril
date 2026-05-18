@@ -2897,6 +2897,123 @@ typedef struct {
     int identifier; /*< Identifier for the request.>*/
 } RIL_EcallConfig;
 
+/**
+ * Maximum number of LTE Secondary Cells (SCells) in a carrier aggregation list.
+ */
+#define MAX_SCELL_LIST_LEN_EXT_V01 10
+
+/**
+ * State of an LTE Secondary Cell (SCell) in Carrier Aggregation.
+ */
+typedef enum {
+    RIL_LTE_SCELL_STATE_DECONFIGURED          = 0x00, /**< SCell is deconfigured */
+    RIL_LTE_SCELL_STATE_CONFIGURED_DEACTIVATED = 0x01, /**< SCell is configured but not active */
+    RIL_LTE_SCELL_STATE_CONFIGURED_ACTIVATED   = 0x02, /**< SCell is configured and active */
+} RIL_LteSCellState;
+
+/**
+ * Defines the LTE downlink channel bandwidth for Carrier Aggregation.
+ */
+typedef enum {
+    BW_1_4_MHZ = 0x00, /**< 1.4 MHz  (NRB = 6)   */
+    BW_3_MHZ   = 0x01, /**< 3 MHz    (NRB = 15)  */
+    BW_5_MHZ   = 0x02, /**< 5 MHz    (NRB = 25)  */
+    BW_10_MHZ  = 0x03, /**< 10 MHz   (NRB = 50)  */
+    BW_15_MHZ  = 0x04, /**< 15 MHz   (NRB = 75)  */
+    BW_20_MHZ  = 0x05, /**< 20 MHz   (NRB = 100) */
+    BW_UNKNOWN  = 0xFF, /**< Unknown bandwidth */
+} RIL_Lte_Bandwidth;
+
+/**
+ * Information for a single LTE Secondary Cell (SCell).
+ */
+typedef struct {
+    uint16_t         pci;        /**< Physical cell ID. Range: 0 to 503 */
+    uint32_t         freq;       /**< E-UTRA Absolute Radio Frequency Channel Number */
+    RIL_LteSCellState scellState; /**< SCell state */
+    RIL_Lte_Bandwidth bandwidth; /**< Downlink channel bandwidth */
+    uint32_t band;              /**< Band class (Valid values from 0 to 318 ) */
+    uint8_t ulConfigured; /**< Indicates whether this SCell has an uplink component carrier
+                               configured.
+                                - TRUE  (1): Uplink CA is active on this SCell.
+                                - FALSE (0): Downlink only — no uplink resources assigned.
+                                @note The structure does not expose a separate UL EARFCN field.
+                                When ulConfigured is TRUE, the UL EARFCN can be derived from
+                                the DL @ref freq and @ref band fields using the 3GPP TS 36.101
+                                Table 5.7.3-1 band-specific offsets for FDD deployments. */
+} RIL_LteSCellInfo;
+
+typedef struct {
+    uint16_t      pci;          /**< Physical cell ID of the PCell. Range: 0 to 503 as per
+                                     3GPP TS 36.211 */
+    uint32_t      freq;         /**< Downlink E-UTRA Absolute Radio Frequency Channel Number
+                                     For LTE TDD bands Uplink EARFCN is equal to downlink EARFCN.
+                                     For FDD, Uplink EARFCN can be derived from
+                                     the Downlink EARFCN @ref freq and @ref band fields using the
+                                     3GPP TS 36.101 Table 5.7.3-1. */
+    RIL_Lte_Bandwidth bandwidth;     /**< Downlink channel bandwidth */
+    uint32_t      band;         /**< LTE band class. Valid values: 120 to 178 */
+} RIL_LtePCellInfo;
+
+/**
+ * List of LTE Secondary Cells (SCells) for Carrier Aggregation.
+ */
+typedef struct {
+    RIL_LtePCellInfo pcell;
+    uint32_t       numSCells;                          /**< Number of valid entries in sCells[] */
+    RIL_LteSCellInfo sCells[MAX_SCELL_LIST_LEN_EXT_V01]; /**< Array of SCell information */
+} RIL_LteCACellList;
+
+/** Array-size constants for ArfcnList */
+
+#define RIL_MAX_LTE_SERVING_CELL    10
+#define RIL_MAX_NBR_ARFCN_LIST      32
+#define RIL_MAX_NR5G_SERVING_CELL   8
+#define RIL_MAX_NR5G_NBR_ARFCN_LIST 64
+
+/**
+ * LteArfcnInfo — per-carrier EARFCN entry returned in ArfcnList.
+ */
+typedef struct {
+    uint32_t dlEarfcn;            /**< LTE EARFCN per 3GPP TS 36.101 */
+    uint32_t ulEarfcn;             /**< True if downlink bandwidth is populated */
+    RIL_Lte_Bandwidth bandwidth; /**< Downlink channel bandwidth in resource blocks */
+} LteArfcnInfo;
+
+/**
+ * ArfcnList — payload for RIL_REQUEST_GET_ARFCN_LIST / RIL_UNSOL_ARFCN_LIST.
+ */
+typedef struct {
+    /**
+     * LTE serving cell and SCell EARFCNs.
+     * Index 0 = PCC.  For TDD a single EARFCN covers both directions;
+     * for FDD uplink/downlink are implicit per 3GPP TS 36.101.
+     */
+    int          lteServingAndSCellArfcnSize;
+    LteArfcnInfo lteServingAndSCellArfcn[RIL_MAX_LTE_SERVING_CELL];
+
+    /**
+     * LTE inter-frequency neighbour cell EARFCNs.
+     */
+    int          lteNeighborArfcnSize;
+    LteArfcnInfo lteNeighborArfcn[RIL_MAX_NBR_ARFCN_LIST];
+
+    /**
+     * NR5G serving cell and SCell NR-ARFCNs.
+     * Index 0 = PSCell (EN-DC) or NR PCC (SA).
+     * For TDD a single NR-ARFCN covers both directions;
+     * for FDD uplink/downlink are derived per 3GPP TS 38.101.
+     */
+    int      nr5gServingAndSCellArfcnSize;
+    uint32_t nr5gServingAndSCellArfcn[RIL_MAX_NR5G_SERVING_CELL];
+
+    /**
+     * NR5G neighbour cell NR-ARFCNs.
+     */
+    int      nr5gNeighborArfcnSize;
+    uint32_t nr5gNeighborArfcn[RIL_MAX_NR5G_NBR_ARFCN_LIST];
+} ArfcnList;
+
 #endif /* RIL_FOR_MDM_LE */
 
 #define RIL_MAX_ICCID_LEN                       20
@@ -6931,6 +7048,38 @@ typedef struct {
  */
 #define RIL_REQUEST_GET_ECALL_CONFIG_REQUEST 172
 
+/**
+ * RIL_REQUEST_GET_LTE_CPHY_CA_INFO
+ *
+ * Request the LTE physical layer carrier aggregation information including
+ * all configured Secondary Cells (SCells).
+ *
+ * "data" is NULL
+ * "response" is RIL_LteCACellList * — list of configured LTE PCells and SCells
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_GET_LTE_CPHY_CA_INFO 173
+
+/**
+ * RIL_REQUEST_GET_ARFCN_LIST
+ *
+ * Request the ARFCN list for LTE and NR5G serving cells (PCC and SCCs)
+ * along with detected neighbor cells.
+ *
+ * "data" is NULL
+ * "response" is NULL (data delivered via RIL_UNSOL_ARFCN_LIST)
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_GET_ARFCN_LIST 174
+
 /***********************************************************************/
 
 /**
@@ -7746,6 +7895,27 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_MSD_UPDATE_REQUEST 1064
+
+/**
+ * RIL_UNSOL_LTE_CPHY_CA_AGGREGATED
+ *
+ * Called when LTE physical layer carrier aggregation SCell list changes.
+ * Carries information about all configured Secondary Cells.
+ *
+ * "data" is serialized RIL_LteCACellList (list of configured LTE SCells)
+ *
+ */
+#define RIL_UNSOL_LTE_CPHY_CA_AGGREGATED 1065
+
+/**
+ * RIL_UNSOL_ARFCN_LIST
+ *
+ * Called when the ARFCN list for LTE and NR5G serving/neighbor cells changes.
+ *
+ * "data" is serialized ARFCN list
+ *
+ */
+#define RIL_UNSOL_ARFCN_LIST 1066
 
 /***********************************************************************/
 

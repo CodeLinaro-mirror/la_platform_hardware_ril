@@ -194,4 +194,6 @@
     {RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER, dispatchInts, responseInts},
     {RIL_REQUEST_SET_ECALL_CONFIG_REQUEST, dispatchECallConfig, responseInts},
     {RIL_REQUEST_GET_ECALL_CONFIG_REQUEST, dispatchInts, responseGetEcallConfig},
+    {RIL_REQUEST_GET_LTE_CPHY_CA_INFO, dispatchVoid, responseLteCaList},
+    {RIL_REQUEST_GET_ARFCN_LIST, dispatchVoid, responseArfcnList},
 #endif  /* RIL_FOR_MDM_LE */
