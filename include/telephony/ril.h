@@ -184,6 +184,8 @@ typedef enum {
                                                    is currently in use */
     RIL_E_ABORTED = 65,                         /* Operation aborted */
 
+    RIL_E_NO_EFFECT = 101,                      /* The requested action had no effect */
+
     RIL_E_PIN_PERM_BLOCKED = 201,               /* PIN is permanently blocked.
                                                    The SIM is unusable */
     RIL_E_PIN_BLOCKED = 202,                     /* PIN is blocked.
