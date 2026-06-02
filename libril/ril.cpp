@@ -20,44 +20,7 @@
 ** limitations under the License.
 */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -1047,6 +1010,9 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     status = p.readInt32(&t);
     dial.rttMode = static_cast<int>(t);
 
+    status = p.readInt32(&t);
+    dial.is_aecs_call = (int)t;
+
     if (status != NO_ERROR || dial.address == NULL) {
         goto invalid;
     }
@@ -1094,7 +1060,8 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     }
 
     startRequest;
-    appendPrintBuf("%snum=%s,clir=%d, rttMode%d", printBuf, dial.address, dial.clir, dial.rttMode);
+    appendPrintBuf("%snum=%s,clir=%d, rttMode%d, is_aecs_call=%d", printBuf, dial.address,
+        dial.clir, dial.rttMode, dial.is_aecs_call);
     if (uusPresent) {
         appendPrintBuf("%s,uusType=%d,uusDcs=%d,uusLen=%d", printBuf,
                 dial.uusInfo->uusType, dial.uusInfo->uusDcs,
@@ -3395,18 +3362,20 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
             (p_call_with_last_failure_cause_info->info).cause_code);
 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
-        RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
+        RLOGD(" vendor_cause= %s, ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+    RLOGD(" sip_error_code= %d, numOfCalls= %d, ",
             (p_call_with_last_failure_cause_info->info).sip_error_code,
             p_call_with_last_failure_cause_info->numOfCalls);
+    RLOGD(" aecs_call_end_reason= %d,",
+        p_call_with_last_failure_cause_info->aecs_call_end_reason);
 
     p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
     p.writeInt32((p_call_with_last_failure_cause_info->info).raw_cause_code);
-
+    p.writeInt32(p_call_with_last_failure_cause_info->aecs_call_end_reason);
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
     /* number of call info's */
@@ -3484,6 +3453,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p.write(uusInfo->uusData, uusInfo->uusLength);
     }
     p.writeString8AsString16(p_cur->reason);
+    p.writeInt32(p_cur->aecs_call_state);
     RLOGD("[id=%d,%s,toa=%d,",
         p_cur->index,
         callStateToString(p_cur->state),
@@ -3499,14 +3469,15 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d,",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
         p_cur->type,
         p_cur->mode);
-   RLOGD("reason = %s]", p_cur->reason);
+   RLOGD("reason = %s,", p_cur->reason);
+   RLOGD(" aecs call state = %d]", p_cur->aecs_call_state);
 }
 
 static int responseSMS(Parcel &p, void *response, size_t responselen) {
