@@ -6251,6 +6251,23 @@ typedef struct {
  */
  #define RIL_REQUEST_GET_SMS_STORAGE_TYPE 159
 
+ /**
+  * RIL_REQUEST_SET_ANT_SWITCH
+  *
+  * Set the cellular antenna switching configuration.
+  *
+  * "data" is int *, the configuration of cellular antenna switching
+  * "response" is NULL
+  *
+  * Valid errors:
+  *  SUCCESS
+  *  RADIO_NOT_AVAILABLE
+  *  MODEM_ERR
+  *  SYSTEM_ERR
+  *  GENERIC_FAILURE
+  */
+ #define RIL_REQUEST_SET_ANT_SWITCH 160
+
 /***********************************************************************/
 
 /**

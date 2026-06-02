@@ -180,5 +180,6 @@
     {RIL_REQUEST_EUICC_PROFILE_OPERATION_RESPONSE, dispatchEuiccProfileOperation, responseVoid},
     {RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE, dispatchEuiccProfileList, responseVoid},
     {RIL_REQUEST_SET_SMS_STORAGE_TYPE, dispatchInts, responseVoid},
-    {RIL_REQUEST_GET_SMS_STORAGE_TYPE, dispatchVoid, responseInts}
+    {RIL_REQUEST_GET_SMS_STORAGE_TYPE, dispatchVoid, responseInts},
+    {RIL_REQUEST_SET_ANT_SWITCH, dispatchInts, responseVoid}
 #endif  /* RIL_FOR_MDM_LE */
