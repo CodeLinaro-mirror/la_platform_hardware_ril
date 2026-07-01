@@ -1921,6 +1921,7 @@ static void dispatchVoiceRadioTech(Parcel& p, RequestInfo *pRI) {
 
     if (RADIO_STATE_UNAVAILABLE == state) {
         RIL_onRequestComplete(pRI, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+        return;
     }
 
     // If radio is available then RIL should support this request.
@@ -1948,6 +1949,7 @@ static void dispatchCdmaSubscriptionSource(Parcel& p, RequestInfo *pRI) {
 
     if ((RADIO_STATE_UNAVAILABLE == state) || (RADIO_STATE_OFF == state)) {
         RIL_onRequestComplete(pRI, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+        return;
     }
 
     // RILs that support RADIO_STATE_ON should support this request.
@@ -3508,7 +3510,7 @@ static int responseSMS(Parcel &p, void *response, size_t responselen) {
 
 static int responseDataCallListV4(Parcel &p, void *response, size_t responselen)
 {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -3647,7 +3649,7 @@ static int responseDataCallListV9(Parcel &p, void *response, size_t responselen)
 }
 
 static int responseDataCallListV11(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
                 RLOGE("invalid response: NULL");
                 return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4354,7 +4356,7 @@ static int responseSimRefresh(Parcel &p, void *response, size_t responselen) {
 }
 
 static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4446,7 +4448,7 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
 }
 
 static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4601,7 +4603,7 @@ static int responseCellInfoList(Parcel &p, void *response, size_t responselen)
 
 static int responseHardwareConfig(Parcel &p, void *response, size_t responselen)
 {
-   if (response == NULL && responselen != 0) {
+   if (response == NULL) {
        RLOGE("invalid response: NULL");
        return RIL_ERRNO_INVALID_RESPONSE;
    }
