@@ -906,7 +906,7 @@ invalid:
 static void dispatchAnswer(Parcel &p, RequestInfo *pRI)
 {
     RIL_RTT_Info rttMode;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchAnswer");
@@ -940,7 +940,7 @@ invalid:
 static void dispatchModify(Parcel &p, RequestInfo *pRI)
 {
     RIL_ModifyCall modifyCallAttribute;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchModify");
@@ -1360,7 +1360,7 @@ invalid:
 
 static status_t
 constructCdmaSms(Parcel &p, RequestInfo *pRI, RIL_CDMA_SMS_Message& rcsm) {
-    int32_t  t;
+    int32_t  t = 0;
     uint8_t ut = 0;
     status_t status;
     int32_t digitCount;
@@ -1585,7 +1585,7 @@ invalid:
 
 static void
 dispatchImsSms(Parcel &p, RequestInfo *pRI) {
-    int32_t  t;
+    int32_t  t = 0;
     status_t status = p.readInt32(&t);
     RIL_RadioTechnologyFamily format;
     uint8_t retry;
@@ -1626,7 +1626,7 @@ invalid:
 static void
 dispatchCdmaSmsAck(Parcel &p, RequestInfo *pRI) {
     RIL_CDMA_SMS_Ack rcsa;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
     int32_t digitCount;
 
@@ -1785,9 +1785,9 @@ invalid:
 
 static void dispatchRilCdmaSmsWriteArgs(Parcel &p, RequestInfo *pRI) {
     RIL_CDMA_SMS_WriteArgs rcsw;
-    int32_t  t;
-    uint32_t ut;
-    uint8_t  uct;
+    int32_t  t = 0;
+    uint32_t ut = 0;
+    uint8_t  uct = 0;
     status_t status;
     int32_t  digitCount;
     int32_t  digitLimit;
@@ -1972,7 +1972,7 @@ static void dispatchCdmaSubscriptionSource(Parcel& p, RequestInfo *pRI) {
 static void dispatchSetInitialAttachApn(Parcel &p, RequestInfo *pRI)
 {
     RIL_InitialAttachApn pf;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&pf, 0, sizeof(pf));
@@ -2021,7 +2021,7 @@ invalid:
 
 static void dispatchNVReadItem(Parcel &p, RequestInfo *pRI) {
     RIL_NV_ReadItem nvri;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&nvri, 0, sizeof(nvri));
@@ -2054,7 +2054,7 @@ invalid:
 
 static void dispatchNVWriteItem(Parcel &p, RequestInfo *pRI) {
     RIL_NV_WriteItem nvwi;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&nvwi, 0, sizeof(nvwi));
@@ -2098,7 +2098,7 @@ invalid:
 static void dispatchUiccSubscripton(Parcel &p, RequestInfo *pRI) {
     RIL_SelectUiccSub uicc_sub;
     status_t status;
-    int32_t  t;
+    int32_t  t = 0;
     memset(&uicc_sub, 0, sizeof(uicc_sub));
 
     status = p.readInt32(&t);
@@ -2148,7 +2148,7 @@ invalid:
 static void dispatchSimAuthentication(Parcel &p, RequestInfo *pRI)
 {
     RIL_SimAuthentication pf;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&pf, 0, sizeof(pf));
@@ -2491,7 +2491,7 @@ invalid:
 }
 
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI) {
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
     RIL_AdnRecordInfo adnInfo;
 
@@ -2831,7 +2831,7 @@ invalid:
 static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI)
 {
     RIL_EcallHlapTimer eCallHlapTimer;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchRestartEcallHlapTimer");
