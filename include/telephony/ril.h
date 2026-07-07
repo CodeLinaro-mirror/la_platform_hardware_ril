@@ -6283,6 +6283,41 @@ typedef struct {
   */
  #define RIL_REQUEST_SET_EMERGENCY_MODE_AND_ANT_SWITCH 158
 
+/**
+ * RIL_REQUEST_SET_SMS_STORAGE_TYPE
+ *
+ * Set the storage type for the SMS message.
+ *
+ * "data" is int *, the SMS storage type
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  MODEM_ERR
+ *  SYSTEM_ERR
+ *  INVALID_ARGUMENTS
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_SET_SMS_STORAGE_TYPE 159
+
+/**
+ * RIL_REQUEST_GET_SMS_STORAGE_TYPE
+ *
+ * Request the storage type for the SMS message.
+ *
+ * "data" is NULL
+ * "response" is int *, used to feedback the SMS storage type
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE
+ *  MODEM_ERR
+ *  SYSTEM_ERR
+ *  GENERIC_FAILURE
+ */
+ #define RIL_REQUEST_GET_SMS_STORAGE_TYPE 160
+
 /***********************************************************************/
 
 /**
@@ -7066,6 +7101,17 @@ typedef struct {
  * "data" is RIL_SIM_IO_Indication *
  */
 #define RIL_UNSOL_RESPONSE_ON_SIM_IO 1061
+
+/**
+ * RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV
+ *
+ * Called when new SMS has been stored on NV
+ *
+ * "data" is const int *
+ * ((const int *)data)[0] contains the slot index on the NV that contains
+ * the new message
+ */
+#define RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV 1062
 
 /***********************************************************************/
 

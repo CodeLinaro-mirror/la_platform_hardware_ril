@@ -15,7 +15,8 @@
 ** limitations under the License.
 */
 
-/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/*
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -83,4 +84,5 @@
     {RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST, responseInts, WAKE_PARTIAL},
     {RIL_UNSOL_DTMF, responseString, WAKE_PARTIAL},
     {RIL_UNSOL_RESPONSE_ON_SIM_IO, responseSimIoInd, WAKE_PARTIAL},
+    {RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV, responseInts, WAKE_PARTIAL}
 #endif  /* RIL_FOR_MDM_LE */
