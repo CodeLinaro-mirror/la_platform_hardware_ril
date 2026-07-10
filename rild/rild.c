@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
     const char * rilLibPath = NULL;
     char **rilArgv;
     void *dlHandle;
-    const RIL_RadioFunctions *(*rilInit)(const struct RIL_Env *, int, char **);
+    const RIL_RadioFunctions *(*rilInit)(const struct RIL_Env *, int, char **) = NULL;
 #ifndef RIL_FOR_MDM_LE
     RIL_RadioFunctions *(*rilUimInit)(const struct RIL_Env *, int, char **);
     const char *err_str = NULL;

@@ -20,44 +20,7 @@
 ** limitations under the License.
 */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -943,7 +906,7 @@ invalid:
 static void dispatchAnswer(Parcel &p, RequestInfo *pRI)
 {
     RIL_RTT_Info rttMode;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchAnswer");
@@ -977,7 +940,7 @@ invalid:
 static void dispatchModify(Parcel &p, RequestInfo *pRI)
 {
     RIL_ModifyCall modifyCallAttribute;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchModify");
@@ -1047,6 +1010,9 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     status = p.readInt32(&t);
     dial.rttMode = static_cast<int>(t);
 
+    status = p.readInt32(&t);
+    dial.is_aecs_call = (int)t;
+
     if (status != NO_ERROR || dial.address == NULL) {
         goto invalid;
     }
@@ -1094,7 +1060,8 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     }
 
     startRequest;
-    appendPrintBuf("%snum=%s,clir=%d, rttMode%d", printBuf, dial.address, dial.clir, dial.rttMode);
+    appendPrintBuf("%snum=%s,clir=%d, rttMode%d, is_aecs_call=%d", printBuf, dial.address,
+        dial.clir, dial.rttMode, dial.is_aecs_call);
     if (uusPresent) {
         appendPrintBuf("%s,uusType=%d,uusDcs=%d,uusLen=%d", printBuf,
                 dial.uusInfo->uusType, dial.uusInfo->uusDcs,
@@ -1393,7 +1360,7 @@ invalid:
 
 static status_t
 constructCdmaSms(Parcel &p, RequestInfo *pRI, RIL_CDMA_SMS_Message& rcsm) {
-    int32_t  t;
+    int32_t  t = 0;
     uint8_t ut = 0;
     status_t status;
     int32_t digitCount;
@@ -1618,7 +1585,7 @@ invalid:
 
 static void
 dispatchImsSms(Parcel &p, RequestInfo *pRI) {
-    int32_t  t;
+    int32_t  t = 0;
     status_t status = p.readInt32(&t);
     RIL_RadioTechnologyFamily format;
     uint8_t retry;
@@ -1659,7 +1626,7 @@ invalid:
 static void
 dispatchCdmaSmsAck(Parcel &p, RequestInfo *pRI) {
     RIL_CDMA_SMS_Ack rcsa;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
     int32_t digitCount;
 
@@ -1818,9 +1785,9 @@ invalid:
 
 static void dispatchRilCdmaSmsWriteArgs(Parcel &p, RequestInfo *pRI) {
     RIL_CDMA_SMS_WriteArgs rcsw;
-    int32_t  t;
-    uint32_t ut;
-    uint8_t  uct;
+    int32_t  t = 0;
+    uint32_t ut = 0;
+    uint8_t  uct = 0;
     status_t status;
     int32_t  digitCount;
     int32_t  digitLimit;
@@ -1954,6 +1921,7 @@ static void dispatchVoiceRadioTech(Parcel& p, RequestInfo *pRI) {
 
     if (RADIO_STATE_UNAVAILABLE == state) {
         RIL_onRequestComplete(pRI, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+        return;
     }
 
     // If radio is available then RIL should support this request.
@@ -1981,6 +1949,7 @@ static void dispatchCdmaSubscriptionSource(Parcel& p, RequestInfo *pRI) {
 
     if ((RADIO_STATE_UNAVAILABLE == state) || (RADIO_STATE_OFF == state)) {
         RIL_onRequestComplete(pRI, RIL_E_RADIO_NOT_AVAILABLE, NULL, 0);
+        return;
     }
 
     // RILs that support RADIO_STATE_ON should support this request.
@@ -2003,7 +1972,7 @@ static void dispatchCdmaSubscriptionSource(Parcel& p, RequestInfo *pRI) {
 static void dispatchSetInitialAttachApn(Parcel &p, RequestInfo *pRI)
 {
     RIL_InitialAttachApn pf;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&pf, 0, sizeof(pf));
@@ -2052,7 +2021,7 @@ invalid:
 
 static void dispatchNVReadItem(Parcel &p, RequestInfo *pRI) {
     RIL_NV_ReadItem nvri;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&nvri, 0, sizeof(nvri));
@@ -2085,7 +2054,7 @@ invalid:
 
 static void dispatchNVWriteItem(Parcel &p, RequestInfo *pRI) {
     RIL_NV_WriteItem nvwi;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&nvwi, 0, sizeof(nvwi));
@@ -2129,7 +2098,7 @@ invalid:
 static void dispatchUiccSubscripton(Parcel &p, RequestInfo *pRI) {
     RIL_SelectUiccSub uicc_sub;
     status_t status;
-    int32_t  t;
+    int32_t  t = 0;
     memset(&uicc_sub, 0, sizeof(uicc_sub));
 
     status = p.readInt32(&t);
@@ -2179,7 +2148,7 @@ invalid:
 static void dispatchSimAuthentication(Parcel &p, RequestInfo *pRI)
 {
     RIL_SimAuthentication pf;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     memset(&pf, 0, sizeof(pf));
@@ -2522,7 +2491,7 @@ invalid:
 }
 
 static void dispatchAdnRecord(Parcel &p, RequestInfo *pRI) {
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
     RIL_AdnRecordInfo adnInfo;
 
@@ -2862,7 +2831,7 @@ invalid:
 static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI)
 {
     RIL_EcallHlapTimer eCallHlapTimer;
-    int32_t  t;
+    int32_t  t = 0;
     status_t status;
 
     RLOGD("dispatchRestartEcallHlapTimer");
@@ -3395,18 +3364,20 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
             (p_call_with_last_failure_cause_info->info).cause_code);
 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
-        RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
+        RLOGD(" vendor_cause= %s, ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+    RLOGD(" sip_error_code= %d, numOfCalls= %d, ",
             (p_call_with_last_failure_cause_info->info).sip_error_code,
             p_call_with_last_failure_cause_info->numOfCalls);
+    RLOGD(" aecs_call_end_reason= %d,",
+        p_call_with_last_failure_cause_info->aecs_call_end_reason);
 
     p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
     p.writeInt32((p_call_with_last_failure_cause_info->info).raw_cause_code);
-
+    p.writeInt32(p_call_with_last_failure_cause_info->aecs_call_end_reason);
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
     /* number of call info's */
@@ -3484,6 +3455,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p.write(uusInfo->uusData, uusInfo->uusLength);
     }
     p.writeString8AsString16(p_cur->reason);
+    p.writeInt32(p_cur->aecs_call_state);
     RLOGD("[id=%d,%s,toa=%d,",
         p_cur->index,
         callStateToString(p_cur->state),
@@ -3499,14 +3471,15 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d,",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
         p_cur->type,
         p_cur->mode);
-   RLOGD("reason = %s]", p_cur->reason);
+   RLOGD("reason = %s,", p_cur->reason);
+   RLOGD(" aecs call state = %d]", p_cur->aecs_call_state);
 }
 
 static int responseSMS(Parcel &p, void *response, size_t responselen) {
@@ -3537,7 +3510,7 @@ static int responseSMS(Parcel &p, void *response, size_t responselen) {
 
 static int responseDataCallListV4(Parcel &p, void *response, size_t responselen)
 {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -3676,7 +3649,7 @@ static int responseDataCallListV9(Parcel &p, void *response, size_t responselen)
 }
 
 static int responseDataCallListV11(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
                 RLOGE("invalid response: NULL");
                 return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4383,7 +4356,7 @@ static int responseSimRefresh(Parcel &p, void *response, size_t responselen) {
 }
 
 static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4475,7 +4448,7 @@ static int responseCellInfoListV6(Parcel &p, void *response, size_t responselen)
 }
 
 static int responseCellInfoListV12(Parcel &p, void *response, size_t responselen) {
-    if (response == NULL && responselen != 0) {
+    if (response == NULL) {
         RLOGE("invalid response: NULL");
         return RIL_ERRNO_INVALID_RESPONSE;
     }
@@ -4630,7 +4603,7 @@ static int responseCellInfoList(Parcel &p, void *response, size_t responselen)
 
 static int responseHardwareConfig(Parcel &p, void *response, size_t responselen)
 {
-   if (response == NULL && responselen != 0) {
+   if (response == NULL) {
        RLOGE("invalid response: NULL");
        return RIL_ERRNO_INVALID_RESPONSE;
    }
@@ -6895,6 +6868,9 @@ failCauseToString(RIL_Errno e) {
         case RIL_E_NO_NETWORK_FOUND: return "E_NO_NETWORK_FOUND";
         case RIL_E_DEVICE_IN_USE: return "E_DEVICE_IN_USE";
         case RIL_E_ABORTED: return "E_ABORTED";
+#ifdef RIL_FOR_MDM_LE
+        case RIL_E_NO_EFFECT: return "E_NO_EFFECT";
+#endif
         case RIL_E_OEM_ERROR_1: return "E_OEM_ERROR_1";
         case RIL_E_OEM_ERROR_2: return "E_OEM_ERROR_2";
         case RIL_E_OEM_ERROR_3: return "E_OEM_ERROR_3";
@@ -7117,6 +7093,7 @@ requestToString(int request) {
         case RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE: return "EUICC_PROFILE_LIST_RESPONSE";
         case RIL_REQUEST_SET_SMS_STORAGE_TYPE : return "RIL_REQUEST_SET_SMS_STORAGE_TYPE";
         case RIL_REQUEST_GET_SMS_STORAGE_TYPE : return "RIL_REQUEST_GET_SMS_STORAGE_TYPE";
+        case RIL_REQUEST_SET_ANT_SWITCH : return "RIL_REQUEST_SET_ANT_SWITCH";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
