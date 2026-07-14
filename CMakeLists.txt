@@ -6,7 +6,7 @@ include(GNUInstallDirs)
 include(FindPkgConfig)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
-add_compile_options(${GLIB_CFLAGS} -include glib.h)
+add_compile_options(${GLIB_CFLAGS} -include glib.h -Wnon-virtual-dtor)
 add_definitions(-Dstrlcpy=g_strlcpy)
 add_definitions(-Dstrlcat=g_strlcat)
 
