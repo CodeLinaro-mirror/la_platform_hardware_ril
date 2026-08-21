@@ -38,12 +38,19 @@ int property_get(const char* key, char* value, const char* defaultValue)
     bool propertyFound = getConfigValue(key, value);
     if(!propertyFound) {
         if(defaultValue) {
+            /* strlcpy always NUL-terminates, so no extra terminator is needed. */
             strlcpy(value, defaultValue, PROPERTY_VALUE_MAX);
         } else {
+            value[0] = '\0';
             return 0;
         }
     }
-    value[PROPERTY_VALUE_MAX-1] = '\0';
+    /*
+    * Do not write value[PROPERTY_VALUE_MAX-1] here.  This function cannot know
+    * how large the caller's buffer really is, and an unconditional store at
+    * offset 91 silently corrupts one byte of the caller's stack whenever the
+    * buffer is smaller than PROPERTY_VALUE_MAX.
+    */
     return strlen(value);
 }
 
