@@ -7080,6 +7080,30 @@ typedef struct {
  */
  #define RIL_REQUEST_GET_ARFCN_LIST 174
 
+ /**
+ * RIL request to disable/enable Next Generation (NG) eCall NV item.
+ * "data" is const int*
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SET_ECALL_DISABLE_NG_ECALL 175
+
+/**
+ * RIL request to get the Disable Next Generation (NG) eCall NV item.
+ * "data" is NULL
+ * "response" is int*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_DISABLE_NG_ECALL 176
+
 /***********************************************************************/
 
 /**

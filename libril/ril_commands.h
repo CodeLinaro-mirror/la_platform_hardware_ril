@@ -196,4 +196,6 @@
     {RIL_REQUEST_GET_ECALL_CONFIG_REQUEST, dispatchInts, responseGetEcallConfig},
     {RIL_REQUEST_GET_LTE_CPHY_CA_INFO, dispatchVoid, responseLteCaList},
     {RIL_REQUEST_GET_ARFCN_LIST, dispatchVoid, responseArfcnList},
+    {RIL_REQUEST_SET_ECALL_DISABLE_NG_ECALL, dispatchInts, responseVoid},
+    {RIL_REQUEST_GET_ECALL_DISABLE_NG_ECALL, dispatchVoid, responseInts},
 #endif  /* RIL_FOR_MDM_LE */

@@ -7930,6 +7930,8 @@ requestToString(int request) {
         case RIL_UNSOL_DTMF: return "RIL_UNSOL_DTMF";
         case RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT: return "UNSOL_IP_CALLER_INFO_STATUS_EVENT";
         case RIL_UNSOL_MSD_UPDATE_REQUEST: return "UNSOL_MSD_UPDATE_REQUEST";
+        case RIL_REQUEST_SET_ECALL_DISABLE_NG_ECALL: return "RIL_REQUEST_SET_ECALL_DISABLE_NG_ECALL";
+        case RIL_REQUEST_GET_ECALL_DISABLE_NG_ECALL: return "RIL_REQUEST_GET_ECALL_DISABLE_NG_ECALL";
 #endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }
