@@ -370,6 +370,8 @@ static int responseCdmaSignalInfoRecord(Parcel &p,void *response, size_t respons
 static int responseCdmaCallWaiting(Parcel &p,void *response, size_t responselen);
 static int responseSimRefresh(Parcel &p, void *response, size_t responselen);
 static int responseCellInfoList(Parcel &p, void *response, size_t responselen);
+static int responseLteCaList(Parcel &p, void *response, size_t responselen);
+static int responseArfcnList(Parcel &p, void *response, size_t responselen);
 static int responseHardwareConfig(Parcel &p, void *response, size_t responselen);
 static int responseDcRtInfo(Parcel &p, void *response, size_t responselen);
 static int responseRadioCapability(Parcel &p, void *response, size_t responselen);
@@ -5207,6 +5209,154 @@ static int responseCellInfoList(Parcel &p, void *response, size_t responselen)
         return responseCellInfoListV12(p, response, responselen);
     }
 
+    return 0;
+}
+
+
+/**
+ * Serialize an RIL_LteCACellList (LTE Carrier Aggregation PCell + SCell lists) into the parcel.
+ */
+static int responseLteCaList(Parcel &p, void *response, size_t responselen)
+{
+    if (response == NULL && responselen != 0) {
+        RLOGE("responseLteCaList: invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof(RIL_LteCACellList)) {
+        RLOGE("responseLteCaList: invalid response length %d expected %d",
+              (int)responselen, (int)sizeof(RIL_LteCACellList));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_LteCACellList *p_cur = (RIL_LteCACellList *) response;
+
+    startResponse;
+    /* PCell */
+    p.writeInt32((int32_t)p_cur->pcell.pci);
+    p.writeInt32((int32_t)p_cur->pcell.freq);
+    p.writeInt32((int32_t)p_cur->pcell.bandwidth);
+    p.writeInt32((int32_t)p_cur->pcell.band);
+    RLOGD("pcell: pci=%u,freq=%u,bw=%d,band=%u",
+          p_cur->pcell.pci, p_cur->pcell.freq,
+          (int)p_cur->pcell.bandwidth, p_cur->pcell.band);
+
+    /* SCells */
+    p.writeInt32((int32_t)p_cur->numSCells);
+    RLOGD("numSCells=%u", p_cur->numSCells);
+
+    for (uint32_t i = 0; i < p_cur->numSCells && i < MAX_SCELL_LIST_LEN_EXT_V01; i++) {
+        p.writeInt32((int32_t)p_cur->sCells[i].pci);
+        p.writeInt32((int32_t)p_cur->sCells[i].freq);
+        p.writeInt32((int32_t)p_cur->sCells[i].scellState);
+        p.writeInt32((int32_t)p_cur->sCells[i].bandwidth);
+        p.writeInt32((int32_t)p_cur->sCells[i].band);
+        p.writeInt32((int32_t)p_cur->sCells[i].ulConfigured);
+        RLOGD("[%u: pci=%u,freq=%u,state=%d,bw=%d,band=%u,ul=%u]", i,
+              p_cur->sCells[i].pci, p_cur->sCells[i].freq,
+              (int)p_cur->sCells[i].scellState,
+              (int)p_cur->sCells[i].bandwidth,
+              p_cur->sCells[i].band,
+              p_cur->sCells[i].ulConfigured);
+    }
+    removeLastChar;
+    closeResponse;
+
+    return 0;
+}
+
+/**
+ * Serialize an ArfcnList (LTE + NR5G ARFCN list) into the parcel.
+ *   int32 lteServingAndSCellArfcnSize
+ *   for each: int32 earfcn
+ *   int32 lteNeighborArfcnSize
+ *   for each: int32 earfcn
+ *   int32 nr5gServingAndSCellArfcnSize
+ *   for each: int32 nrarfcn
+ *   int32 nr5gNeighborArfcnSize
+ *   for each: int32 nrarfcn
+ */
+static int responseArfcnList(Parcel &p, void *response, size_t responselen)
+{
+    if (response == NULL && responselen != 0) {
+        RLOGE("responseArfcnList: invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof(ArfcnList)) {
+        RLOGE("responseArfcnList: invalid response length %d expected %d",
+              (int)responselen, (int)sizeof(ArfcnList));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    ArfcnList *p_cur = (ArfcnList *)response;
+
+    startResponse;
+
+    /* LTE serving cell + SCells */
+    p.writeInt32((int32_t)p_cur->lteServingAndSCellArfcnSize);
+    RLOGD("lteServingAndSCellArfcnSize=%d", p_cur->lteServingAndSCellArfcnSize);
+
+    for (int i = 0;
+         i < p_cur->lteServingAndSCellArfcnSize &&
+         i < RIL_MAX_LTE_SERVING_CELL;
+         i++) {
+        p.writeInt32((int32_t)p_cur->lteServingAndSCellArfcn[i].dlEarfcn);
+        p.writeInt32((int32_t)p_cur->lteServingAndSCellArfcn[i].ulEarfcn);
+        p.writeInt32((int32_t)p_cur->lteServingAndSCellArfcn[i].bandwidth);
+
+        RLOGD("[lte_sc%d: dlarfcn=%u ularfcn=%u bw=%d]", i,
+              p_cur->lteServingAndSCellArfcn[i].dlEarfcn,
+              p_cur->lteServingAndSCellArfcn[i].ulEarfcn,
+              p_cur->lteServingAndSCellArfcn[i].bandwidth);
+    }
+
+    /* LTE neighbor cells */
+    p.writeInt32((int32_t)p_cur->lteNeighborArfcnSize);
+    RLOGD("lteNeighborArfcnSize=%d", p_cur->lteNeighborArfcnSize);
+
+    for (int i = 0;
+         i < p_cur->lteNeighborArfcnSize &&
+         i < RIL_MAX_NBR_ARFCN_LIST;
+         i++) {
+        p.writeInt32((int32_t)p_cur->lteNeighborArfcn[i].dlEarfcn);
+        p.writeInt32((int32_t)p_cur->lteNeighborArfcn[i].ulEarfcn);
+        p.writeInt32((int32_t)p_cur->lteNeighborArfcn[i].bandwidth);
+
+        RLOGD("[lte_nbr%d: dlarfcn=%u ularfcn=%u bw=%d]", i,
+              p_cur->lteNeighborArfcn[i].dlEarfcn,
+              p_cur->lteNeighborArfcn[i].ulEarfcn,
+              p_cur->lteNeighborArfcn[i].bandwidth);
+    }
+
+    /* NR5G serving cell + SCells */
+    p.writeInt32((int32_t)p_cur->nr5gServingAndSCellArfcnSize);
+    RLOGD("nr5gServingAndSCellArfcnSize=%d", p_cur->nr5gServingAndSCellArfcnSize);
+
+    for (int i = 0;
+         i < p_cur->nr5gServingAndSCellArfcnSize &&
+         i < RIL_MAX_NR5G_SERVING_CELL;
+         i++) {
+        p.writeInt32((int32_t)p_cur->nr5gServingAndSCellArfcn[i]);
+
+        RLOGD("[nr5g_sc%d: nrarfcn=%u]", i, p_cur->nr5gServingAndSCellArfcn[i]);
+    }
+
+    /* NR5G neighbor cells */
+    p.writeInt32((int32_t)p_cur->nr5gNeighborArfcnSize);
+    RLOGD("nr5gNeighborArfcnSize=%d", p_cur->nr5gNeighborArfcnSize);
+
+    for (int i = 0;
+         i < p_cur->nr5gNeighborArfcnSize &&
+         i < RIL_MAX_NR5G_NBR_ARFCN_LIST;
+         i++) {
+        p.writeInt32((int32_t)p_cur->nr5gNeighborArfcn[i]);
+
+        RLOGD("[nr5g_nbr%d: nrarfcn=%u]", i, p_cur->nr5gNeighborArfcn[i]);
+    }
+
+    removeLastChar;
+    closeResponse;
     return 0;
 }
 
