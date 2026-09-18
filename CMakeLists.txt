@@ -8,6 +8,10 @@ include(FindPkgConfig)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_compile_options(${GLIB_CFLAGS} -include glib.h)
 
+if(TELSDK_FEATURE_COMMONLOG_SUPPORT)
+    pkg_check_modules(CLOG libclog)
+endif (TELSDK_FEATURE_COMMONLOG_SUPPORT)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I =/usr/include/qmi-framework-vendor")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I =/usr/include/qmi-framework-vendor -Wnon-virtual-dtor")
 
@@ -31,6 +35,10 @@ if (RIL_FOR_EXTERNAL_AP)
 endif (RIL_FOR_EXTERNAL_AP)
 
 include_directories(BEFORE include)
+
+if(TELSDK_FEATURE_COMMONLOG_SUPPORT AND CLOG_FOUND)
+    include_directories(${CLOG_INCLUDE_DIRS})
+endif (TELSDK_FEATURE_COMMONLOG_SUPPORT AND CLOG_FOUND)
 
 if ((NOT MACHINE_HAS_CV2X_ONLY) AND (NOT TELSDK_FEATURE_FOR_SECONDARY_VM) AND (NOT RIL_FOR_EXTERNAL_AP))
    add_subdirectory( rild )
