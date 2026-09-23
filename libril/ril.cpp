@@ -1323,14 +1323,16 @@ dispatchUpdateMsd (Parcel &p, RequestInfo *pRI) {
  */
 static void dispatchECallConfig(Parcel &p, RequestInfo *pRI) {
     RIL_EcallConfig config;
-    int32_t t;
-    status_t status;
+    int32_t t = 0;
+    status_t status = NO_ERROR;
 
     RLOGD("dispatchECallConfig");
     memset(&config, 0, sizeof(config));
 
     // Read config_validity_mask
-    status = p.readInt32(&t);
+    if (p.readInt32(&t) != NO_ERROR) {
+        goto invalid;
+    }
     RLOGD(" t %d is", t);
     for (int i = 0; i < ECALL_CONFIG_COUNT; i++) {
         if (t & (1 << i))  {
