@@ -39,7 +39,18 @@
 #include <sys/types.h>
 #include <libril/ril_ex.h>
 
-
+#ifdef TELSDK_FEATURE_COMMONLOG_SUPPORT_ENABLED
+#include <clog.h>
+#include <clog_ids.h>
+clog_context_t clog_ctx = NULL;
+static void unregisterClog() {
+    if(clog_ctx) {
+        (void)CLOG_UNREGISTER_CONTEXT(clog_ctx);
+        clog_ctx = NULL;
+    }
+    (void)CLOG_UNREGISTER_APP();
+}
+#endif
 
 #define LIB_PATH_PROPERTY   "rild.libpath"
 #define LIB_ARGS_PROPERTY   "rild.libargs"
@@ -156,6 +167,21 @@ void switchUser() {
 }
 
 int main(int argc, char **argv) {
+#ifdef TELSDK_FEATURE_COMMONLOG_SUPPORT_ENABLED
+    clog_return_t clog_app_rc;
+    clog_return_t clog_test_rc;
+
+    clog_app_rc = CLOG_REGISTER_APP(CLOG_APP_RILD, "RILD", "RILD");
+    if (clog_app_rc != CLOG_RETURN_OK) {
+        syslog(LOG_ERR, "RILD CLOG app registration failed: rc=%d", clog_app_rc);
+    }
+    clog_ctx = CLOG_REGISTER_CONTEXT(CLOG_ACTX_RILD_GNRL, "GNRL",
+            "General context level in RILD", CLOG_DIAG_SSID_NOT_AVAILABLE, "RILD", "RILD");
+    if (clog_ctx == NULL) {
+        syslog(LOG_ERR, "RILD CLOG context registration failed");
+    }
+    (void)atexit(unregisterClog);
+#endif
     const char * rilLibPath = NULL;
     char **rilArgv;
     void *dlHandle;
