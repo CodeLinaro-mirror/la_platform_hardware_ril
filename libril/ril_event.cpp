@@ -237,12 +237,20 @@ static void processReadReadies(fd_set * rfds, int n)
 static void firePending()
 {
     dlog("~~~~ +firePending ~~~~");
-    struct ril_event * ev = pending_list.next;
-    while (ev != &pending_list) {
-        struct ril_event * next = ev->next;
+    for (;;) {
+        MUTEX_ACQUIRE();
+        struct ril_event * ev = pending_list.next;
+        if (ev == &pending_list) {
+            MUTEX_RELEASE();
+            break;
+        }
         removeFromList(ev);
+        MUTEX_RELEASE();
+
+        // Callback runs outside listMutex: it may re-enter ril_event_add/
+        // ril_event_del/ril_timer_add (e.g. via RIL_requestTimedCallback),
+        // and listMutex is non-recursive.
         ev->func(ev->fd, 0, ev->param);
-        ev = next;
     }
     dlog("~~~~ -firePending ~~~~");
 }
@@ -346,18 +354,24 @@ void ril_timer_add(struct ril_event * ev, struct timeval * tv)
     dlog("~~~~ -ril_timer_add ~~~~");
 }
 
-// Remove event from watch or timer list
+// Remove event from watch list, and unlink it from the pending/timer list
+// if it is currently queued there
 void ril_event_del(struct ril_event * ev)
 {
     dlog("~~~~ +ril_event_del ~~~~");
     MUTEX_ACQUIRE();
 
-    if (ev->index < 0 || ev->index >= MAX_FD_EVENTS) {
-        MUTEX_RELEASE();
-        return;
+    if (ev->index >= 0 && ev->index < MAX_FD_EVENTS) {
+        removeWatch(ev, ev->index);
     }
 
-    removeWatch(ev, ev->index);
+    // A persistent watch event can already be sitting on pending_list
+    // (queued by processReadReadies() but not yet fired) when a caller on
+    // another thread deletes it here. Unlink it so firePending() can never
+    // dispatch a deleted event against a freed/reset param.
+    if (ev->next != NULL) {
+        removeFromList(ev);
+    }
 
     MUTEX_RELEASE();
     dlog("~~~~ -ril_event_del ~~~~");
