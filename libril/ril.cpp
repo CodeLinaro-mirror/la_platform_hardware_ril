@@ -20,44 +20,7 @@
 ** limitations under the License.
 */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -376,6 +339,11 @@ static void dispatchAnswer(Parcel &p, RequestInfo *pRI);
 static void dispatchRestartEcallHlapTimer(Parcel &p, RequestInfo *pRI);
 static void dispatchEuiccProfileList(Parcel &p, RequestInfo *pRI);
 static void dispatchEuiccProfileOperation(Parcel &p, RequestInfo *pRI);
+static void dispatchEcallDial (Parcel &p, RequestInfo *pRI);
+static void dispatchPrivateEcallDial (Parcel &p, RequestInfo *pRI);
+static void dispatchUpdateMsd (Parcel &p, RequestInfo *pRI);
+static void dispatchConfigureEcallRedial (Parcel &p, RequestInfo *pRI);
+static void dispatchECallConfig(Parcel &p, RequestInfo *pRI);
 #endif /* RIL_FOR_MDM_LE */
 static int responseInts(Parcel &p, void *response, size_t responselen);
 static int responseFailCause(Parcel &p, void *response, size_t responselen);
@@ -416,6 +384,10 @@ static int responseAdnRecords(Parcel &p, void *response, size_t responselen);
 static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, size_t responselen);
 static void decodeCalls(Parcel &p, RIL_Call *p_cur);
 static int responseEuiccProfileOperation(Parcel &p, void *response, size_t responselen);
+static int responseSIMApdu(Parcel &p, void *response, size_t responselen);
+static int responseSimIoInd(Parcel &p, void *response, size_t responselen);
+static int responseGetEcallRedialConfig(Parcel &p, void *response, size_t responselen);
+static int responseGetEcallConfig(Parcel &p, void *response, size_t responselen);
 #endif /* RIL_FOR_MDM_LE */
 static int decodeVoiceRadioTechnology (RIL_RadioState radioState);
 static int decodeCdmaSubscriptionSource (RIL_RadioState radioState);
@@ -1047,6 +1019,9 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     status = p.readInt32(&t);
     dial.rttMode = static_cast<int>(t);
 
+    status = p.readInt32(&t);
+    dial.is_aecs_call = (int)t;
+
     if (status != NO_ERROR || dial.address == NULL) {
         goto invalid;
     }
@@ -1094,7 +1069,8 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
     }
 
     startRequest;
-    appendPrintBuf("%snum=%s,clir=%d, rttMode%d", printBuf, dial.address, dial.clir, dial.rttMode);
+    appendPrintBuf("%snum=%s,clir=%d, rttMode%d, is_aecs_call=%d", printBuf, dial.address,
+        dial.clir, dial.rttMode, dial.is_aecs_call);
     if (uusPresent) {
         appendPrintBuf("%s,uusType=%d,uusDcs=%d,uusLen=%d", printBuf,
                 dial.uusInfo->uusType, dial.uusInfo->uusDcs,
@@ -1118,6 +1094,423 @@ dispatchDial (Parcel &p, RequestInfo *pRI) {
 
     return;
 invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+
+/**
+ * Payload is:
+ *   string callingNumber
+ *   int32_t msdPduSize
+ *   int32_t msdPdu
+ *   int32_t transmitMsd
+ *   int32_t emergencyCategory
+ *   int32_t callType
+ *   int32_t eCallVariant
+ *   int32_t testECallConfig
+ */
+static void
+dispatchEcallDial (Parcel &p, RequestInfo *pRI) {
+    int32_t num = 0;
+    int32_t t = 0;
+    status_t status;
+    RIL_ECall call;
+
+    RLOGD("dispatchEcallDial");
+    memset(&call, 0, sizeof(RIL_ECall));
+    startRequest;
+    call.address = strdupReadString(p);
+    status = p.readInt32(&num);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.msd_size = (int)num;
+    RLOGD(" dispatchEcallDial msd_size %d ", (int)call.msd_size);
+
+    for (int i = 0 ; i < num ; i++ ) {
+        status = p.readInt32(&t);
+        if (status != NO_ERROR) {
+            goto invalid;
+        }
+        call.msd[i] = static_cast<int8_t>(t);
+        RLOGD(" dispatchEcallDial msd[%d]: %d ", i, (int)call.msd[i]);
+    }
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.transmit_msd = static_cast<int>(t);
+    RLOGD(" dispatchEcallDial transmit_msd %d ", call.transmit_msd);
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.emergency_category = static_cast<int>(t);
+    RLOGD(" dispatchEcallDial emergency_category %d ", call.emergency_category);
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.call_type = static_cast<int>(t);
+    RLOGD(" dispatchEcallDial call_type %d ", call.call_type);
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.eCall_variant = static_cast<int>(t);
+    RLOGD(" dispatchEcallDial eCall_variant %d ", call.eCall_variant);
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.config = static_cast<RIL_TestECallConfigType>(t);
+    RLOGD(" dispatchEcallDial testECallConfig %d ", (int)call.config);
+
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &call, sizeof(call),
+                pRI, pRI->socket_id);
+#ifdef MEMSET_FREED
+        memset(&call, 0, sizeof(call));
+#endif
+    free(call.address);
+    return;
+
+    invalid:
+    free(call.address);
+    invalidCommandBlock(pRI);
+    return;
+}
+
+/**
+ * Payload is:
+ *   string callingNumber
+ *   int32_t msdPduSize
+ *   int32_t msdPdu
+ *   int32_t callType
+ *   string content_type
+ *   string accept_info
+ */
+static void
+dispatchPrivateEcallDial (Parcel &p, RequestInfo *pRI) {
+    int32_t num;
+    int32_t t;
+    status_t status;
+    RIL_DialPrivateECall call;
+
+    RLOGD("dispatchPrivateEcallDial");
+    memset(&call, 0, sizeof(RIL_DialPrivateECall));
+    startRequest;
+    call.address = strdupReadString(p);
+    status = p.readInt32(&num);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.msd_size = (int)num;
+    RLOGD(" dispatchPrivateEcallDial %d ", call.msd_size);
+    for (int i = 0 ; i < num ; i++ ) {
+        status = p.readInt32(&t);
+        if (status != NO_ERROR) {
+            goto invalid;
+        }
+        call.msd[i] = static_cast<int8_t>(t);
+        RLOGD(" dispatchPrivateEcallDial msd[%d]: %d ", i, (int)call.msd[i]);
+    }
+
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    call.call_type = static_cast<int>(t);
+    RLOGD(" dispatchPrivateEcallDial call_type %d ", call.call_type);
+
+    call.content_type = strdupReadString(p);
+
+    call.accept_info = strdupReadString(p);
+
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &call, sizeof(call),
+                pRI, pRI->socket_id);
+#ifdef MEMSET_FREED
+        memset(&call, 0, sizeof(call));
+#endif
+    free(call.address);
+    free(call.content_type);
+    free(call.accept_info);
+    return;
+
+    invalid:
+    free(call.address);
+    free(call.content_type);
+    free(call.accept_info);
+    invalidCommandBlock(pRI);
+    return;
+}
+
+/**
+ * Payload is:
+ *   int32_t msdPduSize
+ *   int32_t msdPdu
+ */
+static void
+dispatchUpdateMsd (Parcel &p, RequestInfo *pRI) {
+    int32_t num;
+    int32_t t;
+    status_t status;
+    RIL_Msd msd;
+
+    RLOGD("dispatchUpdateMsd");
+    memset(&msd, 0, sizeof(RIL_Msd));
+    startRequest;
+    status = p.readInt32(&num);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    msd.msd_size = (int)num;
+    RLOGD(" dispatchUpdateMsd %d ", msd.msd_size);
+    for (int i = 0 ; i < num ; i++ ) {
+        status = p.readInt32(&t);
+        if (status != NO_ERROR) {
+            goto invalid;
+        }
+        msd.msd[i] = static_cast<int8_t>(t);
+        RLOGD(" dispatchUpdateMsd msd[%d]: %d ", i, (int)msd.msd[i]);
+    }
+
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &msd, sizeof(msd),
+                pRI, pRI->socket_id);
+#ifdef MEMSET_FREED
+        memset(&msd, 0, sizeof(msd));
+#endif
+    return;
+
+    invalid:
+    invalidCommandBlock(pRI);
+    return;
+}
+
+/**
+ * dispatchEcallConfig
+ * Dispatches a request to configure eCall settings.
+ *
+ * Payload structure:
+ * - int8_t config_validity_mask[] : Bitmask indicating which config fields are valid.
+ * - int32_t mute_rx_audio        : Whether to mute RX audio (1 = mute, 0 = unmute).
+ * - int32_t num_type             : Type of emergency number.
+ * - string overridden_num       : Overridden emergency number (if any).
+ * - int32_t use_canned_msd      : Whether to use canned MSD (1 = yes, 0 = no).
+ * - int32_t gnss_update_interval: GNSS update interval in milliseconds.
+ * - int32_t t2_timer            : T2 timer value in seconds.
+ * - int32_t t7_timer            : T7 timer value in seconds.
+ * - int32_t t9_timer            : T9 timer value in seconds.
+ * - int32_t msd_version         : MSD version to use.
+ * - int32_t id                  : Configuration ID.
+ */
+static void dispatchECallConfig(Parcel &p, RequestInfo *pRI) {
+    RIL_EcallConfig config;
+    int32_t t;
+    status_t status;
+
+    RLOGD("dispatchECallConfig");
+    memset(&config, 0, sizeof(config));
+
+    // Read config_validity_mask
+    status = p.readInt32(&t);
+    RLOGD(" t %d is", t);
+    for (int i = 0; i < ECALL_CONFIG_COUNT; i++) {
+        if (t & (1 << i))  {
+            config.config_validity_mask[i / 8] |= (1 << ( i % 8));
+            RLOGD(" Bit %d is set", i);
+        } else {
+            RLOGD(" Bit %d is unset", i);
+            config.config_validity_mask[i / 8] &= ~(1 << ( i % 8));
+        }
+    }
+    RLOGD(" config.config_validity_mask[0] = %d ", config.config_validity_mask[0]);
+    RLOGD(" config.config_validity_mask[1] = %d ", config.config_validity_mask[1]);
+    if((config.config_validity_mask[ECALL_CONFIG_MUTE_RX_AUDIO / 8] >> (ECALL_CONFIG_MUTE_RX_AUDIO % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+             goto invalid;
+        } else {
+            config.mute_rx_audio = t;
+            RLOGD(" config.mute_rx_audio %d ", config.mute_rx_audio);
+        }
+    } else {
+        RLOGD(" config.mute_rx_audio is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_NUM_TYPE / 8] >> (ECALL_CONFIG_NUM_TYPE % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.num_type = (RIL_ECallNumType)t;
+            RLOGD(" config.num_type %d ", (int)config.num_type);
+        }
+    } else {
+        RLOGD(" config.num_type is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_OVERRIDDEN_NUM / 8] >> (ECALL_CONFIG_OVERRIDDEN_NUM % 8)) & 1) {
+        config.overridden_num = strdupReadString(p);
+        RLOGD(" config.overridden_num %s ", config.overridden_num);
+    } else {
+        RLOGD(" config.overridden_num is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_USE_CANNED_MSD / 8] >> (ECALL_CONFIG_USE_CANNED_MSD % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.use_canned_msd = t;
+            RLOGD(" config.use_canned_msd %d ", config.use_canned_msd);
+        }
+    } else {
+        RLOGD(" config.use_canned_msd is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_GNSS_UPDATE_INTERVAL / 8] >> (ECALL_CONFIG_GNSS_UPDATE_INTERVAL % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.gnss_update_interval = t;
+            RLOGD(" config.gnss_update_interval %d ", config.gnss_update_interval);
+        }
+    } else {
+        RLOGD(" config.gnss_update_interval is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_T2_TIMER / 8] >> (ECALL_CONFIG_T2_TIMER % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.t2_timer = t;
+            RLOGD(" config.t2_timer %d ", config.t2_timer);
+        }
+    } else {
+        RLOGD(" config.t2_timer is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_T7_TIMER / 8] >> (ECALL_CONFIG_T7_TIMER % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.t7_timer = t;
+            RLOGD(" config.t7_timer %d ", config.t7_timer);
+        }
+    } else {
+        RLOGD(" config.t7_timer is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_T9_TIMER / 8] >> (ECALL_CONFIG_T9_TIMER % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.t9_timer = t;
+            RLOGD(" config.t9_timer %d ", config.t9_timer);
+        }
+    } else {
+        RLOGD(" config.t9_timer is not valid ");
+    }
+
+    if((config.config_validity_mask[ECALL_CONFIG_MSD_VERSION / 8] >> (ECALL_CONFIG_MSD_VERSION % 8)) & 1) {
+        if (p.readInt32(&t) != NO_ERROR) {
+            goto invalid;
+        } else {
+            config.msd_version = t;
+            RLOGD(" config.msd_version %d ", config.msd_version);
+        }
+    } else {
+        RLOGD(" config.msd_version is not valid ");
+    }
+
+    // Read id
+    status = p.readInt32(&t);
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    config.identifier = (int)(t);
+    RLOGD(" config.identifier %d ", config.identifier);
+
+    startRequest;
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &config, sizeof(config), pRI, pRI->socket_id);
+
+#ifdef MEMSET_FREED
+    memsetString(config.overridden_num);
+#endif
+    free(config.overridden_num);
+#ifdef MEMSET_FREED
+    memset(&config, 0, sizeof(config));
+#endif
+    return;
+    invalid:
+    free(config.overridden_num);
+    invalidCommandBlock(pRI);
+    return;
+}
+
+/**
+ * Payload is:
+ *   int32_t type
+ *   int32_t timeGap
+ */
+static void
+dispatchConfigureEcallRedial (Parcel &p, RequestInfo *pRI) {
+    int32_t num;
+    int32_t t;
+    status_t status;
+    RIL_Ecall_Redial_Config config;
+
+    RLOGD("dispatchConfigureEcallRedial");
+    memset(&config, 0, sizeof(RIL_Ecall_Redial_Config));
+    startRequest;
+    status = p.readInt32(&t);
+    if (status != NO_ERROR ) {
+        goto invalid;
+    }
+    config.type = (RIL_Redial_Config_Type)t;
+    RLOGD(" dispatchConfigureEcallRedial type %d ", config.type);
+    status = p.readInt32(&num);
+
+    if (status != NO_ERROR) {
+        goto invalid;
+    }
+    config.time_gap_size = (int)num;
+    RLOGD(" dispatchConfigureEcallRedial time_gap_size %d ", config.time_gap_size);
+    for (int i = 0 ; i < num ; i++ ) {
+        status = p.readInt32(&t);
+        if (status != NO_ERROR) {
+            goto invalid;
+        }
+        config.time_gap[i] = static_cast<int>(t);
+        RLOGD(" dispatchConfigureEcallRedial config[%d]: %d ", i, (int)config.time_gap[i]);
+    }
+    closeRequest;
+    printRequest(pRI->token, pRI->pCI->requestNumber);
+
+    CALL_ONREQUEST(pRI->pCI->requestNumber, &config, sizeof(config),
+                pRI, pRI->socket_id);
+#ifdef MEMSET_FREED
+        memset(&config, 0, sizeof(config));
+#endif
+    return;
+
+    invalid:
     invalidCommandBlock(pRI);
     return;
 }
@@ -3395,18 +3788,20 @@ static int responseUpdateCurrentCallsAndFailureCause(Parcel &p, void *response, 
             (p_call_with_last_failure_cause_info->info).cause_code);
 
     if((p_call_with_last_failure_cause_info->info).vendor_cause != NULL) {
-        RLOGD(" vendor_cause= %s ", (p_call_with_last_failure_cause_info->info).vendor_cause);
+        RLOGD(" vendor_cause= %s, ", (p_call_with_last_failure_cause_info->info).vendor_cause);
     }
-    RLOGD(" sip_error_code= %d, numOfCalls= %d ",
+    RLOGD(" sip_error_code= %d, numOfCalls= %d, ",
             (p_call_with_last_failure_cause_info->info).sip_error_code,
             p_call_with_last_failure_cause_info->numOfCalls);
+    RLOGD(" aecs_call_end_reason= %d,",
+        p_call_with_last_failure_cause_info->aecs_call_end_reason);
 
     p.writeInt32(p_call_with_last_failure_cause_info->isLastFailCauseInfoValid);
     p.writeInt32((p_call_with_last_failure_cause_info->info).cause_code);
     p.writeString8AsString16((p_call_with_last_failure_cause_info->info).vendor_cause);
     p.writeInt32((p_call_with_last_failure_cause_info->info).sip_error_code);
     p.writeInt32((p_call_with_last_failure_cause_info->info).raw_cause_code);
-
+    p.writeInt32(p_call_with_last_failure_cause_info->aecs_call_end_reason);
     p.writeInt32(p_call_with_last_failure_cause_info->numOfCalls);
 
     /* number of call info's */
@@ -3484,6 +3879,7 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p.write(uusInfo->uusData, uusInfo->uusLength);
     }
     p.writeString8AsString16(p_cur->reason);
+    p.writeInt32(p_cur->aecs_call_state);
     RLOGD("[id=%d,%s,toa=%d,",
         p_cur->index,
         callStateToString(p_cur->state),
@@ -3499,14 +3895,142 @@ static void decodeCalls(Parcel &p, RIL_Call *p_cur) {
         p_cur->numberPresentation,
         p_cur->name,
         p_cur->namePresentation);
-    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d",
+    RLOGD("rttModeValid = %d,rttMode=%d,localRttCap=%d,peerRttCap=%d,type = %d,callMode=%d,",
         p_cur->rttModeValid,
         p_cur->rttMode,
         p_cur->localRttCap,
         p_cur->peerRttCap,
         p_cur->type,
         p_cur->mode);
-   RLOGD("reason = %s]", p_cur->reason);
+   RLOGD("reason = %s,", p_cur->reason);
+   RLOGD(" aecs call state = %d]", p_cur->aecs_call_state);
+}
+
+static int responseGetEcallRedialConfig(Parcel &p, void *response, size_t responselen) {
+    RLOGD(" In responseGetEcallRedialConfig ");
+    int num;
+    if (response == NULL && responselen != 0) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+    if (response == NULL || responselen != sizeof(RIL_Ecall_Get_Redial_Config)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+            (int)responselen, (int)sizeof(RIL_Ecall_Get_Redial_Config));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    startResponse;
+    RLOGD(" start response ");
+    RIL_Ecall_Get_Redial_Config *get_redial_config =
+        (RIL_Ecall_Get_Redial_Config *) response;
+    RLOGD(" [length_call_orig_time_gap =  %d, length_call_drop_time_gap = %d ",
+            get_redial_config->length_call_orig_time_gap, get_redial_config->call_drop_time_gap);
+
+    /* number of ecall redial config parameters */
+    num = get_redial_config->length_call_orig_time_gap;
+
+    p.writeInt32(num);
+    for (int i = 0 ; i < num ; i++) {
+        p.writeInt32(get_redial_config->call_orig_time_gap[i]);
+        RLOGD(" call_orig at index %d is %d ", i, get_redial_config->call_orig_time_gap[i]);
+    }
+
+    /* number of ecall redial config parameters */
+    num = get_redial_config->length_call_drop_time_gap;
+
+    p.writeInt32(num);
+    for (int i = 0 ; i < num ; i++) {
+        p.writeInt32(get_redial_config->call_drop_time_gap[i]);
+        RLOGD(" call_drop at index %d is %d ", i, get_redial_config->call_drop_time_gap[i]);
+    }
+    p.writeInt32(get_redial_config->identifier);
+    RLOGD(" get_redial_config->identifier %d ", get_redial_config->identifier);
+    removeLastChar;
+    closeResponse;
+    RLOGD(" close response ");
+
+    return 0;
+}
+
+static int responseGetEcallConfig(Parcel &p, void *response, size_t responselen) {
+    RLOGD("In responseGetEcallConfig");
+    int num;
+    if (response == NULL && responselen != 0) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+    if (response == NULL || responselen != sizeof(RIL_EcallConfig)) {
+        RLOGE("invalid response: NULL or invalid response length %d expected %d",
+              (int)responselen, (int)sizeof(RIL_EcallConfig));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+    startResponse;
+    RLOGD("start response");
+    RIL_EcallConfig *ecall_config = (RIL_EcallConfig *)response;
+    for (int i = 0 ; i < (ECALL_CONFIG_COUNT + 7) / 8 ; i++ ) {
+        p.writeInt32(ecall_config->config_validity_mask[i]);
+        RLOGD(" config_validity_mask[%d]: %d ", i, (int)ecall_config->config_validity_mask[i]);
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_MUTE_RX_AUDIO / 8] >> (ECALL_CONFIG_MUTE_RX_AUDIO % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_MUTE_RX_AUDIO is valid, mute_rx_audio = %d", ecall_config->mute_rx_audio);
+        p.writeInt32(ecall_config->mute_rx_audio);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_MUTE_RX_AUDIO / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_NUM_TYPE / 8] >> (ECALL_CONFIG_NUM_TYPE % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_NUM_TYPE is valid, num_type = %d", ecall_config->num_type);
+        p.writeInt32(ecall_config->num_type);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_NUM_TYPE / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_OVERRIDDEN_NUM / 8] >> (ECALL_CONFIG_OVERRIDDEN_NUM % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_OVERRIDDEN_NUM is valid, overridden_num = %s", ecall_config->overridden_num);
+        p.writeString8AsString16(ecall_config->overridden_num);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_OVERRIDDEN_NUM / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_USE_CANNED_MSD / 8] >> (ECALL_CONFIG_USE_CANNED_MSD % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_USE_CANNED_MSD is valid, use_canned_msd = %d", ecall_config->use_canned_msd);
+        p.writeInt32(ecall_config->use_canned_msd);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_USE_CANNED_MSD / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_GNSS_UPDATE_INTERVAL / 8] >> (ECALL_CONFIG_GNSS_UPDATE_INTERVAL % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_GNSS_UPDATE_INTERVAL is valid, gnss_update_interval = %d", ecall_config->gnss_update_interval);
+        p.writeInt32(ecall_config->gnss_update_interval);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_GNSS_UPDATE_INTERVAL / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_T2_TIMER / 8] >> (ECALL_CONFIG_T2_TIMER % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_T2_TIMER is valid, t2_timer = %d", ecall_config->t2_timer);
+        p.writeInt32(ecall_config->t2_timer);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_T2_TIMER / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_T7_TIMER / 8] >> (ECALL_CONFIG_T7_TIMER % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_T7_TIMER is valid, t7_timer = %d", ecall_config->t7_timer);
+        p.writeInt32(ecall_config->t7_timer);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_T7_TIMER / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_T9_TIMER / 8] >> (ECALL_CONFIG_T9_TIMER % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_T9_TIMER is valid, t9_timer = %d", ecall_config->t9_timer);
+        p.writeInt32(ecall_config->t9_timer);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_T9_TIMER / 8] is not valid ");
+    }
+    if((ecall_config->config_validity_mask[ECALL_CONFIG_MSD_VERSION / 8] >> (ECALL_CONFIG_MSD_VERSION % 8)) & 1) {
+        RLOGD("ECALL_CONFIG_MSD_VERSION is valid, msd_version = %d", ecall_config->msd_version);
+        p.writeInt32(ecall_config->msd_version);
+    } else {
+        RLOGD(" config_validity_mask[ECALL_CONFIG_MSD_VERSION / 8] is not valid ");
+    }
+    p.writeInt32(ecall_config->identifier);
+    RLOGD("ecall_config->identifier %d", ecall_config->identifier);
+    removeLastChar;
+    closeResponse;
+    RLOGD("close response");
+    return 0;
 }
 
 static int responseSMS(Parcel &p, void *response, size_t responselen) {
@@ -3779,7 +4303,6 @@ static int responseRaw(Parcel &p, void *response, size_t responselen) {
     return 0;
 }
 
-
 static int responseSIM_IO(Parcel &p, void *response, size_t responselen) {
     if (response == NULL) {
         RLOGE("invalid response: NULL");
@@ -3805,6 +4328,63 @@ static int responseSIM_IO(Parcel &p, void *response, size_t responselen) {
 
     return 0;
 }
+
+#ifdef RIL_FOR_MDM_LE
+static int responseSIMApdu(Parcel &p, void *response, size_t responselen) {
+    if (response == NULL) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof (RIL_SIM_APDU_Response) ) {
+        RLOGE("invalid response length was %d expected %d",
+                (int)responselen, (int)sizeof (RIL_SIM_APDU_Response));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_SIM_APDU_Response *p_cur = (RIL_SIM_APDU_Response *) response;
+    p.writeInt32(p_cur->sw1);
+    p.writeInt32(p_cur->sw2);
+    const char *resp = (p_cur->simResponse != NULL) ? p_cur->simResponse : "";
+    p.writeString8AsString16(resp);
+    p.writeInt32(p_cur->token);
+    p.writeInt32(p_cur->tokenApduLen);
+
+    startResponse;
+    RLOGD("sw1=0x%X,sw2=0x%X,simResponse=%s,token=%d,tokenApduLen =%d ", p_cur->sw1, p_cur->sw2,
+        resp, p_cur->token, p_cur->tokenApduLen);
+    closeResponse;
+    return 0;
+}
+
+static int responseSimIoInd(Parcel &p, void *response, size_t responselen) {
+    if (response == NULL) {
+        RLOGE("invalid response: NULL");
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    if (responselen != sizeof (RIL_SIM_IO_Indication) ) {
+        RLOGE("invalid response length was %d expected %d",
+                (int)responselen, (int)sizeof (RIL_SIM_IO_Indication));
+        return RIL_ERRNO_INVALID_RESPONSE;
+    }
+
+    RIL_SIM_IO_Indication *p_cur = (RIL_SIM_IO_Indication *) response;
+    p.writeInt32(p_cur->token);
+    p.writeInt32(p_cur->tokenApduLen);
+    p.writeInt32(p_cur->offset);
+    const char *resp = (p_cur->simResponse != NULL) ? p_cur->simResponse : "";
+    p.writeString8AsString16(resp);
+
+    startResponse;
+    RLOGD("token=0x%X,tokenApduLen=0x%X, offset=0x%X simResponse=%s", p_cur->token,
+        p_cur->tokenApduLen, p_cur->offset, resp);
+    closeResponse;
+
+
+    return 0;
+}
+#endif
 
 static int responseCallForwards(Parcel &p, void *response, size_t responselen) {
     int num;
@@ -6895,6 +7475,9 @@ failCauseToString(RIL_Errno e) {
         case RIL_E_NO_NETWORK_FOUND: return "E_NO_NETWORK_FOUND";
         case RIL_E_DEVICE_IN_USE: return "E_DEVICE_IN_USE";
         case RIL_E_ABORTED: return "E_ABORTED";
+#ifdef RIL_FOR_MDM_LE
+        case RIL_E_NO_EFFECT: return "E_NO_EFFECT";
+#endif
         case RIL_E_OEM_ERROR_1: return "E_OEM_ERROR_1";
         case RIL_E_OEM_ERROR_2: return "E_OEM_ERROR_2";
         case RIL_E_OEM_ERROR_3: return "E_OEM_ERROR_3";
@@ -7117,6 +7700,19 @@ requestToString(int request) {
         case RIL_REQUEST_EUICC_PROFILE_LIST_RESPONSE: return "EUICC_PROFILE_LIST_RESPONSE";
         case RIL_REQUEST_SET_SMS_STORAGE_TYPE : return "RIL_REQUEST_SET_SMS_STORAGE_TYPE";
         case RIL_REQUEST_GET_SMS_STORAGE_TYPE : return "RIL_REQUEST_GET_SMS_STORAGE_TYPE";
+        case RIL_REQUEST_SET_ANT_SWITCH : return "RIL_REQUEST_SET_ANT_SWITCH";
+        case RIL_REQUEST_DIAL_ECALL: return "RIL_REQUEST_DIAL_ECALL";
+        case RIL_REQUEST_DIAL_PRIVATE_ECALL: return "RIL_REQUEST_DIAL_PRIVATE_ECALL";
+        case RIL_REQUEST_UPDATE_MSD: return "RIL_REQUEST_UPDATE_MSD";
+        case RIL_REQUEST_CONFIGURE_ECALL_REDIAL: return "RIL_REQUEST_CONFIGURE_ECALL_REDIAL";
+        case RIL_REQUEST_GET_ECALL_REDIAL_CONFIG: return "RIL_REQUEST_GET_ECALL_REDIAL_CONFIG";
+        case RIL_REQUEST_SEND_POST_TEST_REGISTRATION_TIMER_REQUEST: return "RIL_REQUEST_SEND_POST_TEST_REGISTRATION_TIMER_REQUEST";
+        case RIL_REQUEST_GET_POST_TEST_REGISTRATION_TIMER_REQUEST: return "RIL_REQUEST_GET_POST_TEST_REGISTRATION_TIMER_REQUEST";
+        case RIL_REQUEST_GET_ECALL_HLAP_TIMER_STATUS: return "RIL_REQUEST_GET_ECALL_HLAP_TIMER_STATUS";
+        case RIL_REQUEST_SEND_UPDATE_ECALL_HLAP_TIMER: return "RIL_REQUEST_SEND_UPDATE_ECALL_HLAP_TIMER";
+        case RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER: return "RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER";
+        case RIL_REQUEST_SET_ECALL_CONFIG_REQUEST: return "RIL_REQUEST_SET_ECALL_CONFIG_REQUEST";
+        case RIL_REQUEST_GET_ECALL_CONFIG_REQUEST: return "RIL_REQUEST_GET_ECALL_CONFIG_REQUEST";
 #endif /* RIL_FOR_MDM_LE */
         case RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED: return "UNSOL_RESPONSE_RADIO_STATE_CHANGED";
         case RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED: return "UNSOL_RESPONSE_CALL_STATE_CHANGED";
@@ -7180,6 +7776,8 @@ requestToString(int request) {
         case RIL_UNSOL_ON_EUICC_PROFILE_LIST_REQUEST: return "UNSOL_ON_EUICC_PROFILE_LIST_REQUEST";
         case RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV: return "RIL_UNSOL_RESPONSE_NEW_SMS_ON_NV";
         case RIL_UNSOL_DTMF: return "RIL_UNSOL_DTMF";
+        case RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT: return "UNSOL_IP_CALLER_INFO_STATUS_EVENT";
+        case RIL_UNSOL_MSD_UPDATE_REQUEST: return "UNSOL_MSD_UPDATE_REQUEST";
 #endif /* RIL_FOR_MDM_LE */
         default: return "<unknown request>";
     }

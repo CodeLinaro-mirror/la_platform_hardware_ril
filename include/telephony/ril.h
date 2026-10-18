@@ -19,44 +19,7 @@
  * limitations under the License.
  */
 
-/*
- *  Changes from Qualcomm Innovation Center are provided under the following license:
- *
- *  Copyright (c) 2021, 2023 Qualcomm Innovation Center, Inc. All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted (subject to the limitations in the
- *  disclaimer below) provided that the following conditions are met:
- *
- *      * Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *
- *      * Redistributions in binary form must reproduce the above
- *        copyright notice, this list of conditions and the following
- *        disclaimer in the documentation and/or other materials provided
- *        with the distribution.
- *
- *      * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- *  NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
- *  GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
- *  HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
- *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- *  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- *  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+/* Changes from Qualcomm Technologies, Inc. are provided under the following license:
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
@@ -219,11 +182,149 @@ typedef enum {
     RIL_E_DEVICE_IN_USE = 64,                   /* Operation cannot be performed because the device
                                                    is currently in use */
     RIL_E_ABORTED = 65,                         /* Operation aborted */
-
+    RIL_E_INCOMPATIBLE_STATE = 90,              /* Operation cannot be performed because the device
+                                                   is in incompatible state */
+    RIL_E_NO_EFFECT = 101,                      /* Given request had to no effect */
+    RIL_E_DEVICE_NOT_READY = 102,               /* Device not ready */
     RIL_E_PIN_PERM_BLOCKED = 201,               /* PIN is permanently blocked.
                                                    The SIM is unusable */
     RIL_E_PIN_BLOCKED = 202,                     /* PIN is blocked.
                                                    Unblock operation must be issued. */
+    /* Note: The error codes defined below do not currently follow Android conventions.
+     * If future requirements mandate alignment with Android standards, the 1000-series
+     * codes will need to be adjusted accordingly.
+     */
+    RIL_E_MALFORMED_MSG = 1001,                 /* Message was not formulated correctly
+                                                    by the control point or the message was
+                                                    corrupted during transmission */
+    RIL_E_INTERNAL = 1003,                      /* Internal error*/
+    RIL_E_CLIENT_IDS_EXHAUSTED = 1005,          /* Client IDs exhausted */
+    RIL_E_UNABORTABLE_TRANSACTION = 1006,       /* The specified transaction could not be
+                                                   aborted*/
+    RIL_E_INVALID_CLIENT_ID = 1007,             /* Could not find client's request */
+    RIL_E_NO_THRESHOLDS = 1008,                 /* No thresholds specified in enable signal
+                                                   strength */
+    RIL_E_INVALID_HANDLE = 1009,                /* Invalid client handle was received */
+    RIL_E_INVALID_PROFILE = 1010,               /* Invalid profile index specified */
+    RIL_E_INVALID_PINID = 1011,                 /* PIN in the request is invalid. */
+    RIL_E_INCORRECT_PIN = 1012,                 /* PIN in the request is incorrect. */
+    RIL_E_CALL_FAILED = 1014,                   /* Call origination failed in the lower layers */
+    RIL_E_OUT_OF_CALL = 1015,                   /* Request issued when packet data session
+                                                   disconnected */
+    RIL_E_MISSING_ARG = 1017,                   /* TLV was missing in the request. */
+    RIL_E_ARG_TOO_LONG = 1019,                  /* Path in the request was too long. */
+    RIL_E_INVALID_TX_ID = 1022,                 /* The transaction ID supplied in the request
+                                                   does not match any pending transaction i.e.
+                                                   either the transaction was not received or it is
+                                                   already executed by the device */
+    RIL_E_OP_NETWORK_UNSUPPORTED = 1024,        /* Selected operation is not supported by the
+                                                   network */
+    RIL_E_OP_DEVICE_UNSUPPORTED = 1025,         /* Operation is not supported by device or SIM
+                                                   card */
+    RIL_E_NO_FREE_PROFILE = 1027,               /* Maximum number of profiles are stored in the
+                                                   device and there is no more storage available to
+                                                   create a new profile */
+    RIL_E_INVALID_PDP_TYPE = 1028,              /* PDP type specified is not supported */
+    RIL_E_INVALID_TECH_PREF = 1029,             /* Invalid technology preference */
+    RIL_E_INVALID_PROFILE_TYPE = 1030,          /* Invalid profile type is specified */
+    RIL_E_INVALID_SERVICE_TYPE = 1031,          /* Invalid service type */
+    RIL_E_INVALID_REGISTER_ACTION = 1032,       /* Invalid register action value specified in
+                                                   request */
+    RIL_E_INVALID_PS_ATTACH_ACTION = 1033,      /* Invalid PS attach action value specified in
+                                                   request */
+    RIL_E_AUTHENTICATION_FAILED = 1034,         /* Authentication error. */
+    RIL_E_SIM_NOT_INITIALIZED = 1037,           /* PIN is not yet initialized because the SIM
+                                                   initialization has not finished. Try the PIN
+                                                   operation later. */
+    RIL_E_MAX_QOS_REQUESTS_IN_USE = 1038,       /* Maximum QoS requests in use */
+    RIL_E_INCORRECT_FLOW_FILTER = 1039,         /* Incorrect flow filter  */
+    RIL_E_NETWORK_QOS_UNAWARE = 1040,           /* Network QoS unaware */
+    RIL_E_INVALID_ID = 1041,                    /* Invalid call ID was sent in the request */
+    RIL_E_REQUESTED_NUM_UNSUPPORTED = 1042,     /* Requested message ID is not supported by the
+                                              currently running software */
+    RIL_E_INTERFACE_NOT_FOUND = 1043,           /* Cannot retrieve the FMC interface */
+    RIL_E_FLOW_SUSPENDED = 1044,                /* Flow suspended */
+    RIL_E_INVALID_DATA_FORMAT = 1045,           /* Invalid data format */
+    RIL_E_GENERAL = 1046,                       /* General error */
+    RIL_E_UNKNOWN = 1047,                       /* Unknown error */
+    RIL_E_INVALID_ARG = 1048,                   /* Parameters passed as input were invalid */
+    RIL_E_INVALID_INDEX = 1049,                 /* MIP profile index is not within the valid
+                                                   range */
+    RIL_E_NO_ENTRY = 1050,                      /* No message exists at the specified memory
+                                                   storage designation */
+    RIL_E_DEVICE_STORAGE_FULL = 1051,           /* Memory storage specified in the request is
+                                                   full */
+    RIL_E_CAUSE_CODE = 1054,                    /* There was an error in the request */
+    RIL_E_MESSAGE_NOT_SENT = 1055,              /* Message could not be sent */
+    RIL_E_MESSAGE_DELIVERY_FAILURE = 1056,      /*  Message could not be delivered */
+    RIL_E_INVALID_MESSAGE_ID = 1057,            /* Message ID specified for the message is
+                                                   invalid */
+    RIL_E_ENCODING = 1058,                      /* Message is not encoded properly */
+    RIL_E_AUTHENTICATION_LOCK = 1059,           /* Maximum number of authentication failures
+                                                   has been reached */
+    RIL_E_INVALID_TRANSITION = 1060,            /* Selected operating mode transition from the
+                                                   current operating mode is invalid */
+    RIL_E_NOT_A_MCAST_IFACE = 1061,             /* Not a MCAST interface */
+    RIL_E_MAX_MCAST_REQUESTS_IN_USE = 1062,     /* MCAST request in use */
+    RIL_E_INVALID_MCAST_HANDLE = 1063,          /* An invalid MCAST handle */
+    RIL_E_INVALID_IP_FAMILY_PREF = 1064,        /* IP family preference is invalid */
+    RIL_E_SESSION_INACTIVE = 1065,              /* Session inactive */
+    RIL_E_SESSION_INVALID = 1066,               /* Session not valid */
+    RIL_E_SESSION_OWNERSHIP = 1067,             /* Session ownership error */
+    RIL_E_INSUFFICIENT_RESOURCES = 1068,        /* Response is longer than the maximum supported
+                                                   size */
+    RIL_E_DISABLED = 1069,                      /* Disabled */
+    RIL_E_INVALID_OPERATION = 1070,             /* Device is not expecting the request. */
+    RIL_E_INVALID_QMI_CMD = 1071,               /* Invalid QMI command */
+    RIL_E_TPDU_TYPE = 1072,                     /* Message in memory contains a TPDU type that
+                                                   cannot be read */
+    RIL_E_SMSC_ADDR = 1073,                     /* SMSC address specified is invalid */
+    RIL_E_INFO_UNAVAILABLE = 1074,              /* Information is not available */
+    RIL_E_SEGMENT_TOO_LONG = 1075,              /* PRL segment size is too large */
+    RIL_E_SEGMENT_ORDER = 1076,                 /* PRL segment order is incorrect */
+    RIL_E_BUNDLING_NOT_SUPPORTED = 1077,        /* Bundling not supported */
+    RIL_E_OP_PARTIAL_FAILURE = 1078,            /* Some personalization codes were set but
+                                                   an error prevented */
+    RIL_E_POLICY_MISMATCH = 1079,               /* Network policy does not match a valid NAT */
+    RIL_E_SIM_FILE_NOT_FOUND = 1080,            /* File is not present on the card. */
+    RIL_E_EXTENDED_INTERNAL = 1081,             /* Error from the the DS profile module,
+                                                   the extended error */
+    RIL_E_ACCESS_DENIED = 1082,                 /* Access to the requested file is denied. This can
+                                                   occur when there is an attempt to access a
+                                                   PIN-protected file. */
+    RIL_E_HARDWARE_RESTRICTED = 1083,           /* Selected operating mode is invalid with the
+                                                   current wireless disable setting */
+    RIL_E_ACK_NOT_SENT = 1084,                  /* ACK could not be sent */
+    RIL_E_INJECT_TIMEOUT = 1085,                /* Inject timeout */
+    RIL_E_FDN_RESTRICT = 1091,                  /* FDN restriction */
+    RIL_E_SUPS_FAILURE_CAUSE = 1092,            /* Indicates supplementary services failure
+                                                   information; */
+    RIL_E_NO_RADIO = 1093,                      /* Radio is not available */
+    RIL_E_NOT_SUPPORTED = 1094,                 /* Operation is not supported */
+    RIL_E_CARD_CALL_CONTROL_FAILED = 1096,      /* SIM/R-UIM call control failed */
+    RIL_E_NETWORK_ABORTED = 1097,               /* Operation was released abruptly by the
+                                                   network */
+    RIL_E_MSG_BLOCKED = 1098,                   /* Message blocked */
+    RIL_E_INVALID_SESSION_TYPE = 1100,          /* Invalid session type */
+    RIL_E_INVALID_PB_TYPE = 1101,               /* Invalid Phone Book type */
+    RIL_E_NO_SIM = 1102,                        /* Action is being performed on a SIM that is not
+                                                   initialized. */
+    RIL_E_PB_NOT_READY = 1103,                  /* Phone Book not ready */
+    RIL_E_PIN_RESTRICTION = 1104,               /* PIN restriction */
+    RIL_E_PIN2_RESTRICTION = 1105,              /* PIN2 restriction */
+    RIL_E_PUK_RESTRICTION = 1106,               /* PUK restriction */
+    RIL_E_PUK2_RESTRICTION = 1107,              /* PUK2 restriction */
+    RIL_E_PB_ACCESS_RESTRICTED = 1108,          /* Phone Book access restricted */
+    RIL_E_PB_DELETE_IN_PROG = 1109,             /* Phone Book delete in progress */
+    RIL_E_PB_TEXT_TOO_LONG = 1110,              /* Phone Book text too long */
+    RIL_E_PB_NUMBER_TOO_LONG = 1111,            /* Phone Book number too long */
+    RIL_E_PB_HIDDEN_KEY_RESTRICTION = 1112,     /* Phone Book hidden key restriction */
+    RIL_E_PB_NOT_AVAILABLE = 1113,              /* Phone Book not available */
+    RIL_E_DEVICE_MEMORY_ERROR = 1114,           /* Device memory error */
+    RIL_E_NO_PERMISSION = 1115,                 /* No permission */
+    RIL_E_TOO_SOON = 1116,                      /* Too soon */
+    RIL_E_TIME_NOT_ACQUIRED = 1117,             /* Time not acquired */
+    RIL_E_OP_IN_PROGRESS = 1118,                /* Operation is in progress */
     // OEM specific error codes. To be used by OEM when they don't want to reveal
     // specific error codes which would be replaced by Generic failure.
     RIL_E_OEM_ERROR_1 = 501,
@@ -482,6 +583,22 @@ typedef enum {
     RIL_RTT_MODE_DISABLED = 0,       /* Non-RTT call */
     RTT_MODE_FULL = 1,               /* RTT call */
 } RIL_RTT_Info;
+/*
+ * Represents automotive Accident Emergency Call System (AECS) call states.
+ */
+typedef enum {
+    RIL_AECS_CALL_STATE_UNKNOWN = 0,       /* Unknown AECS call state. */
+    RIL_AECS_CALL_STATE_CONNECTED,         /* AECS call is connected. */
+    RIL_AECS_CALL_STATE_DROPPED,           /* Indicates when an AECS call is dropped. */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_START, /* Indicates when a call failed to originate and the
+                                              modem has started automatic redial attempts
+                                              (duration: 45 seconds). */
+    RIL_AECS_CALL_STATE_MODEM_RETRY_END,   /* Indicates when the modem has completed its automatic
+                                              redial attempts. Upon receiving this state, the
+                                              application is expected to initiate a new call. */
+    RIL_AECS_CALL_STATE_FAILED,            /* Indicates when an AECS call is failed permanently. */
+    RIL_AECS_CALL_STATE_COMPLETED          /* AECS call is ended or completed. */
+} RIL_AecsCallState;
 
 typedef struct {
     RIL_CallState   state;
@@ -506,6 +623,7 @@ typedef struct {
                                      3 = emergency ip call, 4 = automotive eCall */
     char *          reason;       /* Call reason for incoming PS call. */
     RIL_CallMode    mode;       /* -1 = Unknown , 0 = GSM call, 1 = UMTS call, 2 = LTE call, 3 = NR5G call */
+    RIL_AecsCallState aecs_call_state; /* Call state for an AECS call. */
 } RIL_Call;
 
 typedef struct {
@@ -689,8 +807,157 @@ typedef struct {
              * rttMode == 0 when a normal voice call is initiated by user
              * rttMode == 1 when a RTT voice call is initiated by user
              */
+    int is_aecs_call; /* Indicates whether the call is AECS or not.
+                  * is_aecs_call == 0 when a normal voice call is initiated by user
+                  * is_aecs_call == 1 when a AECS call is initiated by user
+                  */
     RIL_UUS_Info *  uusInfo;    /* NULL or Pointer to User-User Signaling Information */
 } RIL_Dial;
+
+/** Used by RIL_REQUEST_DIAL_ECALL */
+#define RIL_ECALL_MSD_MAX 140 // in bytes
+
+/** Used by RIL_REQUEST_DIAL_PRIVATE_ECALL */
+#define RIL_IP_CALLER_INFO_MAX 255
+#define RIL_IP_CALLER_INFO_CONTENT_EXT_TYPE_MAX 128
+#define RIL_IP_ACCEPT_INFO_MAX 128
+
+/**
+ * Configuration type used to select how a test NG or CS eCall is dialed.
+ */
+typedef enum {
+    RIL_TEST_ECALL_CONFIG_DEFAULT_SDN_URI = 0, /**< Uses the default Fixed Dialing Number (FDN)
+                                                     or Service Dialing Number (SDN) or SDN URI
+                                                     retrieved from the SIM card to initiate a
+                                                     test NG or CS eCall.
+                                                     This configuration takes precedence over the
+                                                     custom SDN URI and dialing number. */
+    RIL_TEST_ECALL_CONFIG_CUSTOM_SDN_URI,      /**< Uses a custom Service Dialing Number (SDN)
+                                                     URI configured on the device to initiate a
+                                                     custom test NG eCall when the default FDN or
+                                                     SDN or SDN URI is not available on the SIM
+                                                     card. */
+    RIL_TEST_ECALL_CONFIG_DIALING_NUMBER,      /**< Uses a direct dialing number configured by
+                                                     the user to initiate a custom test NG eCall
+                                                     when the default FDN or SDN or SDN URI is
+                                                     not available on the SIM card. */
+} RIL_TestECallConfigType;
+
+/**
+ * Structure representing an eCall configuration.
+ */
+typedef struct {
+    /**
+     * The phone number to be used for the eCall.
+     */
+    char * address;
+
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_ECALL_MSD_MAX.
+     */
+    uint8_t msd[RIL_ECALL_MSD_MAX];
+
+    /**
+     * Flag indicating whether the MSD should be transmitted.
+     * A value of 1 indicates that the MSD should be transmitted, while a value of 0 indicates that
+     * it should not.
+     */
+    int transmit_msd;
+
+    /**
+     * The emergency category of the eCall.
+     * This value determines the type of emergency call being made.
+     */
+    int emergency_category;
+
+    /**
+     * The type of call being made.
+     * This value determines the type of call, such as a voice call or a emergency call.
+     */
+    int call_type;
+
+    /**
+     * The variant of the eCall being made.
+     * This value determines the specific variant of the eCall protocol being used.
+     */
+    int eCall_variant;
+
+    /**
+     * The test eCall dialing configuration to use when eCall_variant indicates a test/self
+     * test eCall.
+     */
+    RIL_TestECallConfigType config;
+} RIL_ECall;
+
+/**
+ * Structure representing a private eCall configuration.
+ */
+typedef struct {
+    /**
+     * The phone number to be used for the private eCall.
+     */
+    char * address;
+
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_IP_CALLER_INFO_MAX.
+     */
+    uint8_t msd[RIL_IP_CALLER_INFO_MAX];
+
+    /**
+     * The type of call being made.
+     * This value determines the type of call, such as a voice call.
+     */
+    int call_type;
+
+    /**
+     * The content type of the private eCall.
+     * Represents custom SIP headers for content type for a PSAP.
+     * This provides clients the ability to transfer custom SIP headers with the SIP INVITE
+     * that is sent as part of call connect on TPS eCall over IMS.
+     * The value corresponding to these data fields should be recognised by a PSAP
+     * otherwise no acknowledgement would be received by device.
+     */
+    char * content_type;
+
+    /**
+     * The accept info for the private eCall.
+     * Represents custom SIP headers for accept info for a PSAP.
+     * This provides clients the ability to transfer custom SIP headers with the SIP INVITE
+     * that is sent as part of call connect on TPS eCall over IMS.
+     * The value corresponding to these data fields should be recognised by a PSAP
+     * otherwise no acknowledgement would be received by device.
+     */
+    char * accept_info;
+} RIL_DialPrivateECall;
+
+
+/**
+ * Structure representing an MSD (Minimum Set of Data) configuration.
+ */
+typedef struct {
+    /**
+     * The size of the Minimum Set of Data (MSD) to be transmitted.
+     */
+    int msd_size;
+
+    /**
+     * The Minimum Set of Data (MSD) to be transmitted.
+     * The MSD is an array of bytes, with a maximum size of RIL_ECALL_MSD_MAX.
+     */
+    uint8_t msd[RIL_ECALL_MSD_MAX];
+} RIL_Msd;
 
 typedef struct {
     int command;    /* one of the commands listed for TS 27.007 +CRSM*/
@@ -744,6 +1011,37 @@ typedef struct {
     char *simResponse;  /* In hex string format ([a-fA-F0-9]*), except for SIM_AUTHENTICATION
                            response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
 } RIL_SIM_IO_Response;
+
+#ifdef RIL_FOR_MDM_LE
+/*
+ * Due to QRTR socket data transfer limitations, payloads larger than 8 KB cannot be sent
+ * in a single message. As a result, the APDU response concatenation logic has been moved
+ * from the server side to the client side.
+ *
+ * To support this, the RIL_SIM_APDU_Response structure is extended to include additional
+ * metadata such as the token and total APDU length (totalApduLen).
+ *
+ * The RIL_SIM_IO_Indication structure carries the actual APDU payload (simResponse),
+ * along with the token, total APDU length and offset enabling the client to reconstruct
+ * the complete APDU response from multiple chunks.
+ */
+typedef struct {
+    int sw1;
+    int sw2;
+    char *simResponse;  /* In hex string format ([a-fA-F0-9]*), except for SIM_AUTHENTICATION
+                           response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
+    uint32_t token;
+    uint16_t tokenApduLen;
+} RIL_SIM_APDU_Response;
+
+typedef struct {
+    uint32_t token;
+    uint16_t tokenApduLen;
+    uint16_t offset;
+    char *simResponse;  /* In hex string format ([a-fA-F0-9]*), except for SIM_AUTHENTICATION
+                           response for which it is in Base64 format, see 3GPP TS 31.102 7.1.2 */
+} RIL_SIM_IO_Indication;
+#endif
 
 /* See also com.android.internal.telephony.gsm.CallForwardInfo */
 
@@ -846,6 +1144,71 @@ typedef struct {
   RIL_Hlap_Timer_Id timerId;
   int32_t duration;
 } RIL_EcallHlapTimer;
+
+typedef enum {
+    CALL_DROP = 0,  /**< Redial configuration for eCall termination before reciept of MSD
+                         Transmission status */
+    CALL_ORIG = 1,  /**< Redial configuration for eCall origination failure */
+} RIL_Redial_Config_Type;
+
+#define ECALL_REDIAL_MAX_LEN 255
+
+/**
+ * Structure representing an eCall redial configuration.
+ */
+typedef struct {
+    /**
+     * The type of redial configuration.
+     * This value determines the type of redial, such as a eCall origination failure or eCall drop.
+     */
+    RIL_Redial_Config_Type type;
+
+    /**
+     * The size of the time gap array.
+     */
+    int32_t time_gap_size;
+
+    /**
+     * The time gap array.
+     * This array stores the time gaps for the redial configuration,
+     * with a maximum size of ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t time_gap[ECALL_REDIAL_MAX_LEN];
+} RIL_Ecall_Redial_Config;
+
+/**
+ * Structure representing the result of getting an eCall redial configuration.
+ */
+typedef struct {
+    /**
+     * The length of the call origination time gap array.
+     */
+    int32_t length_call_orig_time_gap;
+
+    /**
+     * The call origination time gap array.
+     * This array stores the time gaps for the call origination, with a maximum size of
+     * ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t call_orig_time_gap[ECALL_REDIAL_MAX_LEN];
+
+    /**
+     * The length of the call drop time gap array.
+     */
+    int32_t length_call_drop_time_gap;
+
+    /**
+     * The call drop time gap array.
+     * This array stores the time gaps for the call drop, with a maximum size of
+     * ECALL_REDIAL_MAX_LEN.
+     */
+    int32_t call_drop_time_gap[ECALL_REDIAL_MAX_LEN];
+
+    /**
+     * The identifier for the redial configuration.
+     */
+    int identifier;
+} RIL_Ecall_Get_Redial_Config;
 
 /* See RIL_REQUEST_LAST_CALL_FAIL_CAUSE */
 typedef enum {
@@ -1194,6 +1557,14 @@ typedef enum {
                                             code to specific error */
 } RIL_LastCallFailCause;
 
+typedef enum {
+   AECS_CALL_END_DROPPED = 2,          /* AECS call connected and failed unexpectedly */
+   AECS_CALL_END_ORIG_FAILED = 4,      /* AECS call origination fails */
+   AECS_CALL_END_FAILED = 5,           /* AECS call failed permanently */
+   AECS_CALL_END_COMPLETED = 6,        /* AECS call ended or disconnected */
+   AECS_CALL_END_UNSPECIFIED = 0xffff  /* AECS call fail reason is not available */
+} RIL_AecsCallEndReason;
+
 typedef struct {
   RIL_LastCallFailCause cause_code;
   char *                vendor_cause;
@@ -1206,6 +1577,7 @@ typedef struct {
 typedef struct {
     int isLastFailCauseInfoValid;   /* Indicates last failure causeinfo is valid or not */
     RIL_LastCallFailCauseInfo info; /* Indicates last failure causeinfo */
+    RIL_AecsCallEndReason aecs_call_end_reason; /* Indicates AECS call end reason */
     int numOfCalls;                 /* Indicates number of current calls */
     RIL_Call call[RIL_MAX_CALL];    /* List of current calls */
 } RIL_CallWithLastFailureCauseInfo;
@@ -2388,6 +2760,15 @@ typedef struct {
    RIL_HlapTimerEvent t10;  /**< T10 Timer event */
 } RIL_ECallHlapTimerEvents;
 
+typedef struct {
+    RIL_HlapTimerStatus t2;   /**< T2 Timer status */
+    RIL_HlapTimerStatus t5;   /**< T5 Timer status */
+    RIL_HlapTimerStatus t6;   /**< T6 Timer status */
+    RIL_HlapTimerStatus t7;   /**< T7 Timer status */
+    RIL_HlapTimerStatus t9;   /**< T9 Timer status */
+    RIL_HlapTimerStatus t10;  /**< T10 Timer status */
+} RIL_ECallHlapTimerStatus;
+
 /**
  * MSD Transmission Status
  */
@@ -2424,6 +2805,8 @@ typedef enum {
                                             /**< Modem can cleardown the eCall after receipt of
                                                  Application-Layer Acknowledgement(AL-LCK) during
                                                  in-band MSD transmission */
+   INIT_SENT = 15, /**< Initialization frames sent to public safety answering point (PSAP) */
+   NACK_RECEIVED = 16, /**< NACK received from public safety answering point (PSAP) */
 } RIL_ECallMsdTransmissionStatus;
 
 typedef enum {
@@ -2448,6 +2831,71 @@ typedef struct {
                              1 - redial of eCall will be attempted */
    RIL_ReasonType reason; /**< Indicates the reason for redial of eCall to be performed or not */
 } RIL_ECallRedialInfo;
+
+#define ECALL_CONFIG_MAX_OVERRIDDEN_NUM_LEN 32
+#define ECALL_CONFIG_ELEMENTS 8
+
+/**
+ * Enum representing various eCall configuration parameters.
+ */
+typedef enum {
+    ECALL_CONFIG_MUTE_RX_AUDIO = 0,        /**< Mute the local audio device during MSD
+                                                transmission */
+    ECALL_CONFIG_NUM_TYPE,                 /**< Type of number to be dialed when an eCall is
+                                                initiated */
+    ECALL_CONFIG_OVERRIDDEN_NUM,           /**< User-configured/overridden number for eCall */
+    ECALL_CONFIG_USE_CANNED_MSD,           /**< Use pre-defined MSD in modem for eCall */
+    ECALL_CONFIG_GNSS_UPDATE_INTERVAL,     /**< GNSS update interval in milliseconds */
+    ECALL_CONFIG_T2_TIMER,                 /**< T2 timer value in milliseconds */
+    ECALL_CONFIG_T7_TIMER,                 /**< T7 timer value in milliseconds */
+    ECALL_CONFIG_T9_TIMER,                 /**< T9 timer value in milliseconds */
+    ECALL_CONFIG_MSD_VERSION,              /**< MSD version to be used by modem */
+    ECALL_CONFIG_COUNT                     /**< Total number of configuration parameters */
+} RIL_EcallConfigType;
+
+/**
+ * Configuration that represents the type of the number to be dialed when an automotive emergency
+ * call is initiated.
+ */
+typedef enum {
+   RIL_ECALL_NUM_TYPE_DEFAULT,         /* Default configured number is dialed */
+   RIL_ECALL_NUM_TYPE_OVERRIDDEN,      /* User configured/overridden number is dialed */
+}RIL_ECallNumType;
+
+/**
+ * Structure representing the configuration parameters for automotive emergency call (eCall).
+ */
+typedef struct {
+    uint8_t config_validity_mask[(ECALL_CONFIG_COUNT + 7) / 8];
+    /**< Bitmask indicating which configuration parameters are valid.
+         Each bit corresponds to a value in RIL_EcallConfigType.
+         A bit set to 1 denotes that the corresponding parameter is valid. */
+
+    uint8_t mute_rx_audio;
+    /**< Mute the local audio device (e.g., speaker) during MSD transmission.
+         0 = disabled, 1 = enabled */
+
+    RIL_ECallNumType num_type;
+    /**< Type of number to be dialed when eCall is initiated. */
+
+    char* overridden_num;
+    /**< User-configured/overridden number to be dialed when num_type is set to override.*/
+
+    uint8_t use_canned_msd;
+    /**< Use the pre-defined MSD stored in the modem.
+         0 = disabled, 1 = enabled */
+
+    uint32_t gnss_update_interval;
+    /**< Time interval in milliseconds at which the modem updates GNSS information
+         in its internally generated MSD. */
+
+    uint32_t t2_timer; /**< T2 timer value in milliseconds, as per EN 16062:2015 standard. */
+    uint32_t t7_timer; /**< T7 timer value in milliseconds, as per EN 16062:2015 standard. */
+    uint32_t t9_timer;/**< T9 timer value in milliseconds, as per EN 16062:2015 standard.*/
+    uint8_t msd_version; /**< MSD version to be used by modem when generating MSD internally.
+         Supported values: 1 or 2. */
+    int identifier; /*< Identifier for the request.>*/
+} RIL_EcallConfig;
 
 #endif /* RIL_FOR_MDM_LE */
 
@@ -5494,7 +5942,7 @@ typedef struct {
  * "data" is a const RIL_SIM_APDU *
  * "sessionid" field should be ignored.
  *
- * "response" is a const RIL_SIM_IO_Response *
+ * "response" is a const RIL_SIM_APDU_Response *
  *
  * Valid errors:
  *  SUCCESS
@@ -5553,7 +6001,7 @@ typedef struct {
  *
  * "data" is a const RIL_SIM_APDU*
  *
- * "response" is a const RIL_SIM_IO_Response *
+ * "response" is a const RIL_SIM_APDU_Response *
  *
  * Valid errors:
  *  SUCCESS
@@ -6284,6 +6732,204 @@ typedef struct {
  *  GENERIC_FAILURE
  */
  #define RIL_REQUEST_GET_SMS_STORAGE_TYPE 159
+
+ /**
+  * RIL_REQUEST_SET_ANT_SWITCH
+  *
+  * Set the cellular antenna switching configuration.
+  *
+  * "data" is int *, the configuration of cellular antenna switching
+  * "response" is NULL
+  *
+  * Valid errors:
+  *  SUCCESS
+  *  RADIO_NOT_AVAILABLE
+  *  MODEM_ERR
+  *  SYSTEM_ERR
+  *  GENERIC_FAILURE
+  */
+ #define RIL_REQUEST_SET_ANT_SWITCH 160
+
+/**
+ * RIL_REQUEST_DIAL_ECALL
+ *
+ * Initiate an automotive emergency eCall.
+ *
+ * "data" is const RIL_ECall *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE (radio resetting)
+ *  INVALID_ARGUMENTS
+ *  NO_RESOURCES
+ *  INTERNAL_ERR
+ *  MODEM_ERR
+ *  NO_SUBSCRIPTION
+ *  NO_NETWORK_FOUND
+ *  INVALID_CALL_ID
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_DIAL_ECALL 161
+
+/**
+ * RIL_REQUEST_DIAL_PRIVATE_ECALL
+ *
+ * Initiate an automotive private eCall.
+ *
+ * "data" is const int *
+ * "response" is NULL
+ *
+ * This method is never used for supplementary service codes
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  RADIO_NOT_AVAILABLE (radio resetting)
+ *  INVALID_ARGUMENTS
+ *  NO_RESOURCES
+ *  INTERNAL_ERR
+ *  MODEM_ERR
+ *  NO_SUBSCRIPTION
+ *  NO_NETWORK_FOUND
+ *  INVALID_CALL_ID
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_DIAL_PRIVATE_ECALL 162
+
+/**
+ * RIL_REQUEST_UPDATE_MSD
+ *
+ * Initiate an automotive private eCall.
+ *
+ * "data" is const RIL_Msd *
+ * "response" is NULL
+ *
+ * This method is never used for supplementary service codes
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  INVALID_ARGUMENTS
+ *  ABORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_UPDATE_MSD 163
+
+
+/**
+ * RIL_REQUEST_CONFIGURE_ECALL_REDIAL
+ *
+ * Configure eCall redial
+ *
+ * "data" is const RIL_Ecall_Redial_Config *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_CONFIGURE_ECALL_REDIAL 164
+
+/**
+ * RIL_REQUEST_GET_ECALL_REDIAL_CONFIG
+ *
+ * Get the eCall redial configuration.
+ *
+ * "data" is int *
+ * "response" is RIL_Ecall_Get_Redial_Config *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_REDIAL_CONFIG 165
+
+/**
+ * RIL request to send a post-test registration timer request.
+ * "data" is const int *
+ * "response" is int *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_POST_TEST_REGISTRATION_TIMER_REQUEST 166
+
+/**
+ * RIL request to get the post-test registration timer request.
+ * "data" is const int *
+ * "response" is int *
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_POST_TEST_REGISTRATION_TIMER_REQUEST 167
+
+/**
+ * RIL request to get the eCall HLAP timer status.
+ * "data" is NULL
+ * "response" is RIL_ECallHlapTimerStatus
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_HLAP_TIMER_STATUS 168
+
+/**
+ * RIL request to send an update eCall HLAP timer request.
+ * "data" is const int *
+ * "response" is NULL
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_UPDATE_ECALL_HLAP_TIMER 169
+
+/**
+ * RIL request to send a get eCall HLAP timer request.
+ * "data" is NULL
+ * "response" is int*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SEND_GET_ECALL_HLAP_TIMER 170
+
+/**
+ * RIL request to set the eCall configuration.
+ * "data" is const RIL_EcallConfig *
+ * "response" is int*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_SET_ECALL_CONFIG_REQUEST 171
+
+/**
+ * RIL request to get the eCall configuration.
+ * "data" is const  int*
+ * "response" is RIL_EcallConfig*
+ *
+ * Valid errors:
+ *  SUCCESS
+ *  NOT_SUPPORTED
+ *  GENERIC_FAILURE
+ */
+#define RIL_REQUEST_GET_ECALL_CONFIG_REQUEST 172
 
 /***********************************************************************/
 
@@ -7070,6 +7716,36 @@ typedef struct {
  *
  */
 #define RIL_UNSOL_DTMF 1061
+
+/**
+ * RIL_UNSOL_RESPONSE_ON_SIM_IO
+ *
+ * Called when APDU messages are recieved from card
+ *
+ * "data" is RIL_SIM_IO_Indication *
+ */
+#define RIL_UNSOL_RESPONSE_ON_SIM_IO 1062
+
+/**
+ * RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT
+ *
+ * Called whenever there is change in MSD transmission status at call connect for a Tps eCall over
+ * IMS.
+ *
+ * "data" is const int *
+ *
+ */
+#define RIL_UNSOL_IP_CALLER_INFO_STATUS_EVENT 1063
+
+/**
+ * RIL_UNSOL_MSD_UPDATE_REQUEST
+ *
+ * Called whenever PSAP request for MSD update.
+ *
+ * "data" is NULL
+ *
+ */
+#define RIL_UNSOL_MSD_UPDATE_REQUEST 1064
 
 /***********************************************************************/
 
